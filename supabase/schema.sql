@@ -1,0 +1,34 @@
+-- ENABLE RLS (Row Level Security) ON ALL TABLES
+CREATE TABLE breweries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  license_number TEXT,
+  owner_id UUID REFERENCES auth.users(id)
+);
+
+CREATE TABLE inventory (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brewery_id UUID REFERENCES breweries(id),
+  item_type TEXT CHECK (item_type IN ('Hops', 'Grain', 'Yeast', 'Adjunct')),
+  name TEXT NOT NULL,
+  current_stock DECIMAL NOT NULL,
+  unit TEXT DEFAULT 'kg',
+  reorder_point DECIMAL
+);
+
+CREATE TABLE tanks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brewery_id UUID REFERENCES breweries(id),
+  name TEXT NOT NULL, -- e.g., "FV-01"
+  capacity_bbl DECIMAL,
+  current_batch_id UUID -- Null if empty
+);
+
+CREATE TABLE batches (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brewery_id UUID REFERENCES breweries(id),
+  recipe_name TEXT NOT NULL,
+  status TEXT DEFAULT 'Fermenting', -- 'Mashing', 'Fermenting', 'Conditioning', 'Finished'
+  og DECIMAL, -- Original Gravity
+  fg DECIMAL  -- Final Gravity
+);

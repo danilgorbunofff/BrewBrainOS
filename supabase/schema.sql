@@ -32,3 +32,11 @@ CREATE TABLE batches (
   og DECIMAL, -- Original Gravity
   fg DECIMAL  -- Final Gravity
 );
+
+CREATE TABLE sanitation_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tank_id UUID REFERENCES tanks(id),
+  user_id UUID REFERENCES auth.users(id),
+  notes TEXT,
+  cleaned_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);

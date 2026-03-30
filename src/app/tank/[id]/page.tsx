@@ -3,8 +3,9 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { LucideWaves, LucideHistory, LucideCheckCircle, LucideAlertTriangle } from 'lucide-react'
+import { LucideWaves, LucideHistory, LucideCheckCircle, LucideAlertTriangle, LucideMic } from 'lucide-react'
 import { logSanitation } from './actions'
+import { VoiceLogger } from '@/components/VoiceLogger'
 
 export const metadata = {
   title: 'Tank Dashboard | BrewBrain OS',
@@ -179,6 +180,17 @@ export default async function TankPage({ params }: PageProps) {
           </Card>
 
         </div>
+
+        {/* Tank Voice Logger */}
+        <Card className="bg-zinc-900/40 border-zinc-800 p-8 text-center flex flex-col items-center animate-in fade-in slide-in-from-bottom-12 duration-1000">
+          <h2 className="text-2xl font-bold mb-2 text-zinc-100 flex items-center gap-2">
+            <LucideMic className="h-6 w-6 text-orange-500" />
+            Log Reading
+          </h2>
+          <p className="text-zinc-500 max-w-sm mb-6">Hold the button to securely record a temperature or gravity log specifically for this tank.</p>
+          <VoiceLogger tankId={tank.id} />
+        </Card>
+
       </div>
     </div>
   )

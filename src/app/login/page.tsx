@@ -48,10 +48,10 @@ export default function LoginPage() {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-2">
-              <Button formAction={login} className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium">
+              <Button formAction={login} type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium">
                 Log In
               </Button>
-              <Button formAction={signup} variant="outline" className="w-full border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200">
+              <Button formAction={signup} type="submit" variant="outline" className="w-full border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200">
                 Register Brewery
               </Button>
             </CardFooter>

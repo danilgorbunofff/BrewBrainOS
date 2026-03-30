@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { LucideClipboardList, LucidePackageSearch, LucideWaves } from 'lucide-react'
+import { VoiceLogger } from '@/components/VoiceLogger'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -57,6 +58,12 @@ export default async function DashboardPage() {
             icon={<LucideClipboardList className="text-orange-600" />}
             href="/batches"
           />
+        </div>
+
+        {/* Global Voice Logger */}
+        <div className="flex flex-col items-center justify-center py-12 animate-in fade-in slide-in-from-bottom-12 duration-1000">
+          <h2 className="text-2xl font-bold mb-6 text-zinc-100">Global Voice Log</h2>
+          <VoiceLogger />
         </div>
 
         {/* Empty State / Welcome Message if No Brewery */}

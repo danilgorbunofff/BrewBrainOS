@@ -40,3 +40,13 @@ CREATE TABLE sanitation_logs (
   notes TEXT,
   cleaned_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
+
+CREATE TABLE batch_readings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  batch_id UUID REFERENCES batches(id),
+  logger_id UUID REFERENCES auth.users(id),
+  temperature DECIMAL,
+  gravity DECIMAL,
+  notes TEXT,
+  logged_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);

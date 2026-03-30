@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { LucideClipboardList, LucidePackageSearch, LucideWaves } from 'lucide-react'
 import { VoiceLogger } from '@/components/VoiceLogger'
+import { setupBrewery } from './actions'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -68,12 +71,21 @@ export default async function DashboardPage() {
 
         {/* Empty State / Welcome Message if No Brewery */}
         {!brewery && (
-          <div className="rounded-3xl border-2 border-dashed border-zinc-800 bg-zinc-900/20 p-12 text-center animate-pulse">
-            <h2 className="text-xl font-bold text-zinc-400 mb-2">No Brewery Configured</h2>
-            <p className="text-zinc-600 mb-6">Let's get your facility set up so you can start logging batches.</p>
-            <button className="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-700 transition-colors">
-              Set Up Brewery Profile
-            </button>
+          <div className="rounded-3xl border-2 border-dashed border-zinc-800 bg-zinc-900/20 p-12 text-center">
+            <h2 className="text-2xl font-bold text-zinc-100 mb-2">Configure Your Brewery</h2>
+            <p className="text-zinc-500 mb-8 max-w-md mx-auto">You're logged in, but you haven't linked a brewery profile to this account yet. What's the name of your facility?</p>
+            
+            <form action={setupBrewery} className="flex flex-col md:flex-row items-center justify-center gap-4 max-w-sm mx-auto">
+              <Input 
+                name="name" 
+                placeholder="e.g. Apex Brewing Co." 
+                required 
+                className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-600 focus-visible:ring-orange-600"
+              />
+              <Button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white font-bold w-full md:w-auto">
+                Create
+              </Button>
+            </form>
           </div>
         )}
       </div>

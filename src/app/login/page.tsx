@@ -4,7 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const p = await searchParams
+  const errorMessage = p?.error
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a] p-4 font-sans">
       <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-700">
@@ -25,6 +27,11 @@ export default function LoginPage() {
           </CardHeader>
           <form action={login}>
             <CardContent className="space-y-4">
+              {errorMessage && (
+                <div className="bg-red-950/50 border border-red-900 text-red-400 p-3 rounded-lg text-sm text-center font-medium animate-pulse">
+                  {errorMessage}
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-zinc-300">Email Address</Label>
                 <Input

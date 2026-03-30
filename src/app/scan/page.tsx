@@ -2,11 +2,21 @@ import { QRScanner } from '@/components/QRScanner'
 import { LucideQrCode } from 'lucide-react'
 import Link from 'next/link'
 
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
+
 export const metadata = {
   title: 'Scan Tank | BrewBrain',
 }
 
-export default function ScanPage() {
+export default async function ScanPage() {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#0a0a0a] px-4 py-12 text-zinc-100 font-sans">
       <div className="w-full max-w-md text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">

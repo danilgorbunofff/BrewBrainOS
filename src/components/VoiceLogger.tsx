@@ -20,39 +20,29 @@ export function VoiceLogger({ tankId, className }: VoiceLoggerProps) {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm'
-      })
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
       
       mediaRecorderRef.current = mediaRecorder
       chunksRef.current = []
 
       mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          chunksRef.current.push(e.data)
-        }
+        if (e.data.size > 0) chunksRef.current.push(e.data)
       }
 
       mediaRecorder.onstop = handleStop
-      mediaRecorder.start(200) // Collect chunks every 200ms
+      mediaRecorder.start(200)
       setIsRecording(true)
       
-      toast.info('Recording...', { duration: 2000 })
+      toast.info('Neural Link Established: Recording...', { duration: 2000 })
     } catch (err: any) {
-      console.error('Error accessing microphone:', err)
-      if (err.name === 'NotAllowedError') {
-        toast.error('Microphone access denied. Please allow it in your browser settings.')
-      } else {
-        toast.error('Failed to access microphone. Are you on a secure (HTTPS) connection?')
-      }
+      console.error('Mic error:', err)
+      toast.error('Voice Interface Error: Check Permissions')
     }
   }
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop()
-      // Stop all audio tracks
       mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
       setIsRecording(false)
     }
@@ -60,7 +50,7 @@ export function VoiceLogger({ tankId, className }: VoiceLoggerProps) {
 
   const handleStop = async () => {
     setIsProcessing(true)
-    const toastId = toast.loading('BrewBrain AI processing your log...')
+    const toastId = toast.loading('BrewBrain AI extraction in progress...')
 
     try {
       const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' })
@@ -68,20 +58,17 @@ export function VoiceLogger({ tankId, className }: VoiceLoggerProps) {
 
       const formData = new FormData()
       formData.append('audio', audioFile)
-      if (tankId) {
-        formData.append('tankId', tankId)
-      }
+      if (tankId) formData.append('tankId', tankId)
 
       const result = await processVoiceLog(formData)
       
       if (result && result.success) {
-        toast.success(`Log processed successfully! Temp: ${result.data.temperature || 'N/A'}, Gravity: ${result.data.gravity || 'N/A'}`, { id: toastId, duration: 5000 })
+        toast.success(`Data Synchronized: Temp ${result.data.temperature || '??'} / Grav ${result.data.gravity || '??'}`, { id: toastId, duration: 5000 })
       } else {
-        toast.error(result?.error || 'Failed to process voice log.', { id: toastId })
+        toast.error(result?.error || 'Extraction Failed.', { id: toastId })
       }
     } catch (error) {
-      console.error('Voice processing error:', error)
-      toast.error('Network or server error occurred.', { id: toastId })
+      toast.error('System Link Failure.', { id: toastId })
     } finally {
       setIsProcessing(false)
     }
@@ -89,35 +76,57 @@ export function VoiceLogger({ tankId, className }: VoiceLoggerProps) {
 
   return (
     <div className={`flex flex-col items-center ${className || ''}`}>
-      <Button
-        type="button"
-        size="lg"
-        variant={isRecording ? 'destructive' : 'default'}
-        disabled={isProcessing}
-        onMouseDown={startRecording}
-        onMouseUp={stopRecording}
-        onTouchStart={startRecording}
-        onTouchEnd={stopRecording}
-        onMouseLeave={stopRecording}
-        className={`h-24 w-24 rounded-full shadow-2xl transition-all duration-300 ${
-          isRecording ? 'bg-red-600 hover:bg-red-700 animate-pulse scale-110 shadow-[0_0_40px_rgba(220,38,38,0.5)]' : 'bg-orange-600 hover:bg-orange-700 hover:scale-105 shadow-[0_0_30px_rgba(234,88,12,0.3)]'
-        }`}
-      >
-        {isProcessing ? (
-          <LucideLoader2 className="h-10 w-10 animate-spin text-white" />
-        ) : isRecording ? (
-          <LucideSquare className="h-10 w-10 text-white fill-white" />
-        ) : (
-          <LucideMic className="h-10 w-10 text-white" />
+      <div className="relative group">
+        {/* Animated Aura */}
+        {isRecording && (
+          <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping -z-10 scale-150 blur-xl transition-all" />
         )}
-      </Button>
-      <div className="mt-4 text-center">
-        <p className="text-sm font-semibold text-zinc-300">
-          {isProcessing ? 'Analyzing audio...' : isRecording ? 'Release to Send' : 'Hold to Log Reading'}
+        <div className={`absolute inset-0 rounded-full bg-primary/10 -z-10 blur-2xl group-hover:bg-primary/20 transition-all duration-700 ${isRecording ? 'opacity-100 scale-125' : 'opacity-0 scale-100'}`} />
+
+        <Button
+          type="button"
+          disabled={isProcessing}
+          onMouseDown={startRecording}
+          onMouseUp={stopRecording}
+          onTouchStart={startRecording}
+          onTouchEnd={stopRecording}
+          onMouseLeave={stopRecording}
+          className={`h-24 w-24 rounded-full transition-all duration-500 transform-gpu ${
+            isRecording 
+              ? 'bg-primary hover:bg-primary shadow-[0_0_60px_rgba(245,158,11,0.6)] scale-110 !border-white/20' 
+              : 'bg-zinc-900 hover:bg-zinc-800 shadow-2xl scale-100 border-white/5'
+          } border-2 overflow-hidden`}
+        >
+          <div className="relative flex items-center justify-center h-full w-full">
+             {isProcessing ? (
+               <LucideLoader2 className="h-10 w-10 animate-spin text-primary" />
+             ) : isRecording ? (
+               <div className="flex flex-col items-center gap-1">
+                 <LucideSquare className="h-8 w-8 text-white fill-white animate-pulse" />
+                 <span className="text-[8px] font-black uppercase tracking-tighter text-white/50">Stop</span>
+               </div>
+             ) : (
+               <LucideMic className="h-10 w-10 text-primary group-hover:scale-110 transition-transform duration-300" />
+             )}
+             
+             {/* Progress Pulse for processing */}
+             {isProcessing && (
+               <div className="absolute inset-0 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+             )}
+          </div>
+        </Button>
+      </div>
+
+      <div className="mt-8 text-center space-y-2">
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500 group-hover:text-zinc-300 transition-colors">
+          {isProcessing ? 'Analyzing' : isRecording ? 'Transmitting' : 'Voice Interface'}
+        </p>
+        <p className="text-lg font-bold text-white tracking-tight">
+          {isProcessing ? 'Synthesizing Data...' : isRecording ? 'Listening to Environment' : 'Push to Authenticate Log'}
         </p>
         {!isRecording && !isProcessing && (
-           <p className="text-xs text-zinc-500 mt-1 max-w-[200px]">
-             Say something like: "Temperature is 68, gravity is 1.012."
+           <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest bg-white/5 px-4 py-1 rounded-full border border-white/5 mx-auto w-fit">
+             "Gravity 1.012, Temp 68"
            </p>
         )}
       </div>

@@ -43,3 +43,40 @@ export async function addBatch(formData: FormData) {
 
   revalidatePath('/batches')
 }
+
+export async function deleteBatch(formData: FormData) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const batchId = formData.get('batchId') as string
+
+  const { data: brewery } = await supabase
+    .from('breweries')
+    .select('id')
+    .eq('owner_id', user.id)
+    .single()
+
+  if (!brewery) throw new Error('No brewery configured')
+
+  // Also clear any tank that references this batch
+  await supabase
+    .from('tanks')
+    .update({ current_batch_id: null, status: 'empty' })
+    .eq('current_batch_id', batchId)
+    .eq('brewery_id', brewery.id)
+
+  const { error } = await supabase
+    .from('batches')
+    .delete()
+    .eq('id', batchId)
+    .eq('brewery_id', brewery.id)
+
+  if (error) {
+    console.error('Failed to delete batch:', error)
+    throw new Error('Failed to delete batch')
+  }
+
+  revalidatePath('/batches')
+}

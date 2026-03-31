@@ -46,16 +46,30 @@ export async function addInventoryItem(formData: FormData) {
 export async function adjustStock(formData: FormData) {
   const supabase = await createClient()
 
+  // Auth check
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
   const id = formData.get('id') as string
   const adjustment = parseFloat(formData.get('adjustment') as string)
+
+  // Verify the item belongs to this user's brewery (ownership check)
+  const { data: brewery } = await supabase
+    .from('breweries')
+    .select('id')
+    .eq('owner_id', user.id)
+    .single()
+
+  if (!brewery) throw new Error('Brewery not found')
 
   const { data: currentItem, error: fetchError } = await supabase
     .from('inventory')
     .select('current_stock')
     .eq('id', id)
+    .eq('brewery_id', brewery.id) // ownership gate
     .single()
 
-  if (fetchError || !currentItem) throw new Error('Item not found')
+  if (fetchError || !currentItem) throw new Error('Item not found or access denied')
 
   const newStock = Math.max(0, currentItem.current_stock + adjustment)
 
@@ -67,6 +81,36 @@ export async function adjustStock(formData: FormData) {
   if (updateError) {
     console.error('Adjust stock error:', updateError)
     throw new Error('Failed to adjust stock')
+  }
+
+  revalidatePath('/inventory')
+}
+
+export async function deleteInventoryItem(formData: FormData) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const itemId = formData.get('itemId') as string
+
+  const { data: brewery } = await supabase
+    .from('breweries')
+    .select('id')
+    .eq('owner_id', user.id)
+    .single()
+
+  if (!brewery) throw new Error('Brewery not found')
+
+  const { error } = await supabase
+    .from('inventory')
+    .delete()
+    .eq('id', itemId)
+    .eq('brewery_id', brewery.id)
+
+  if (error) {
+    console.error('Failed to delete inventory item:', error)
+    throw new Error('Failed to delete inventory item')
   }
 
   revalidatePath('/inventory')

@@ -42,3 +42,33 @@ export async function addTank(formData: FormData) {
 
   revalidatePath('/tanks')
 }
+
+export async function deleteTank(formData: FormData) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const tankId = formData.get('tankId') as string
+
+  const { data: brewery } = await supabase
+    .from('breweries')
+    .select('id')
+    .eq('owner_id', user.id)
+    .single()
+
+  if (!brewery) throw new Error('No brewery configured')
+
+  const { error } = await supabase
+    .from('tanks')
+    .delete()
+    .eq('id', tankId)
+    .eq('brewery_id', brewery.id)
+
+  if (error) {
+    console.error('Failed to delete tank:', error)
+    throw new Error('Failed to delete tank')
+  }
+
+  revalidatePath('/tanks')
+}

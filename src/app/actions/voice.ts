@@ -87,7 +87,13 @@ export async function processVoiceLog(formData: FormData) {
     }
 
     if (!finalBatchId) {
-       return { success: false, error: "Could not link this voice reading to an active batch.", data: extractedData }
+       return { 
+         success: false, 
+         error: tankId 
+           ? "This tank has no active batch assigned. Go to the Tanks page and assign a batch first."
+           : "Could not link reading to a batch. Try logging from your tank's page, or mention the exact recipe name.",
+         data: extractedData 
+       }
     }
 
     // Insert Reading

@@ -1,4 +1,4 @@
-import { login, signup } from './actions'
+import { login, signup, forgotPassword } from './actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -8,65 +8,77 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const p = await searchParams
   const errorMessage = p?.error
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a] p-4 font-sans">
-      <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-700">
-        <div className="text-center">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-orange-600 mb-4 shadow-[0_0_20px_rgba(234,88,12,0.3)]">
-            <span className="text-2xl font-bold text-white">B</span>
+    <div className="relative flex min-h-screen items-center justify-center p-4 overflow-hidden">
+      {/* Dynamic Background Mesh */}
+      <div className="absolute inset-0 -z-10 h-full w-full bg-[#030303]">
+        <div className="absolute top-0 left-0 h-full w-full bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.05),transparent_50%)] animate-pulse" />
+        <div className="absolute -top-[10%] -left-[10%] h-[40%] w-[40%] rounded-full bg-orange-600/10 blur-[120px] animate-blob" />
+        <div className="absolute -bottom-[10%] -right-[10%] h-[40%] w-[40%] rounded-full bg-orange-900/10 blur-[120px] animate-blob animation-delay-2000" />
+      </div>
+
+      <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+        <div className="text-center group">
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary mb-6 shadow-[0_0_30px_rgba(245,158,11,0.4)] group-hover:shadow-[0_0_50px_rgba(245,158,11,0.6)] transition-all duration-500 transform group-hover:scale-110">
+            <span className="text-3xl font-black text-white italic">B</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-100">BrewBrain OS</h1>
-          <p className="mt-2 text-zinc-400">The digital floor-assistant for craft breweries.</p>
+          <h1 className="text-5xl font-black tracking-tighter text-white mb-2">
+            BrewBrain <span className="text-primary italic">OS</span>
+          </h1>
+          <p className="text-zinc-500 font-medium tracking-wide uppercase text-xs">
+            Professional Brewery Management Platform
+          </p>
         </div>
 
-        <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur-xl transition-all hover:border-orange-600/30">
-          <CardHeader>
-            <CardTitle className="text-xl text-zinc-100">Sign In</CardTitle>
-            <CardDescription className="text-zinc-500">
-              Enter your credentials to access your brewery dashboard.
+        <Card className="border-white/5 backdrop-blur-2xl">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl">Access Dashboard</CardTitle>
+            <CardDescription>
+              Securely sign in to your brewery's command center.
             </CardDescription>
           </CardHeader>
           <form action={login}>
             <CardContent className="space-y-4">
               {errorMessage && (
-                <div className="bg-red-950/50 border border-red-900 text-red-400 p-3 rounded-lg text-sm text-center font-medium animate-pulse">
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm text-center font-bold animate-in zoom-in-95 duration-300">
                   {errorMessage}
                 </div>
               )}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-zinc-300">Email Address</Label>
+              <div className="grid gap-2">
+                <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Email Address</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   placeholder="name@brewery.com"
                   required
-                  className="border-zinc-800 bg-zinc-950 text-zinc-200 focus-visible:ring-orange-600"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password" title='Password' className="text-zinc-300">Password</Label>
+              <div className="grid gap-2">
+                <Label htmlFor="password" title='Password' className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Password</Label>
                 <Input
                   id="password"
                   name="password"
                   type="password"
                   required
-                  className="border-zinc-800 bg-zinc-950 text-zinc-200 focus-visible:ring-orange-600"
                 />
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col space-y-2">
-              <Button formAction={login} type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium">
+            <CardFooter className="flex flex-col gap-3 pt-2">
+              <Button formAction={login} type="submit" className="w-full">
                 Log In
               </Button>
-              <Button formAction={signup} type="submit" variant="outline" className="w-full border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200">
-                Register Brewery
+              <Button formAction={signup} type="submit" variant="outline" className="w-full">
+                Register New facility
+              </Button>
+              <Button formAction={forgotPassword} type="submit" variant="link" className="text-xs text-zinc-600 hover:text-primary transition-colors">
+                Forgot your password?
               </Button>
             </CardFooter>
           </form>
         </Card>
 
-        <p className="text-center text-xs text-zinc-600">
-          Built for brewers, by brewers. © 2026 BrewBrain Technologies.
+        <p className="text-center text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-700">
+          Precision Engineering for Brewers • © MMXXVI
         </p>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { BatchesTable } from '@/components/BatchesTable'
 import { AddBatchForm } from '@/components/AddBatchForm'
 import { LucideClipboardList } from 'lucide-react'
+import { getActiveBrewery } from '@/lib/active-brewery'
 
 export const metadata = {
   title: 'Batches | BrewBrain OS',
@@ -14,11 +15,7 @@ export default async function BatchesPage() {
 
   if (!user) redirect('/login')
 
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single()
+  const brewery = await getActiveBrewery()
 
   if (!brewery) redirect('/dashboard')
 

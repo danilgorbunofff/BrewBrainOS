@@ -9,6 +9,8 @@ import {
 } from 'lucide-react'
 import { ThemeSelector } from '@/components/ThemeSelector'
 import { ActivityLog } from '@/components/ActivityLog'
+import { SubscriptionCard } from '@/components/SubscriptionCard'
+import { getActiveBrewery } from '@/lib/active-brewery'
 
 export const metadata = {
   title: 'Settings | BrewBrain OS',
@@ -19,11 +21,7 @@ export default async function SettingsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('*')
-    .eq('owner_id', user.id)
-    .single()
+  const brewery = await getActiveBrewery()
 
   // Build activity log from recent data
   const activities: { id: string; type: 'batch' | 'tank' | 'reading' | 'inventory'; label: string; detail: string; timestamp: string }[] = []
@@ -189,6 +187,9 @@ export default async function SettingsPage() {
 
           {/* Theme Selector (client component) */}
           <ThemeSelector />
+
+          {/* Subscription Status */}
+          <SubscriptionCard />
 
           {/* Activity Log */}
           <ActivityLog activities={activities} />

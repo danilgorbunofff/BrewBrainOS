@@ -6,6 +6,8 @@ import {
   LucideCalendar, LucideBarChart3
 } from 'lucide-react'
 import { TTBReportTable } from '@/components/TTBReportTable'
+import { ReportsGate } from '@/components/ReportsGate'
+import { getActiveBrewery } from '@/lib/active-brewery'
 
 export const metadata = {
   title: 'TTB Compliance Reports | BrewBrain OS',
@@ -16,11 +18,7 @@ export default async function ReportsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('*')
-    .eq('owner_id', user.id)
-    .single()
+  const brewery = await getActiveBrewery()
 
   if (!brewery) redirect('/dashboard')
 
@@ -131,6 +129,7 @@ export default async function ReportsPage() {
 
   return (
     <div className="min-h-screen bg-[#060606] text-zinc-100 p-6 md:p-8 pt-8 pb-32 md:pb-8 selection:bg-primary/30">
+      <ReportsGate>
       <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
 
         {/* Header */}
@@ -254,6 +253,7 @@ export default async function ReportsPage() {
         </div>
 
       </div>
+      </ReportsGate>
     </div>
   )
 }

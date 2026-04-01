@@ -5,12 +5,13 @@ import { usePathname } from 'next/navigation'
 import {
   LucideLayoutDashboard, LucideWaves, LucideClipboardList,
   LucidePackageSearch, LucideQrCode, LucideSettings,
-  LucideX, LucideSearch, LucideFileBarChart
+  LucideX, LucideSearch, LucideFileBarChart, LucideCreditCard
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { MobileFloatingActions } from '@/components/MobileFloatingActions'
+import { BrewerySwitcher } from '@/components/BrewerySwitcher'
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LucideLayoutDashboard },
@@ -19,18 +20,28 @@ const navItems = [
   { label: 'Inventory', href: '/inventory', icon: LucidePackageSearch },
   { label: 'QR Scan', href: '/scan', icon: LucideQrCode },
   { label: 'Reports', href: '/reports', icon: LucideFileBarChart },
+  { label: 'Billing', href: '/billing', icon: LucideCreditCard },
 ]
 
 const bottomItems = [
   { label: 'Settings', href: '/settings', icon: LucideSettings },
 ]
 
+interface BrewerySummary {
+  id: string
+  name: string
+  license_number: string | null
+  subscription_tier: string
+}
+
 interface SidebarProps {
   userEmail: string
   breweryName: string | null
+  breweries: BrewerySummary[]
+  activeBreweryId: string | null
 }
 
-export function Sidebar({ userEmail, breweryName }: SidebarProps) {
+export function Sidebar({ userEmail, breweryName, breweries, activeBreweryId }: SidebarProps) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const initials = userEmail.substring(0, 2).toUpperCase()
@@ -67,13 +78,8 @@ export function Sidebar({ userEmail, breweryName }: SidebarProps) {
           </button>
         </div>
 
-        {/* Brewery Badge */}
-        {breweryName && (
-          <div className="mx-4 mt-4 px-3 py-2 rounded-xl bg-white/[0.02] border border-white/5">
-            <span className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Active Brewery</span>
-            <p className="text-sm font-bold text-zinc-300 truncate">{breweryName}</p>
-          </div>
-        )}
+        {/* Brewery Switcher */}
+        <BrewerySwitcher breweries={breweries} activeBreweryId={activeBreweryId} />
 
         {/* Main Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">

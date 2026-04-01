@@ -1,7 +1,7 @@
 'use client'
 
 import { useOfflineQueue } from '@/lib/offlineQueue'
-import { WifiOff, ShieldCheck, Loader2 } from 'lucide-react'
+import { WifiOff, ShieldCheck, Loader2, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function OfflineSyncBanner() {
@@ -25,6 +25,13 @@ export function OfflineSyncBanner() {
               {queueCount} item(s) pending sync.
             </span>
           )}
+          <button
+            onClick={() => window.location.reload()}
+            className="ml-2 px-2.5 py-0.5 rounded-md bg-red-500/20 border border-red-500/30 text-red-300 hover:bg-red-500/30 hover:text-red-100 transition-all flex items-center gap-1"
+          >
+            <RefreshCw className="h-3 w-3" />
+            Retry
+          </button>
         </>
       ) : (
         <>

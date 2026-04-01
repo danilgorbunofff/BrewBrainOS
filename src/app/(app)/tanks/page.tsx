@@ -6,8 +6,10 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { deleteTank } from './actions'
 import { AddTankForm } from '@/components/AddTankForm'
 import { DeleteConfirmButton } from '@/components/DeleteConfirmButton'
+import { TankLimitBadge, TankAddGate } from '@/components/TankLimitGate'
 import { LucideWaves } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getActiveBrewery } from '@/lib/active-brewery'
 
 export const metadata = {
   title: 'Vessels | BrewBrain OS',
@@ -21,15 +23,19 @@ export default async function TanksPage() {
     redirect('/login')
   }
 
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single()
+  const brewery = await getActiveBrewery()
 
   if (!brewery) {
     redirect('/dashboard')
   }
+
+  // Get tank count for limit badge
+  const { count: tankCount } = await supabase
+    .from('tanks')
+    .select('id', { count: 'exact', head: true })
+    .eq('brewery_id', brewery.id)
+
+  const currentTankCount = tankCount || 0
 
   return (
     <div className="min-h-screen bg-[#060606] text-zinc-100 p-6 md:p-8 pt-8 pb-32 md:pb-8 selection:bg-primary/30">
@@ -43,10 +49,15 @@ export default async function TanksPage() {
               </div>
               Vessels
             </h1>
-            <p className="text-zinc-500 mt-2 font-medium">Monitoring and allocation of fermentation infrastructure.</p>
+            <div className="flex items-center gap-3 mt-2">
+              <p className="text-zinc-500 font-medium">Monitoring and allocation of fermentation infrastructure.</p>
+              <TankLimitBadge currentCount={currentTankCount} />
+            </div>
           </div>
           
-          <AddTankForm />
+          <TankAddGate currentCount={currentTankCount}>
+            <AddTankForm />
+          </TankAddGate>
         </div>
 
         <Suspense fallback={<TanksSkeleton />}>

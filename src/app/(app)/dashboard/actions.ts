@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { setActiveBreweryId } from '@/lib/active-brewery'
 
 export async function setupBrewery(formData: FormData) {
   const supabase = await createClient()
@@ -17,15 +18,22 @@ export async function setupBrewery(formData: FormData) {
     throw new Error('Brewery name is required')
   }
 
-  const { error } = await supabase.from('breweries').insert({
-    name: name.trim(),
-    owner_id: user.id
-  })
+  const { data: newBrewery, error } = await supabase
+    .from('breweries')
+    .insert({
+      name: name.trim(),
+      owner_id: user.id
+    })
+    .select('id')
+    .single()
 
-  if (error) {
+  if (error || !newBrewery) {
     console.error('Failed to setup brewery:', error)
     throw new Error('Database Error: Could not create brewery.')
   }
+
+  // Automatically set the new brewery as active
+  await setActiveBreweryId(newBrewery.id)
 
   revalidatePath('/dashboard')
   redirect('/dashboard')

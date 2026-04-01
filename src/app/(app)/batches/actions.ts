@@ -1,25 +1,10 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireActiveBrewery } from '@/lib/require-brewery'
 
 export async function addBatch(formData: FormData) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Unauthorized')
-  }
-
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single()
-
-  if (!brewery) {
-    throw new Error('No brewery configured')
-  }
+  const { supabase, brewery } = await requireActiveBrewery()
 
   const recipeName = formData.get('recipeName') as string
   const og = formData.get('og') as string
@@ -45,20 +30,9 @@ export async function addBatch(formData: FormData) {
 }
 
 export async function deleteBatch(formData: FormData) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const { supabase, brewery } = await requireActiveBrewery()
 
   const batchId = formData.get('batchId') as string
-
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single()
-
-  if (!brewery) throw new Error('No brewery configured')
 
   // Also clear any tank that references this batch
   await supabase

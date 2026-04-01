@@ -1,25 +1,10 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireActiveBrewery } from '@/lib/require-brewery'
 
 export async function addTank(formData: FormData) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    throw new Error('Unauthorized')
-  }
-
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single()
-
-  if (!brewery) {
-    throw new Error('No brewery configured')
-  }
+  const { supabase, brewery } = await requireActiveBrewery()
 
   const name = formData.get('name') as string
   const capacity = formData.get('capacity') as string
@@ -44,20 +29,9 @@ export async function addTank(formData: FormData) {
 }
 
 export async function deleteTank(formData: FormData) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const { supabase, brewery } = await requireActiveBrewery()
 
   const tankId = formData.get('tankId') as string
-
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single()
-
-  if (!brewery) throw new Error('No brewery configured')
 
   const { error } = await supabase
     .from('tanks')

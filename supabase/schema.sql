@@ -76,15 +76,34 @@ CREATE TABLE IF NOT EXISTS batch_readings (
   created_at  TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
 
+-- SUBSCRIPTIONS (Stripe billing)
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brewery_id             UUID REFERENCES breweries(id) ON DELETE CASCADE UNIQUE,
+  stripe_customer_id     TEXT,
+  stripe_subscription_id TEXT,
+  tier                   TEXT DEFAULT 'free' CHECK (tier IN ('free','nano','production','multi_site')),
+  status                 TEXT DEFAULT 'inactive' CHECK (status IN ('active','past_due','canceled','inactive','trialing')),
+  current_period_start   TIMESTAMP WITH TIME ZONE,
+  current_period_end     TIMESTAMP WITH TIME ZONE,
+  white_glove_paid       BOOLEAN DEFAULT false,
+  created_at             TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()),
+  updated_at             TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+-- Add subscription_tier column to breweries for quick lookups
+ALTER TABLE breweries ADD COLUMN IF NOT EXISTS subscription_tier TEXT DEFAULT 'free';
+
 -- ─────────────────────────────────────────────
 -- ROW LEVEL SECURITY (RLS)
 -- ─────────────────────────────────────────────
-ALTER TABLE breweries      ENABLE ROW LEVEL SECURITY;
-ALTER TABLE tanks          ENABLE ROW LEVEL SECURITY;
-ALTER TABLE batches        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE inventory      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE breweries       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tanks           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE batches         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventory       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sanitation_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE batch_readings  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscriptions   ENABLE ROW LEVEL SECURITY;
 
 -- Breweries: owner can do anything
 CREATE POLICY "Owner manages brewery" ON breweries
@@ -126,4 +145,10 @@ CREATE POLICY "Owner manages batch readings" ON batch_readings
       JOIN breweries br ON br.id = b.brewery_id
       WHERE br.owner_id = auth.uid()
     )
+  );
+
+-- Subscriptions: user must own the brewery
+CREATE POLICY "Owner manages subscriptions" ON subscriptions
+  FOR ALL USING (
+    brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid())
   );

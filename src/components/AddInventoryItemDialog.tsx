@@ -7,11 +7,23 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { LucidePlus } from 'lucide-react'
 import { addInventoryItem } from '@/app/(app)/inventory/actions'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import { BluetoothScale, type ScaleReading } from '@/components/BluetoothScale'
 
 export function AddInventoryItemDialog() {
   const [itemType, setItemType] = useState('Hops')
   const [unit, setUnit] = useState('kg')
+  const stockInputRef = useRef<HTMLInputElement>(null)
+
+  const handleWeightCaptured = (reading: ScaleReading) => {
+    if (stockInputRef.current) {
+      stockInputRef.current.value = String(reading.weight)
+      // Also sync the unit selector to match the scale
+      if (reading.unit === 'kg' || reading.unit === 'lbs' || reading.unit === 'oz') {
+        setUnit(reading.unit)
+      }
+    }
+  }
 
   return (
     <Dialog>
@@ -72,8 +84,11 @@ export function AddInventoryItemDialog() {
 
           <div className="grid grid-cols-2 gap-6">
             <div className="grid gap-2">
-              <Label htmlFor="inv-stock" className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Initial Reserve</Label>
-              <Input id="inv-stock" name="current_stock" type="number" step="0.1" required defaultValue="0" min="0" className="font-mono" />
+              <div className="flex items-center justify-between">
+                <Label htmlFor="inv-stock" className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Initial Reserve</Label>
+                <BluetoothScale compact onWeightCaptured={handleWeightCaptured} />
+              </div>
+              <Input ref={stockInputRef} id="inv-stock" name="current_stock" type="number" step="0.1" required defaultValue="0" min="0" className="font-mono" />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="inv-reorder" className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Alert Threshold</Label>

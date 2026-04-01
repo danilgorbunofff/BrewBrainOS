@@ -2,21 +2,10 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireActiveBrewery } from '@/lib/require-brewery'
 
 export async function addInventoryItem(formData: FormData) {
-  const supabase = await createClient()
-
-  // Get user's brewery
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
-
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single()
-
-  if (!brewery) throw new Error('Brewery not found')
+  const { supabase, brewery } = await requireActiveBrewery()
 
   const item_type = formData.get('item_type') as string
   const name = formData.get('name') as string
@@ -44,23 +33,10 @@ export async function addInventoryItem(formData: FormData) {
 }
 
 export async function adjustStock(formData: FormData) {
-  const supabase = await createClient()
-
-  // Auth check
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const { supabase, brewery } = await requireActiveBrewery()
 
   const id = formData.get('id') as string
   const adjustment = parseFloat(formData.get('adjustment') as string)
-
-  // Verify the item belongs to this user's brewery (ownership check)
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single()
-
-  if (!brewery) throw new Error('Brewery not found')
 
   const { data: currentItem, error: fetchError } = await supabase
     .from('inventory')
@@ -87,20 +63,9 @@ export async function adjustStock(formData: FormData) {
 }
 
 export async function deleteInventoryItem(formData: FormData) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const { supabase, brewery } = await requireActiveBrewery()
 
   const itemId = formData.get('itemId') as string
-
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single()
-
-  if (!brewery) throw new Error('Brewery not found')
 
   const { error } = await supabase
     .from('inventory')

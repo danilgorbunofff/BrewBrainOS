@@ -1,16 +1,13 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireActiveBrewery } from '@/lib/require-brewery'
 
 export async function logSanitation(formData: FormData) {
-  const supabase = await createClient()
+  const { supabase, user } = await requireActiveBrewery()
   
   const tankId = formData.get('tankId') as string
   const notes = (formData.get('notes') as string)?.trim() || 'Routine cleaning'
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
 
   const { error } = await supabase
     .from('sanitation_logs')
@@ -29,22 +26,10 @@ export async function logSanitation(formData: FormData) {
 }
 
 export async function assignBatch(formData: FormData) {
-  const supabase = await createClient()
+  const { supabase, brewery } = await requireActiveBrewery()
   
   const tankId = formData.get('tankId') as string
   const batchId = formData.get('batchId') as string
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
-
-  // Verify ownership via brewery
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single()
-
-  if (!brewery) throw new Error('Brewery not found')
 
   const { error } = await supabase
     .from('tanks')
@@ -61,20 +46,9 @@ export async function assignBatch(formData: FormData) {
 }
 
 export async function unassignBatch(formData: FormData) {
-  const supabase = await createClient()
+  const { supabase, brewery } = await requireActiveBrewery()
 
   const tankId = formData.get('tankId') as string
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
-
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single()
-
-  if (!brewery) throw new Error('Brewery not found')
 
   const { error } = await supabase
     .from('tanks')

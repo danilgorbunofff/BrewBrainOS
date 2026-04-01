@@ -13,6 +13,7 @@ import { deleteBatch } from '../actions'
 import { DeleteConfirmButton } from '@/components/DeleteConfirmButton'
 import { GravityChart } from '@/components/GravityChart'
 import { cn } from '@/lib/utils'
+import { getActiveBrewery } from '@/lib/active-brewery'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -33,11 +34,7 @@ export default async function BatchDetailPage({ params }: PageProps) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single()
+  const brewery = await getActiveBrewery()
 
   if (!brewery) redirect('/dashboard')
 

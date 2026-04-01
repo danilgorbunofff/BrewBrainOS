@@ -4,7 +4,9 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { AddInventoryItemDialog } from '@/components/AddInventoryItemDialog'
 import { InventoryTable } from '@/components/InventoryTable'
+import { BluetoothScalePanel } from '@/components/BluetoothScalePanel'
 import { LucidePackageSearch, LucideAlertCircle } from 'lucide-react'
+import { getActiveBrewery } from '@/lib/active-brewery'
 
 export default async function InventoryPage() {
   const supabase = await createClient()
@@ -12,11 +14,7 @@ export default async function InventoryPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single()
+  const brewery = await getActiveBrewery()
 
   if (!brewery) {
     return (
@@ -55,9 +53,13 @@ export default async function InventoryPage() {
           <AddInventoryItemDialog />
         </div>
 
+        {/* Bluetooth Scale Integration */}
+        <BluetoothScalePanel items={inventory || []} />
+
         <InventoryTable items={inventory || []} />
 
       </div>
     </div>
   )
 }
+

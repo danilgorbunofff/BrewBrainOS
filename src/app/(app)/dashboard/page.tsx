@@ -7,11 +7,13 @@ import {
   LucideAlertCircle, LucideArrowRight,
 } from 'lucide-react'
 import { VoiceLogger } from '@/components/VoiceLogger'
+import { VoiceLoggerGate } from '@/components/VoiceLoggerGate'
 import { OnboardingChecklist } from '@/components/OnboardingChecklist'
 import { setupBrewery } from './actions'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { getActiveBrewery } from '@/lib/active-brewery'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -21,11 +23,7 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  const { data: brewery } = await supabase
-    .from('breweries')
-    .select('*')
-    .eq('owner_id', user.id)
-    .single()
+  const brewery = await getActiveBrewery()
 
   return (
     <div className="min-h-screen bg-[#060606] text-zinc-100 p-6 md:p-8 pt-8 pb-32 md:pb-8 selection:bg-primary/30">
@@ -278,15 +276,7 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
 
       {/* Voice Logger — hidden on mobile, available via floating button instead */}
       <div className="hidden md:block relative group rounded-2xl p-1 bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.1),transparent_70%)] animate-in fade-in duration-1000">
-        <div className="rounded-[calc(1rem-1px)] border border-white/5 bg-white/[0.01] p-10 text-center">
-          <div className="max-w-xl mx-auto space-y-4">
-            <h2 className="text-2xl font-black tracking-tight text-white">Voice Command</h2>
-            <p className="text-zinc-500 text-sm font-medium">Speak a production reading. AI extracts gravity, temperature, and notes.</p>
-            <div className="pt-2">
-              <VoiceLogger />
-            </div>
-          </div>
-        </div>
+        <VoiceLoggerGate />
       </div>
     </>
   )

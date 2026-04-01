@@ -5,11 +5,12 @@ import { usePathname } from 'next/navigation'
 import {
   LucideLayoutDashboard, LucideWaves, LucideClipboardList,
   LucidePackageSearch, LucideQrCode, LucideSettings,
-  LucideMenu, LucideX, LucideSearch, LucideFileBarChart
+  LucideX, LucideSearch, LucideFileBarChart
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { MobileFloatingActions } from '@/components/MobileFloatingActions'
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LucideLayoutDashboard },
@@ -36,22 +37,6 @@ export function Sidebar({ userEmail, breweryName }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile toggle button */}
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="fixed top-5 left-5 z-50 md:hidden p-2.5 rounded-xl glass border-white/10 hover:bg-white/10 transition-colors"
-        aria-label="Open menu"
-      >
-        <LucideMenu className="h-5 w-5 text-zinc-400" />
-      </button>
-
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
 
       {/* Sidebar */}
       <aside
@@ -64,8 +49,8 @@ export function Sidebar({ userEmail, breweryName }: SidebarProps) {
         {/* Logo */}
         <div className="flex items-center justify-between px-5 py-6 border-b border-white/5">
           <Link href="/dashboard" className="flex items-center gap-3 group" onClick={() => setMobileOpen(false)}>
-            <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.3)] group-hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] transition-shadow">
-              <span className="text-lg font-black text-white italic">B</span>
+            <div className="h-9 w-9 rounded-xl overflow-hidden flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.3)] group-hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] transition-shadow">
+              <img src="/logo.png" alt="BrewBrain Logo" className="h-full w-full object-cover" />
             </div>
             <div>
               <span className="text-base font-black tracking-tight text-white">BrewBrain</span>
@@ -193,6 +178,9 @@ export function Sidebar({ userEmail, breweryName }: SidebarProps) {
           })}
         </div>
       </nav>
+
+      {/* Mobile floating Voice + QR buttons */}
+      <MobileFloatingActions />
     </>
   )
 }

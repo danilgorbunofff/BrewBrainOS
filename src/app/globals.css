@@ -76,9 +76,13 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground transition-colors duration-500 selection:bg-primary/20 antialiased;
-  }
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-background text-foreground transition-colors duration-500 selection:bg-primary/20 antialiased;
+}
   .dark body,
   body:is(.dark *) {
     background-image: 
@@ -105,5 +109,13 @@
 
   .animation-delay-2000 {
     animation-delay: 2s;
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }

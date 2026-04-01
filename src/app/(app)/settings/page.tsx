@@ -76,7 +76,7 @@ export default async function SettingsPage() {
   const initials = email.substring(0, 2).toUpperCase()
 
   return (
-    <div className="min-h-screen bg-[#060606] text-zinc-100 p-6 md:p-8 pt-8 selection:bg-primary/30">
+    <div className="min-h-screen bg-[#060606] text-zinc-100 p-6 md:p-8 pt-8 pb-32 md:pb-8 selection:bg-primary/30">
       <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
 
         {/* Header */}

@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
-import { LucideClipboardList } from 'lucide-react'
+import { LucideClipboardList, LucideChevronRight } from 'lucide-react'
 import { deleteBatch } from '@/app/(app)/batches/actions'
 
 interface Batch {
@@ -47,7 +47,8 @@ export function BatchesTable({ batches }: { batches: Batch[] }) {
             />
           </div>
 
-          <div className="glass border-white/5 overflow-hidden rounded-2xl">
+          {/* ── Desktop Table (md+) ── */}
+          <div className="glass border-white/5 overflow-hidden rounded-2xl hidden md:block">
             <Table>
               <TableHeader className="bg-zinc-950/50">
                 <TableRow className="border-white/5 hover:bg-transparent">
@@ -110,6 +111,81 @@ export function BatchesTable({ batches }: { batches: Batch[] }) {
                 )}
               </TableBody>
             </Table>
+          </div>
+
+          {/* ── Mobile Card Layout (< md) ── */}
+          <div className="md:hidden space-y-3 pb-20">
+            {filtered.length === 0 ? (
+              <div className="glass border-white/5 rounded-2xl py-16 text-center">
+                <div className="max-w-xs mx-auto space-y-2">
+                  <LucideClipboardList className="h-12 w-12 text-zinc-800 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-zinc-400">{query ? 'No matches' : 'Empty Logbook'}</h3>
+                  <p className="text-sm text-zinc-600 font-medium italic">
+                    {query ? 'Try a different search term.' : 'Your production records will appear here as soon as you initiate your first batch cycle.'}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              filtered.map(batch => {
+                const isActive = batch.status === 'fermenting'
+                return (
+                  <div key={batch.id} className="glass border-white/5 rounded-2xl overflow-hidden">
+                    <Link href={`/batches/${batch.id}`} className="block p-4 active:bg-white/[0.03] transition-colors">
+                      {/* Top row: Recipe name + status */}
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-black text-base tracking-tight text-white truncate">
+                            {batch.recipe_name}
+                          </h3>
+                          <p className="text-[10px] text-zinc-600 font-mono uppercase mt-0.5">
+                            ID: {batch.id.slice(0, 8)}
+                          </p>
+                        </div>
+                        <span className={cn(
+                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shrink-0',
+                          isActive
+                            ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]'
+                            : 'bg-zinc-800 text-zinc-500 border border-white/5'
+                        )}>
+                          {isActive && <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />}
+                          {batch.status}
+                        </span>
+                      </div>
+
+                      {/* Metrics row */}
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700 mb-0.5">Date</p>
+                          <p className="text-zinc-400 font-medium text-xs truncate">
+                            {new Date(batch.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700 mb-0.5">OG</p>
+                          <p className="text-zinc-300 font-mono italic text-xs">{batch.og?.toFixed(3) || '--'}</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700 mb-0.5">FG</p>
+                          <p className="text-primary font-mono font-black text-sm drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]">
+                            {batch.fg?.toFixed(3) || '--'}
+                          </p>
+                        </div>
+                        <LucideChevronRight className="h-4 w-4 text-zinc-700 shrink-0" />
+                      </div>
+                    </Link>
+
+                    {/* Delete action row */}
+                    <div className="flex items-center justify-end px-4 py-2 border-t border-white/5 bg-zinc-950/30">
+                      <DeleteConfirmButton
+                        action={deleteBatch}
+                        hiddenInputs={{ batchId: batch.id }}
+                        itemName={batch.recipe_name}
+                      />
+                    </div>
+                  </div>
+                )
+              })
+            )}
           </div>
         </div>
       )}

@@ -39,17 +39,17 @@ export default async function InventoryPage() {
     .order('name', { ascending: true })
 
   return (
-    <div className="min-h-screen bg-[#060606] text-zinc-100 p-6 md:p-8 pt-8 selection:bg-primary/30">
-      <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+    <div className="min-h-screen bg-[#060606] text-zinc-100 p-4 md:p-8 pt-6 md:pt-8 pb-24 md:pb-8 selection:bg-primary/30 overflow-x-hidden">
+      <div className="max-w-6xl mx-auto space-y-6 md:space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
         
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 border-b border-white/5 pb-10">
-          <div className="flex items-center gap-5">
-            <div className="p-4 bg-primary/10 rounded-xl border border-primary/20 shadow-2xl">
-              <LucidePackageSearch className="h-8 w-8 text-primary shadow-primary/20 shadow-2x" />
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-8 border-b border-white/5 pb-6 md:pb-10">
+          <div className="flex items-center gap-3 md:gap-5">
+            <div className="p-3 md:p-4 bg-primary/10 rounded-xl border border-primary/20 shadow-2xl">
+              <LucidePackageSearch className="h-6 w-6 md:h-8 md:w-8 text-primary shadow-primary/20 shadow-2x" />
             </div>
             <div>
-              <h1 className="text-5xl font-black tracking-tighter text-white">Inventory</h1>
-              <p className="text-zinc-500 mt-1 font-medium italic">Resource allocation and stock management console.</p>
+              <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-white">Inventory</h1>
+              <p className="text-zinc-500 mt-1 font-medium italic text-sm md:text-base">Resource allocation and stock management console.</p>
             </div>
           </div>
           <AddInventoryItemDialog />

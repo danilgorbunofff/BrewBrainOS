@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { Sidebar } from '@/components/Sidebar'
 import { CommandPalette } from '@/components/CommandPalette'
+import { OfflineSyncBanner } from '@/components/OfflineSyncBanner'
 import { redirect } from 'next/navigation'
 
 export default async function AppLayout({
@@ -22,16 +23,19 @@ export default async function AppLayout({
     .single()
 
   return (
-    <div className="min-h-screen flex">
+    <>
+      <OfflineSyncBanner />
+      <div className="min-h-screen flex max-w-[100vw] overflow-x-hidden md:mt-0 mt-8">
       <Sidebar
         userEmail={user.email || ''}
         breweryName={brewery?.name || null}
       />
       <CommandPalette />
       {/* Main content area — pushed right past sidebar */}
-      <main className="flex-1 md:ml-[260px] min-h-screen">
+      <main className="flex-1 md:ml-[260px] min-h-screen max-w-[100vw] overflow-x-hidden">
         {children}
       </main>
-    </div>
+      </div>
+    </>
   )
 }

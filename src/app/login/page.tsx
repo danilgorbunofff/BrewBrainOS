@@ -18,8 +18,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
 
       <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
         <div className="text-center group">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary mb-6 shadow-[0_0_30px_rgba(245,158,11,0.4)] group-hover:shadow-[0_0_50px_rgba(245,158,11,0.6)] transition-all duration-500 transform group-hover:scale-110">
-            <span className="text-3xl font-black text-white italic">B</span>
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-black overflow-hidden mb-6 shadow-[0_0_30px_rgba(245,158,11,0.4)] group-hover:shadow-[0_0_50px_rgba(245,158,11,0.6)] transition-all duration-500 transform group-hover:scale-110">
+            <img src="/logo.png" alt="BrewBrain Logo" className="h-full w-full object-cover" />
           </div>
           <h1 className="text-5xl font-black tracking-tighter text-white mb-2">
             BrewBrain <span className="text-primary italic">OS</span>

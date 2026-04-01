@@ -5,6 +5,7 @@ import { LucideMic, LucideSquare, LucideLoader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { processVoiceLog } from '@/app/actions/voice'
+import { enqueueAction } from '@/lib/offlineQueue'
 
 interface VoiceLoggerProps {
   tankId?: string
@@ -50,10 +51,23 @@ export function VoiceLogger({ tankId, className }: VoiceLoggerProps) {
 
   const handleStop = async () => {
     setIsProcessing(true)
-    const toastId = toast.loading('BrewBrain AI extraction in progress...')
 
+    const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' })
+
+    if (!navigator.onLine) {
+      await enqueueAction({
+        type: 'voice-log',
+        payload: audioBlob,
+        tankId
+      })
+      toast.success('Offline Link Established. Data Queued.', { duration: 5000 })
+      setIsProcessing(false)
+      return
+    }
+
+    const toastId = toast.loading('BrewBrain AI extraction in progress...')
+    
     try {
-      const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' })
       const audioFile = new File([audioBlob], 'voice-log.webm', { type: 'audio/webm' })
 
       const formData = new FormData()

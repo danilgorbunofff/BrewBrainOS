@@ -5,6 +5,8 @@ import {
   LucideBarChart3, LucideWifi, LucideCheck, LucideArrowRight,
   LucideZap, LucideSmartphone, LucideBrain, LucideStar
 } from 'lucide-react'
+import { ScrollReveal } from '@/components/ScrollReveal'
+import { CookieConsent } from '@/components/CookieConsent'
 
 export default function LandingPage() {
   return (
@@ -14,8 +16,8 @@ export default function LandingPage() {
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-[#030303]/80 backdrop-blur-2xl">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-orange-600 shadow-[0_0_20px_rgba(234,88,12,0.4)] flex items-center justify-center">
-              <span className="text-lg font-black text-white italic">B</span>
+            <div className="h-9 w-9 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(234,88,12,0.4)] flex items-center justify-center">
+              <img src="/logo.png" alt="BrewBrain Logo" className="h-full w-full object-cover" />
             </div>
             <span className="text-xl font-black tracking-tight">BrewBrain <span className="text-orange-500">OS</span></span>
           </div>
@@ -95,9 +97,15 @@ export default function LandingPage() {
           </div>
 
           {/* ─── LIVE PRODUCT PREVIEW ─── */}
-          <div className="relative mt-20 mx-auto max-w-5xl animate-in fade-in slide-in-from-bottom-24 duration-1000">
-            <div className="absolute -inset-4 bg-gradient-to-b from-orange-600/10 to-transparent rounded-3xl blur-2xl pointer-events-none" />
-            <div className="relative rounded-2xl border border-white/10 overflow-hidden shadow-2xl shadow-black/50 bg-[#060606]">
+          <ScrollReveal direction="up" distance={60} delay={0.2}>
+            <div className="mt-80 text-center mb-12">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-500 mb-4">THE DASHBOARD</p>
+              <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Your entire brewery, <br className="sm:hidden" /> in your pocket.</h2>
+              <p className="mt-4 text-zinc-500 font-medium max-w-xl mx-auto">Real-time floor state, tank levels, and batch history. Zero latency, even in the cold room.</p>
+            </div>
+            <div className="relative mx-auto max-w-5xl">
+              <div className="absolute -inset-4 bg-gradient-to-b from-orange-600/10 to-transparent rounded-3xl blur-2xl pointer-events-none" />
+              <div className="relative rounded-2xl border border-white/10 overflow-hidden shadow-2xl shadow-black/50 bg-[#060606]">
               
               {/* Browser chrome */}
               <div className="flex items-center gap-2 px-4 py-3 bg-[#0a0a0a] border-b border-white/5">
@@ -117,8 +125,8 @@ export default function LandingPage() {
                 {/* Sidebar */}
                 <div className="hidden md:flex flex-col w-[200px] bg-[#060606] border-r border-white/5 p-4 shrink-0">
                   <div className="flex items-center gap-2 mb-6">
-                    <div className="h-7 w-7 rounded-lg bg-orange-600 flex items-center justify-center shadow-[0_0_12px_rgba(234,88,12,0.3)]">
-                      <span className="text-xs font-black text-white italic">B</span>
+                    <div className="h-7 w-7 rounded-lg overflow-hidden shadow-[0_0_12px_rgba(234,88,12,0.3)] flex items-center justify-center">
+                      <img src="/logo.png" alt="BrewBrain Logo" className="h-full w-full object-cover" />
                     </div>
                     <span className="text-sm font-black text-white">BrewBrain <span className="text-orange-500 text-[10px]">OS</span></span>
                   </div>
@@ -286,34 +294,39 @@ export default function LandingPage() {
               <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#030303] to-transparent pointer-events-none" />
             </div>
           </div>
-        </div>
-      </section>
+        </ScrollReveal>
+      </div>
+    </section>
 
       {/* ─── PAIN → SOLUTION ─── */}
       <section className="py-24 border-t border-white/5">
-        <div className="max-w-5xl mx-auto px-6 text-center">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-500 mb-4">THE PROBLEM</p>
-          <h2 className="text-3xl md:text-5xl font-black tracking-tighter max-w-3xl mx-auto">
-            Your brewery runs on <span className="text-zinc-500 line-through decoration-red-500/60">paper, memory, and spreadsheets</span>
-          </h2>
-          <p className="mt-6 text-zinc-500 font-medium max-w-2xl mx-auto text-lg leading-relaxed">
-            Every day, critical production data gets lost — scribbled on whiteboards, forgotten in walk-in coolers, 
-            or buried in a spreadsheet nobody updates. Until TTB audit season, when it becomes a three-day panic.
-          </p>
-        </div>
+        <ScrollReveal>
+          <div className="max-w-5xl mx-auto px-6 text-center">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-500 mb-4">THE PROBLEM</p>
+            <h2 className="text-3xl md:text-5xl font-black tracking-tighter max-w-3xl mx-auto">
+              Your brewery runs on <span className="text-zinc-500 line-through decoration-red-500/60">paper, memory, and spreadsheets</span>
+            </h2>
+            <p className="mt-6 text-zinc-500 font-medium max-w-2xl mx-auto text-lg leading-relaxed">
+              Every day, critical production data gets lost — scribbled on whiteboards, forgotten in walk-in coolers, 
+              or buried in a spreadsheet nobody updates. Until TTB audit season, when it becomes a three-day panic.
+            </p>
+          </div>
+        </ScrollReveal>
 
         <div className="max-w-5xl mx-auto px-6 mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             { emoji: '📋', problem: 'Handwritten logs get wet, lost, or unreadable', stat: '40%', desc: 'of manual data is never digitized' },
             { emoji: '🧊', problem: 'No signal in the cold room or basement', stat: '0 bars', desc: 'where most readings happen' },
             { emoji: '😰', problem: 'TTB & FSMA audits cause 72-hour fire drills', stat: '$5,000+', desc: 'average cost of a compliance error' },
-          ].map((item) => (
-            <div key={item.stat} className="rounded-2xl border border-red-500/10 bg-red-500/[0.02] p-8 text-center">
-              <span className="text-4xl mb-4 block">{item.emoji}</span>
-              <p className="text-white font-bold text-sm mb-3">{item.problem}</p>
-              <p className="text-3xl font-black text-red-400 tracking-tighter">{item.stat}</p>
-              <p className="text-xs text-zinc-600 font-medium mt-1">{item.desc}</p>
-            </div>
+          ].map((item, i) => (
+            <ScrollReveal key={item.stat} delay={i * 0.1}>
+              <div className="rounded-2xl border border-red-500/10 bg-red-500/[0.02] p-8 text-center h-full">
+                <span className="text-4xl mb-4 block">{item.emoji}</span>
+                <p className="text-white font-bold text-base mb-3 leading-tight">{item.problem}</p>
+                <p className="text-5xl font-black text-red-400 tracking-tighter leading-none my-2">{item.stat}</p>
+                <p className="text-sm text-zinc-500 font-medium px-4">{item.desc}</p>
+              </div>
+            </ScrollReveal>
           ))}
         </div>
       </section>
@@ -321,13 +334,15 @@ export default function LandingPage() {
       {/* ─── FEATURES ─── */}
       <section id="features" className="py-24 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-20">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-500 mb-4">FEATURES</p>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter">
-              Everything your brewery needs.<br className="hidden sm:block" />
-              <span className="text-zinc-500">Nothing it doesn&apos;t.</span>
-            </h2>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-20">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-500 mb-4">FEATURES</p>
+              <h2 className="text-3xl md:text-5xl font-black tracking-tighter">
+                Everything your brewery needs.<br className="hidden sm:block" />
+                <span className="text-zinc-500">Nothing it doesn&apos;t.</span>
+              </h2>
+            </div>
+          </ScrollReveal>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
@@ -362,30 +377,31 @@ export default function LandingPage() {
                 title: 'Live Dashboards',
                 description: 'Active batches, tanks in use, low-stock alerts, gravity trends — all in one place. Know your floor state at a glance.',
               },
-            ].map((feature) => (
-              <div
-                key={feature.title}
-                className={`group relative rounded-2xl border p-8 transition-all duration-500 ${
-                  feature.highlight
-                    ? 'border-orange-600/30 bg-orange-600/[0.03] hover:bg-orange-600/[0.06] hover:border-orange-500/40 shadow-[0_0_40px_rgba(234,88,12,0.05)]'
-                    : 'border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/10'
-                }`}
-              >
-                {feature.highlight && (
-                  <span className="absolute top-4 right-4 text-[9px] font-black uppercase tracking-widest text-orange-500 bg-orange-500/10 px-2.5 py-1 rounded-full border border-orange-500/20">
-                    AI Powered
-                  </span>
-                )}
-                <div className={`h-12 w-12 rounded-xl flex items-center justify-center mb-5 border transition-all duration-300 group-hover:scale-110 ${
-                  feature.highlight
-                    ? 'bg-orange-600/10 border-orange-600/20'
-                    : 'bg-white/5 border-white/5 group-hover:bg-orange-600/10 group-hover:border-orange-600/20'
-                }`}>
-                  <feature.icon className={`h-5 w-5 ${feature.highlight ? 'text-orange-500' : 'text-zinc-500 group-hover:text-orange-500 transition-colors'}`} />
+            ].map((feature, i) => (
+              <ScrollReveal key={feature.title} delay={i * 0.1}>
+                <div
+                  className={`group h-full relative rounded-2xl border p-8 transition-all duration-500 ${
+                    feature.highlight
+                      ? 'border-orange-600/30 bg-orange-600/[0.03] hover:bg-orange-600/[0.06] hover:border-orange-500/40 shadow-[0_0_40px_rgba(234,88,12,0.05)]'
+                      : 'border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/10'
+                  }`}
+                >
+                  {feature.highlight && (
+                    <span className="absolute top-4 right-4 text-[9px] font-black uppercase tracking-widest text-orange-500 bg-orange-500/10 px-2.5 py-1 rounded-full border border-orange-500/20">
+                      AI Powered
+                    </span>
+                  )}
+                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center mb-5 border transition-all duration-300 group-hover:scale-110 ${
+                    feature.highlight
+                      ? 'bg-orange-600/10 border-orange-600/20'
+                      : 'bg-white/5 border-white/5 group-hover:bg-orange-600/10 group-hover:border-orange-600/20'
+                  }`}>
+                    <feature.icon className={`h-5 w-5 ${feature.highlight ? 'text-orange-500' : 'text-zinc-500 group-hover:text-orange-500 transition-colors'}`} />
+                  </div>
+                  <h3 className="text-xl font-black tracking-tight mb-2 group-hover:text-orange-400 transition-colors">{feature.title}</h3>
+                  <p className="text-zinc-500 text-sm leading-relaxed font-medium">{feature.description}</p>
                 </div>
-                <h3 className="text-xl font-black tracking-tight mb-2 group-hover:text-orange-400 transition-colors">{feature.title}</h3>
-                <p className="text-zinc-500 text-sm leading-relaxed font-medium">{feature.description}</p>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -394,13 +410,15 @@ export default function LandingPage() {
       {/* ─── HOW IT WORKS ─── */}
       <section id="how-it-works" className="py-24 border-t border-white/5">
         <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-20">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-500 mb-4">HOW IT WORKS</p>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter">
-              Three steps. Five minutes.
-            </h2>
-            <p className="text-zinc-500 font-medium mt-4 max-w-lg mx-auto">You&apos;ll be logging readings before your yeast finishes proofing.</p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-20">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-500 mb-4">HOW IT WORKS</p>
+              <h2 className="text-3xl md:text-5xl font-black tracking-tighter">
+                Three steps. Five minutes.
+              </h2>
+              <p className="text-zinc-500 font-medium mt-4 max-w-lg mx-auto">You&apos;ll be logging readings before your yeast finishes proofing.</p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
@@ -423,19 +441,21 @@ export default function LandingPage() {
                 description: 'Tap the mic, speak your reading, and our AI parses it into structured data. It\'s that simple.',
               },
             ].map((item, i) => (
-              <div key={item.step} className="relative">
-                {i < 2 && (
-                  <div className="hidden md:block absolute top-12 left-[calc(100%+1rem)] w-[calc(100%-2rem)] h-px bg-gradient-to-r from-orange-600/30 to-transparent" />
-                )}
-                <div className="text-center space-y-4">
-                  <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-600/10 border border-orange-600/20 shadow-[0_0_20px_rgba(234,88,12,0.1)]">
-                    <item.icon className="h-6 w-6 text-orange-500" />
+              <ScrollReveal key={item.step} delay={i * 0.2}>
+                <div className="relative">
+                  {i < 2 && (
+                    <div className="hidden md:block absolute top-7 left-1/2 w-[calc(100%+2rem)] h-px bg-gradient-to-r from-orange-600/30 to-transparent z-0" />
+                  )}
+                  <div className="text-center space-y-4 relative z-10">
+                    <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#030303] border border-orange-600/20 shadow-[0_0_20px_rgba(234,88,12,0.1)]">
+                      <item.icon className="h-6 w-6 text-orange-500" />
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-400">Step {item.step}</p>
+                    <h3 className="text-xl font-black tracking-tight">{item.title}</h3>
+                    <p className="text-zinc-500 text-sm leading-relaxed font-medium">{item.description}</p>
                   </div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-400">Step {item.step}</p>
-                  <h3 className="text-xl font-black tracking-tight">{item.title}</h3>
-                  <p className="text-zinc-500 text-sm leading-relaxed font-medium">{item.description}</p>
                 </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -443,94 +463,104 @@ export default function LandingPage() {
 
       {/* ─── TESTIMONIAL / SOCIAL PROOF ─── */}
       <section className="py-24 border-t border-white/5 bg-orange-600/[0.015]">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <div className="flex justify-center gap-1 mb-6">
-            {[1,2,3,4,5].map(i => (
-              <LucideStar key={i} className="h-5 w-5 fill-orange-500 text-orange-500" />
-            ))}
+        <ScrollReveal>
+          <div className="max-w-4xl mx-auto px-6 text-center">
+            <div className="flex justify-center gap-1 mb-6">
+              {[1,2,3,4,5].map(i => (
+                <LucideStar key={i} className="h-5 w-5 fill-orange-500 text-orange-500" />
+              ))}
+            </div>
+            <blockquote className="text-2xl md:text-3xl font-black tracking-tight text-white leading-snug max-w-3xl mx-auto">
+              &ldquo;We were running our 15-barrel system on whiteboards and Google Sheets. BrewBrain replaced all of it in one afternoon. TTB reporting went from a 3-day nightmare to one button click.&rdquo;
+            </blockquote>
+            <div className="mt-8">
+              <p className="font-bold text-white">Jake Morrison</p>
+              <p className="text-sm text-zinc-500 font-medium">Head Brewer, Copper Trail Brewing Co.</p>
+            </div>
           </div>
-          <blockquote className="text-2xl md:text-3xl font-black tracking-tight text-white leading-snug max-w-3xl mx-auto">
-            &ldquo;We were running our 15-barrel system on whiteboards and Google Sheets. BrewBrain replaced all of it in one afternoon. TTB reporting went from a 3-day nightmare to one button click.&rdquo;
-          </blockquote>
-          <div className="mt-8">
-            <p className="font-bold text-white">Jake Morrison</p>
-            <p className="text-sm text-zinc-500 font-medium">Head Brewer, Copper Trail Brewing Co.</p>
-          </div>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* ─── PRICING ─── */}
       <section id="pricing" className="py-24 border-t border-white/5">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-500 mb-4">PRICING</p>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter">
-              Cheaper than one compliance mistake.
-            </h2>
-            <p className="text-zinc-500 font-medium mt-4">Start free for 14 days. Cancel anytime.</p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-16">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-500 mb-4">PRICING</p>
+              <h2 className="text-3xl md:text-5xl font-black tracking-tighter">
+                Cheaper than one compliance mistake.
+              </h2>
+              <p className="text-zinc-500 font-medium mt-4">Start free for 14 days. Cancel anytime.</p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Nano */}
-            <div className="rounded-2xl border border-white/5 bg-white/[0.01] p-8 flex flex-col">
-              <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-2">Nanobrewery</p>
-              <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-5xl font-black tracking-tighter">$149</span>
-                <span className="text-zinc-600 font-bold">/mo</span>
+            <ScrollReveal delay={0.1}>
+              <div className="rounded-2xl border border-white/5 bg-white/[0.01] p-8 flex flex-col h-full">
+                <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-2">Nanobrewery</p>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="text-5xl font-black tracking-tighter">$149</span>
+                  <span className="text-zinc-600 font-bold">/mo</span>
+                </div>
+                <p className="text-sm text-zinc-600 font-medium mb-8">Up to 5 tanks. Perfect for taproom brewing.</p>
+                <ul className="space-y-3 flex-1 mb-8">
+                  {['Up to 5 tanks', 'Inventory tracking', 'QR tank scanning', 'Basic compliance logs', 'Offline-first PWA'].map(f => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-zinc-400 font-medium">
+                      <LucideCheck className="h-4 w-4 text-green-500 shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/login" className="block">
+                  <Button variant="outline" className="w-full border-white/10 font-bold">Start Free Trial</Button>
+                </Link>
               </div>
-              <p className="text-sm text-zinc-600 font-medium mb-8">Up to 5 tanks. Perfect for taproom brewing.</p>
-              <ul className="space-y-3 flex-1 mb-8">
-                {['Up to 5 tanks', 'Inventory tracking', 'QR tank scanning', 'Basic compliance logs', 'Offline-first PWA'].map(f => (
-                  <li key={f} className="flex items-center gap-2 text-sm text-zinc-400 font-medium">
-                    <LucideCheck className="h-4 w-4 text-green-500 shrink-0" /> {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/login" className="block">
-                <Button variant="outline" className="w-full border-white/10 font-bold">Start Free Trial</Button>
-              </Link>
-            </div>
+            </ScrollReveal>
 
             {/* Production — Highlighted */}
-            <div className="rounded-2xl border border-orange-600/30 bg-orange-600/[0.03] p-8 flex flex-col relative shadow-[0_0_60px_rgba(234,88,12,0.08)]">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-widest bg-orange-600 text-white px-4 py-1.5 rounded-full">Most Popular</span>
-              <p className="text-xs font-black uppercase tracking-widest text-orange-400 mb-2">Production</p>
-              <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-5xl font-black tracking-tighter text-white">$299</span>
-                <span className="text-zinc-500 font-bold">/mo</span>
+            <ScrollReveal delay={0.2}>
+              <div className="rounded-2xl border border-orange-600/30 bg-orange-600/[0.03] p-8 flex flex-col relative shadow-[0_0_60px_rgba(234,88,12,0.08)] h-full">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-widest bg-orange-600 text-white px-4 py-1.5 rounded-full">Most Popular</span>
+                <p className="text-xs font-black uppercase tracking-widest text-orange-400 mb-2">Production</p>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="text-5xl font-black tracking-tighter text-white">$299</span>
+                  <span className="text-zinc-500 font-bold">/mo</span>
+                </div>
+                <p className="text-sm text-zinc-500 font-medium mb-8">Unlimited tanks. Full AI and compliance suite.</p>
+                <ul className="space-y-3 flex-1 mb-8">
+                  {['Unlimited tanks & batches', 'AI voice logging', 'TTB & FSMA report exports', 'Real-time analytics', 'Priority support', 'White-glove setup included'].map(f => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-zinc-300 font-medium">
+                      <LucideCheck className="h-4 w-4 text-orange-500 shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/login" className="block">
+                  <Button className="w-full bg-orange-600 hover:bg-orange-500 font-bold shadow-[0_0_20px_rgba(234,88,12,0.2)]">Start Free Trial</Button>
+                </Link>
               </div>
-              <p className="text-sm text-zinc-500 font-medium mb-8">Unlimited tanks. Full AI and compliance suite.</p>
-              <ul className="space-y-3 flex-1 mb-8">
-                {['Unlimited tanks & batches', 'AI voice logging', 'TTB & FSMA report exports', 'Real-time analytics', 'Priority support', 'White-glove setup included'].map(f => (
-                  <li key={f} className="flex items-center gap-2 text-sm text-zinc-300 font-medium">
-                    <LucideCheck className="h-4 w-4 text-orange-500 shrink-0" /> {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/login" className="block">
-                <Button className="w-full bg-orange-600 hover:bg-orange-500 font-bold shadow-[0_0_20px_rgba(234,88,12,0.2)]">Start Free Trial</Button>
-              </Link>
-            </div>
+            </ScrollReveal>
 
             {/* Multi-Site */}
-            <div className="rounded-2xl border border-white/5 bg-white/[0.01] p-8 flex flex-col">
-              <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-2">Multi-Site</p>
-              <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-5xl font-black tracking-tighter">$599</span>
-                <span className="text-zinc-600 font-bold">/mo</span>
+            <ScrollReveal delay={0.3}>
+              <div className="rounded-2xl border border-white/5 bg-white/[0.01] p-8 flex flex-col h-full">
+                <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-2">Multi-Site</p>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="text-5xl font-black tracking-tighter">$599</span>
+                  <span className="text-zinc-600 font-bold">/mo</span>
+                </div>
+                <p className="text-sm text-zinc-600 font-medium mb-8">Multiple facilities. Regional oversight.</p>
+                <ul className="space-y-3 flex-1 mb-8">
+                  {['Everything in Production', 'Multi-brewery management', 'Team roles & permissions', 'Supply chain dashboard', 'Dedicated account manager', 'Custom integrations'].map(f => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-zinc-400 font-medium">
+                      <LucideCheck className="h-4 w-4 text-green-500 shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/login" className="block">
+                  <Button variant="outline" className="w-full border-white/10 font-bold">Contact Sales</Button>
+                </Link>
               </div>
-              <p className="text-sm text-zinc-600 font-medium mb-8">Multiple facilities. Regional oversight.</p>
-              <ul className="space-y-3 flex-1 mb-8">
-                {['Everything in Production', 'Multi-brewery management', 'Team roles & permissions', 'Supply chain dashboard', 'Dedicated account manager', 'Custom integrations'].map(f => (
-                  <li key={f} className="flex items-center gap-2 text-sm text-zinc-400 font-medium">
-                    <LucideCheck className="h-4 w-4 text-green-500 shrink-0" /> {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/login" className="block">
-                <Button variant="outline" className="w-full border-white/10 font-bold">Contact Sales</Button>
-              </Link>
-            </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -538,29 +568,31 @@ export default function LandingPage() {
       {/* ─── FINAL CTA ─── */}
       <section className="py-32 border-t border-white/5 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(234,88,12,0.08),transparent_60%)] pointer-events-none" />
-        <div className="relative max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-4xl md:text-6xl font-black tracking-tighter mb-6">
-            Focus on the beer.<br />
-            <span className="text-orange-500">We&apos;ll handle the brain.</span>
-          </h2>
-          <p className="text-zinc-500 font-medium text-lg max-w-xl mx-auto mb-10">
-            Join the breweries that stopped losing data on the floor and started running production like a machine.
-          </p>
-          <Link href="/login">
-            <Button className="h-16 px-12 text-xl font-black bg-orange-600 hover:bg-orange-500 hover:scale-105 transition-all duration-300 shadow-[0_0_50px_rgba(234,88,12,0.3)]">
-              Launch My Brewery Brain
-              <LucideArrowRight className="ml-3 h-6 w-6" />
-            </Button>
-          </Link>
-        </div>
+        <ScrollReveal>
+          <div className="relative max-w-3xl mx-auto px-6 text-center">
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter mb-6">
+              Focus on the beer.<br />
+              <span className="text-orange-500">We&apos;ll handle the brain.</span>
+            </h2>
+            <p className="text-zinc-500 font-medium text-lg max-w-xl mx-auto mb-10">
+              Join the breweries that stopped losing data on the floor and started running production like a machine.
+            </p>
+            <Link href="/login">
+              <Button className="h-16 px-12 text-xl font-black bg-orange-600 hover:bg-orange-500 hover:scale-105 transition-all duration-300 shadow-[0_0_50px_rgba(234,88,12,0.3)]">
+                Launch My Brewery Brain
+                <LucideArrowRight className="ml-3 h-6 w-6" />
+              </Button>
+            </Link>
+          </div>
+        </ScrollReveal>
       </section>
 
       {/* ─── FOOTER ─── */}
       <footer className="border-t border-white/5 px-6 py-12">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-3">
-            <div className="h-7 w-7 rounded-lg bg-zinc-900 flex items-center justify-center">
-              <span className="text-xs font-black text-orange-500 italic">B</span>
+            <div className="h-7 w-7 rounded-lg overflow-hidden flex items-center justify-center">
+              <img src="/logo.png" alt="BrewBrain Logo" className="h-full w-full object-cover" />
             </div>
             <span className="text-sm font-bold text-zinc-600">BrewBrain OS</span>
           </div>
@@ -574,6 +606,7 @@ export default function LandingPage() {
           </p>
         </div>
       </footer>
+      <CookieConsent />
     </div>
   )
 }

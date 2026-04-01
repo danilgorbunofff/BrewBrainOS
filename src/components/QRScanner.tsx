@@ -1,15 +1,32 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Scanner } from '@yudiel/react-qr-scanner'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
 export function QRScanner() {
-  const [isScanning, setIsScanning] = useState(true)
+  const [isScanning, setIsScanning] = useState(false)
   const router = useRouter()
+  const [isMounted, setIsMounted] = useState(false)
 
-  const handleScan = (detectedCodes: any[]) => {
+  // Explicit cleanup on unmount and delayed initialization
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsMounted(true)
+    
+    // Desktop fix: delay acquisition to ensure previous stream is released
+    const timer = setTimeout(() => {
+      setIsScanning(true)
+    }, 250)
+
+    return () => {
+      clearTimeout(timer)
+      setIsScanning(false)
+    }
+  }, [])
+
+  const handleScan = (detectedCodes: Array<{ rawValue: string }>) => {
     if (!isScanning || !detectedCodes.length) return
     
     // Grab the first detected code value
@@ -40,26 +57,27 @@ export function QRScanner() {
         // Unrecognized format
         toast.error('Invalid BrewBrain QR code detected.')
         setTimeout(() => setIsScanning(true), 2000)
-      } catch (err) {
+      } catch {
         toast.error('Failed to parse QR code.')
         setTimeout(() => setIsScanning(true), 2000)
       }
     }
   }
 
-  const handleError = (error: any) => {
+  const handleError = (error: unknown) => {
     console.error('QR Scanner Error:', error)
-    if (error?.message?.includes('Permission denied')) {
+    if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' && error.message.includes('Permission denied')) {
       toast.error('Camera permission denied. Please allow camera access.')
     }
   }
 
   return (
     <div className="relative mx-auto max-w-sm overflow-hidden rounded-2xl border border-zinc-800 bg-black aspect-square shadow-2xl">
-      {isScanning ? (
+      {isMounted && isScanning ? (
         <Scanner
           onScan={handleScan}
           onError={handleError}
+          paused={!isScanning}
           formats={['qr_code']}
           styles={{
            container: { width: '100%', height: '100%' },

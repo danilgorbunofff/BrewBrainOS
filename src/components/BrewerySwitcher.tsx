@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   LucideBuilding2, LucideChevronDown, LucideCheck,
-  LucidePlus, LucideMapPin, LucideLock,
+  LucidePlus, LucideMapPin, LucideLock, LucideLoader2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { switchBrewery, createBrewery } from '@/app/(app)/brewery-actions'
@@ -17,18 +17,33 @@ interface Brewery {
   id: string
   name: string
   license_number: string | null
-  subscription_tier: string
+  subscription_tier?: string
 }
 
 interface BrewerySwitcherProps {
   breweries: Brewery[]
   activeBreweryId: string | null
+  activeBreweryName: string | null
 }
 
-export function BrewerySwitcher({ breweries, activeBreweryId }: BrewerySwitcherProps) {
+export function BrewerySwitcher({ breweries, activeBreweryId, activeBreweryName }: BrewerySwitcherProps) {
   const [open, setOpen] = useState(false)
   const [showNewForm, setShowNewForm] = useState(false)
-  const [switching, setSwitching] = useState<string | null>(null)
+  const [pendingId, setPendingId] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+  const switchedToName = useRef<string | null>(null)
+  const prevName = useRef<string | null>(activeBreweryName)
+
+  // Trigger toast exactly when the server-side name prop changes
+  useEffect(() => {
+    if (activeBreweryName !== prevName.current && activeBreweryName === switchedToName.current) {
+      toast.success(`Switched to ${activeBreweryName}`)
+      switchedToName.current = null
+      setPendingId(null)
+    }
+    prevName.current = activeBreweryName
+  }, [activeBreweryName])
+
   const router = useRouter()
   const { limits } = useSubscription()
 
@@ -43,19 +58,22 @@ export function BrewerySwitcher({ breweries, activeBreweryId }: BrewerySwitcherP
       return
     }
 
-    setSwitching(breweryId)
-    try {
-      const formData = new FormData()
-      formData.set('breweryId', breweryId)
-      await switchBrewery(formData)
-      toast.success(`Switched to ${breweries.find(b => b.id === breweryId)?.name}`)
-      router.refresh()
-      setOpen(false)
-    } catch {
-      toast.error('Failed to switch brewery')
-    } finally {
-      setSwitching(null)
-    }
+    setPendingId(breweryId)
+    switchedToName.current = breweries.find(b => b.id === breweryId)?.name || null
+    
+    startTransition(async () => {
+      try {
+        const formData = new FormData()
+        formData.set('breweryId', breweryId)
+        await switchBrewery(formData)
+        router.refresh()
+        setOpen(false)
+      } catch {
+        toast.error('Failed to switch brewery')
+        setPendingId(null)
+        switchedToName.current = null
+      }
+    })
   }
 
   const handleCreate = async (formData: FormData) => {
@@ -93,7 +111,11 @@ export function BrewerySwitcher({ breweries, activeBreweryId }: BrewerySwitcherP
         )}
       >
         <div className="h-7 w-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-          <LucideBuilding2 className="h-3.5 w-3.5 text-primary" />
+          {pendingId || isPending ? (
+            <LucideLoader2 className="h-3.5 w-3.5 text-primary animate-spin" />
+          ) : (
+            <LucideBuilding2 className="h-3.5 w-3.5 text-primary" />
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <span className="text-[9px] font-black uppercase tracking-widest text-zinc-600 block">Active Brewery</span>
@@ -114,7 +136,7 @@ export function BrewerySwitcher({ breweries, activeBreweryId }: BrewerySwitcherP
           <div className="p-1.5 space-y-0.5 max-h-48 overflow-y-auto">
             {breweries.map((brewery) => {
               const isActive = brewery.id === activeBreweryId
-              const isSwitching = switching === brewery.id
+              const isSwitching = pendingId === brewery.id
               return (
                 <button
                   key={brewery.id}
@@ -134,7 +156,13 @@ export function BrewerySwitcher({ breweries, activeBreweryId }: BrewerySwitcherP
                       ? 'bg-primary/20 text-primary'
                       : 'bg-white/5 text-zinc-600'
                   )}>
-                    {isActive ? <LucideCheck className="h-3 w-3" /> : brewery.name.charAt(0).toUpperCase()}
+                    {(isPending || pendingId) && (pendingId === brewery.id || (isPending && !pendingId)) ? (
+                      <LucideLoader2 className="h-3 w-3 animate-spin" />
+                    ) : isActive ? (
+                      <LucideCheck className="h-3 w-3" />
+                    ) : (
+                      brewery.name.charAt(0).toUpperCase()
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className={cn(

@@ -31,7 +31,7 @@ interface BrewerySummary {
   id: string
   name: string
   license_number: string | null
-  subscription_tier: string
+  subscription_tier?: string
 }
 
 interface SidebarProps {
@@ -79,7 +79,11 @@ export function Sidebar({ userEmail, breweryName, breweries, activeBreweryId }: 
         </div>
 
         {/* Brewery Switcher */}
-        <BrewerySwitcher breweries={breweries} activeBreweryId={activeBreweryId} />
+        <BrewerySwitcher 
+          breweries={breweries} 
+          activeBreweryId={activeBreweryId} 
+          activeBreweryName={breweryName}
+        />
 
         {/* Main Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">

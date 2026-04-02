@@ -25,16 +25,16 @@ export async function setupBrewery(formData: FormData) {
       owner_id: user.id
     })
     .select('id')
-    .single()
+    .maybeSingle()
 
   if (error || !newBrewery) {
     console.error('Failed to setup brewery:', error)
-    throw new Error('Database Error: Could not create brewery.')
+    return { error: error?.message || 'Database Error: Could not create brewery.' }
   }
 
   // Automatically set the new brewery as active
   await setActiveBreweryId(newBrewery.id)
 
-  revalidatePath('/dashboard')
+  revalidatePath('/', 'layout')
   redirect('/dashboard')
 }

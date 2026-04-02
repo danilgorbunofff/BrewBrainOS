@@ -8,7 +8,7 @@ const withSerwist = withSerwistInit({
   // Serwist requires webpack. The SW is compiled during `next build` (webpack).
   // In dev with turbopack the SW plugin is skipped, but that's fine —
   // offline testing should be done against a production build.
-  disable: false,
+  disable: process.env.NODE_ENV !== "production",
 });
 
 const nextConfig: NextConfig = {

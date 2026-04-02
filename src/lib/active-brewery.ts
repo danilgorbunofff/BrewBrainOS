@@ -7,7 +7,7 @@ export interface BrewerySummary {
   id: string
   name: string
   license_number: string | null
-  subscription_tier: string
+  subscription_tier?: string
 }
 
 /**
@@ -18,11 +18,16 @@ export async function getUserBreweries(): Promise<BrewerySummary[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('breweries')
-    .select('id, name, license_number, subscription_tier')
+    .select('id, name, license_number')
     .eq('owner_id', user.id)
     .order('created_at', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching user breweries:', error)
+    return []
+  }
 
   return (data as BrewerySummary[]) || []
 }
@@ -45,24 +50,32 @@ export async function getActiveBrewery(): Promise<BrewerySummary | null> {
 
   // If we have a cookie, verify it belongs to this user
   if (storedId) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('breweries')
-      .select('id, name, license_number, subscription_tier')
+      .select('id, name, license_number')
       .eq('id', storedId)
       .eq('owner_id', user.id)
-      .single()
+      .maybeSingle()
+
+    if (error) {
+      console.error('Error fetching active brewery by cookie ID:', error)
+    }
 
     if (data) return data as BrewerySummary
   }
 
   // Fallback: first brewery
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('breweries')
-    .select('id, name, license_number, subscription_tier')
+    .select('id, name, license_number')
     .eq('owner_id', user.id)
     .order('created_at', { ascending: true })
     .limit(1)
-    .single()
+    .maybeSingle()
+
+  if (error) {
+    console.error('Error fetching fallback active brewery:', error)
+  }
 
   return (data as BrewerySummary) || null
 }

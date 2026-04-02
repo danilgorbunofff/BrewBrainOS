@@ -10,7 +10,7 @@ import { VoiceLogger } from '@/components/VoiceLogger'
 import { VoiceLoggerGate } from '@/components/VoiceLoggerGate'
 import { OnboardingChecklist } from '@/components/OnboardingChecklist'
 import { setupBrewery } from './actions'
-import { Input } from '@/components/ui/input'
+import { InitializeBreweryForm } from '@/components/InitializeBreweryForm'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { getActiveBrewery } from '@/lib/active-brewery'
@@ -47,10 +47,7 @@ export default async function DashboardPage() {
             <div className="max-w-md mx-auto space-y-6">
               <h2 className="text-4xl font-black text-white tracking-tighter italic">Initialize facility</h2>
               <p className="text-zinc-500 font-medium leading-relaxed">Establish your digital footprint. Define your brewery&apos;s identity to synchronize hardware and logs.</p>
-              <form action={setupBrewery} className="flex flex-col gap-4">
-                <Input name="name" placeholder="Official Brewery Name" required className="text-center h-14 text-lg font-bold" />
-                <Button type="submit" size="lg" className="h-14 text-lg">Confirm Initialization</Button>
-              </form>
+              <InitializeBreweryForm />
             </div>
           </div>
         )}

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { LucideSettings, LucideX, LucideLoader2, LucideCheck, LucideZap } from 'lucide-react'
-import { setDevSubscriptionTier } from '@/app/(app)/dev-actions'
+import { setDevSubscriptionTier, seedMockBatches } from '@/app/(app)/dev-actions'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
@@ -22,6 +22,7 @@ export function DevTools({ activeBreweryId, currentTier }: DevToolsProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [pendingTier, setPendingTier] = useState<string | null>(null)
+  const [isSeeding, setIsSeeding] = useState(false)
   const router = useRouter()
 
   if (process.env.NODE_ENV !== 'development') {
@@ -76,7 +77,24 @@ export function DevTools({ activeBreweryId, currentTier }: DevToolsProps) {
                 </span>
               </div>
               
-              <div className="grid gap-2">
+              <button
+                onClick={async () => {
+                  setIsSeeding(true)
+                  try {
+                    await seedMockBatches(activeBreweryId)
+                    router.refresh()
+                  } finally {
+                    setIsSeeding(false)
+                  }
+                }}
+                disabled={isSeeding}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border bg-purple-500/10 border-purple-500/30 text-purple-300 hover:bg-purple-500/20 transition-all text-xs font-black uppercase tracking-wider"
+              >
+                {isSeeding ? <LucideLoader2 className="h-4 w-4 animate-spin" /> : <LucideZap className="h-4 w-4" />}
+                Seed 10 Batches
+              </button>
+              
+              <div className="grid gap-2 mt-4">
                 {TIER_OPTIONS.map((opt) => {
                   const isActive = currentTier === opt.value
                   const isChanging = pendingTier === opt.value

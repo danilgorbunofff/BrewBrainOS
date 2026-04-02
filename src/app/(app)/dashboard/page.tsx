@@ -16,6 +16,10 @@ import { cn } from '@/lib/utils'
 import { getActiveBrewery } from '@/lib/active-brewery'
 import { RealtimeRefresh } from '@/components/RealtimeRefresh'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

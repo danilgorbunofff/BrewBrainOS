@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { ActionResult } from '@/types/database'
 
@@ -27,6 +28,7 @@ export function FormWithToast({
 }: FormWithToastProps) {
   const internalRef = useRef<HTMLFormElement>(null)
   const formRef = externalRef ?? internalRef
+  const router = useRouter()
 
   const handleAction = async (formData: FormData) => {
     onBeforeSubmit?.()
@@ -41,6 +43,8 @@ export function FormWithToast({
           if (resetOnSuccess && formRef.current) {
             formRef.current.reset()
           }
+          // Re-fetch server data so the UI updates immediately
+          router.refresh()
           if (onSuccess) onSuccess()
         } else {
           toast.error(result.error || errorMessage)
@@ -48,6 +52,7 @@ export function FormWithToast({
       } else {
         // Fallback for non-standard actions
         toast.success(successMessage)
+        router.refresh()
       }
     } catch (err: any) {
       toast.error(err?.message || errorMessage)

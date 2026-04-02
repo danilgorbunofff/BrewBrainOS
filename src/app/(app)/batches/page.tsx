@@ -9,6 +9,9 @@ export const metadata = {
   title: 'Batches | BrewBrain OS',
 }
 
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
+
 export default async function BatchesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { SearchFilter } from '@/components/SearchFilter'
@@ -11,6 +11,15 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { AddBatchForm } from '@/components/AddBatchForm'
 import { LucideFlaskConical, LucideChevronRight, LucidePlusCircle } from 'lucide-react'
 import { deleteBatch } from '@/app/(app)/batches/actions'
 
@@ -29,6 +38,8 @@ const ROW_HEIGHT = 89 // py-6 ≈ 24px × 2 + ~41px content
 // ─── Empty State ──────────────────────────────────────────────────────────────
 
 function EmptyLogbook({ query }: { query: string }) {
+  const [open, setOpen] = useState(false)
+
   return (
     <div className="max-w-xs mx-auto space-y-2 text-center py-4">
       <div className="relative mx-auto mb-6 h-16 w-16">
@@ -45,12 +56,25 @@ function EmptyLogbook({ query }: { query: string }) {
       </p>
       {!query && (
         <div className="pt-4">
-          <Link href="/batches/new">
-            <Button className="gap-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-black shadow-[0_0_20px_rgba(245,158,11,0.05)] hover:shadow-[0_0_30px_rgba(245,158,11,0.15)] transition-all">
-              <LucidePlusCircle className="h-4 w-4" />
-              Start a Batch
-            </Button>
-          </Link>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger render={
+              <Button className="gap-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-black shadow-[0_0_20px_rgba(245,158,11,0.05)] hover:shadow-[0_0_30px_rgba(245,158,11,0.15)] transition-all">
+                <LucidePlusCircle className="h-4 w-4" />
+                Start a Batch
+              </Button>
+            } />
+            <DialogContent className="sm:max-w-md bg-[#0a0a0a]/95 backdrop-blur-xl border-white/5 shadow-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-black text-white">Start a New Batch</DialogTitle>
+                <DialogDescription className="text-zinc-400 font-medium">
+                  Enter the recipe and target original gravity to initiate a new batch cycle.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="py-4 flex justify-center">
+                <AddBatchForm onSuccess={() => setOpen(false)} />
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       )}
     </div>

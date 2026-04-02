@@ -2,39 +2,40 @@
 
 import { revalidatePath } from 'next/cache'
 import { requireActiveBrewery } from '@/lib/require-brewery'
-import { batchSchema } from '@/lib/schemas'
 import { ActionResult } from '@/types/database'
 
 export async function addBatch(formData: FormData): Promise<ActionResult> {
   try {
     const { supabase, brewery } = await requireActiveBrewery()
 
-    const rawData = {
-      recipe_name: formData.get('recipeName') as string,
-      og: formData.get('og') ? parseFloat(formData.get('og') as string) : undefined,
-      status: 'fermenting' // Default to fermenting as per existing logic
+    const recipeName = formData.get('recipeName') as string
+
+    if (!recipeName || recipeName.trim() === '') {
+      return { success: false, error: 'Recipe name is required' }
     }
 
-    const result = batchSchema.safeParse(rawData)
-    
-    if (!result.success) {
-      return { success: false, error: result.error.issues[0].message }
-    }
+    const ogText = formData.get('og') as string
+    const og = ogText && ogText.trim() !== '' ? parseFloat(ogText) : null
 
-    const { error } = await supabase.from('batches').insert({
-      ...result.data,
+    const insertPayload = {
       brewery_id: brewery.id,
+      recipe_name: recipeName.trim(),
+      status: 'fermenting',
+      og: og,
       fg: null,
-    })
+    }
+
+    const { data: newBatch, error } = await supabase.from('batches').insert(insertPayload).select().single()
 
     if (error) {
       console.error('Failed to add batch:', error)
-      return { success: false, error: 'Database error: Failed to create batch' }
+      return { success: false, error: error.message || 'Database error: Failed to create batch' }
     }
 
     revalidatePath('/batches')
-    return { success: true, data: null }
+    return { success: true, data: newBatch }
   } catch (e: any) {
+    console.error('Batch creation failed:', e)
     return { success: false, error: e.message || 'Authentication error' }
   }
 }

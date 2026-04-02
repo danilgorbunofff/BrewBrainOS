@@ -3,9 +3,14 @@ import { cookies } from 'next/headers'
 
 export async function createClient() {
   const cookieStore = await cookies()
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
+
+  if (process.env.NODE_ENV === 'production' && url.includes('localhost')) {
+    console.error('CRITICAL WARNING: Localhost Supabase URL detected in production build (Vercel/Preview). Check your environment variables!')
+  }
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    url,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {

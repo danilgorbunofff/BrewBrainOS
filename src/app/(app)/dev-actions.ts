@@ -50,3 +50,32 @@ export async function setDevSubscriptionTier(breweryId: string, tier: string) {
 
   revalidatePath('/', 'layout')
 }
+
+export async function seedMockBatches(breweryId: string) {
+  if (process.env.NODE_ENV !== 'development') {
+    throw new Error('Not in development mode')
+  }
+
+  const supabase = await createClient()
+  const MOCK_RECIPES = ['Hazy IPA', 'Oatmeal Stout', 'Czech Pilsner', 'West Coast IPA', 'Sour Ale']
+  const MOCK_STATUSES = ['fermenting', 'conditioning', 'ready']
+  
+  const batchesToInsert = Array.from({ length: 10 }).map(() => ({
+    brewery_id: breweryId,
+    recipe_name: `${MOCK_RECIPES[Math.floor(Math.random() * MOCK_RECIPES.length)]} #${Math.floor(Math.random() * 1000)}`,
+    status: MOCK_STATUSES[Math.floor(Math.random() * MOCK_STATUSES.length)],
+    og: (1.040 + Math.random() * 0.040).toFixed(3),
+    fg: null
+  }))
+
+  const { error } = await supabase.from('batches').insert(batchesToInsert)
+  
+  if (error) {
+    console.error('DevTools: Failed to seed batches', error)
+    throw new Error('Failed to seed batches')
+  }
+
+  console.log(`DevTools: Seeded 10 mock batches for brewery ${breweryId}`)
+  revalidatePath('/batches')
+  revalidatePath('/dashboard')
+}

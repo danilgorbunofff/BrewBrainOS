@@ -139,7 +139,7 @@ export default async function BatchDetailPage({ params }: PageProps) {
             </CardHeader>
             <CardContent className="space-y-2">
               {BATCH_STATUSES.map((s) => (
-                <form key={s.value} action={updateBatchStatus}>
+                <form key={s.value} action={updateBatchStatus as any}>
                   <input type="hidden" name="batchId" value={batch.id} />
                   <input type="hidden" name="status" value={s.value} />
                   <Button
@@ -168,7 +168,7 @@ export default async function BatchDetailPage({ params }: PageProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-zinc-500 font-medium">Manually set the current final gravity reading for this batch.</p>
-              <form action={updateBatchFG} className="flex gap-2">
+              <form action={updateBatchFG as any} className="flex gap-2">
                 <input type="hidden" name="batchId" value={batch.id} />
                 <Input
                   name="fg"

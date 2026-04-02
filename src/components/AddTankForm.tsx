@@ -1,22 +1,30 @@
 'use client'
 
-import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { SubmitButton } from '@/components/SubmitButton'
 import { FormWithToast } from '@/components/FormWithToast'
 import { LucidePlus } from 'lucide-react'
 import { addTank } from '@/app/(app)/tanks/actions'
 
-export function AddTankForm() {
-  const [open, setOpen] = useState(false)
+interface AddTankFormProps {
+  onOptimisticAdd?: (id: string, name: string, capacity?: number) => void
+}
 
-  // Note: AddTankForm was previously a Dialog, but the design pattern here
-  // is often a floating bar as per the code earlier. 
-  // I will stick to the FormWithToast version which is the most reliable.
+export function AddTankForm({ onOptimisticAdd }: AddTankFormProps) {
+  // Wrap the server action to intercept formData before sending
+  const actionWithOptimistic = async (formData: FormData) => {
+    const id = crypto.randomUUID()
+    formData.set('id', id)
+    const name = formData.get('name') as string
+    const capRaw = formData.get('capacity') as string
+    const capacity = capRaw ? parseFloat(capRaw) : undefined
+    if (name) onOptimisticAdd?.(id, name, capacity)
+    return addTank(formData)
+  }
 
   return (
-    <FormWithToast 
-      action={addTank} 
+    <FormWithToast
+      action={actionWithOptimistic}
       successMessage="Vessel added successfully"
       resetOnSuccess
     >

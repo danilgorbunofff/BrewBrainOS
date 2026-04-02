@@ -6,6 +6,7 @@ import { z } from 'zod'
  */
 
 export const tankSchema = z.object({
+  id: z.string().uuid().optional(),
   name: z.string().min(1, 'Name is required').max(50, 'Name too long'),
   capacity: z.number().positive('Capacity must be positive').optional(),
   status: z.enum(['ready', 'fermenting', 'conditioning', 'cleaning', 'maintenance']).default('ready'),

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { BluetoothScale, type ScaleReading } from '@/components/BluetoothScale'
-import { adjustStock } from '@/app/(app)/inventory/actions'
+import { updateStock } from '@/app/(app)/inventory/actions'
 import { LucideScale, LucideChevronDown, LucideChevronUp } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -44,7 +44,7 @@ export function BluetoothScalePanel({ items }: BluetoothScalePanelProps) {
     formData.set('adjustment', String(adjustment))
 
     try {
-      await adjustStock(formData)
+      await updateStock(formData)
       toast.success(`Updated ${item.name} → ${reading.weight} ${reading.unit}`)
     } catch (err) {
       toast.error('Failed to update stock')

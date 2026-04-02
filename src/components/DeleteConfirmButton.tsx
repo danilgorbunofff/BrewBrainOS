@@ -13,6 +13,7 @@ interface DeleteConfirmButtonProps {
   itemName: string
   className?: string
   size?: 'default' | 'sm' | 'icon' | 'icon-sm'
+  onOptimisticDelete?: () => void
 }
 
 export function DeleteConfirmButton({
@@ -21,11 +22,16 @@ export function DeleteConfirmButton({
   itemName,
   className,
   size = 'icon-sm',
+  onOptimisticDelete,
 }: DeleteConfirmButtonProps) {
   const [confirming, setConfirming] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   const handleSubmit = () => {
+    // Fire optimistic update immediately before async work begins
+    onOptimisticDelete?.()
+    setConfirming(false)
+
     const formData = new FormData()
     Object.entries(hiddenInputs).forEach(([key, value]) => {
       formData.set(key, value)
@@ -34,12 +40,10 @@ export function DeleteConfirmButton({
     startTransition(async () => {
       try {
         const result = await action(formData)
-        
-        // Handle standardized ActionResult
+
         if (result && typeof result === 'object' && 'success' in result) {
           if (result.success) {
             toast.success(`Deleted ${itemName}`)
-            setConfirming(false)
           } else {
             toast.error(result.error || `Failed to delete ${itemName}`)
           }

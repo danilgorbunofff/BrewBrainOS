@@ -10,6 +10,7 @@ export async function addTank(formData: FormData): Promise<ActionResult> {
     const { supabase, brewery } = await requireActiveBrewery()
 
     const rawData = {
+      id: formData.get('id') ? (formData.get('id') as string) : undefined,
       name: formData.get('name') as string,
       capacity: formData.get('capacity') ? parseFloat(formData.get('capacity') as string) : undefined,
     }
@@ -23,7 +24,6 @@ export async function addTank(formData: FormData): Promise<ActionResult> {
     const { error } = await supabase.from('tanks').insert({
       ...result.data,
       brewery_id: brewery.id,
-      status: 'ready' // Defaulting to our new union type 'ready'
     })
 
     if (error) {

@@ -44,16 +44,7 @@ export default async function TankPage({ params }: PageProps) {
 
   const { data: tank, error: tankError } = await supabase
     .from('tanks')
-    .select(`
-      *,
-      batches (
-        id,
-        recipe_name,
-        status,
-        og,
-        fg
-      )
-    `)
+    .select('*')
     .eq('id', id)
     .single()
 
@@ -85,7 +76,15 @@ export default async function TankPage({ params }: PageProps) {
     .in('status', ['fermenting', 'conditioning'])
     .order('created_at', { ascending: false })
 
-  const activeBatch = tank.current_batch_id ? (tank.batches as any) : null
+  let activeBatch = null
+  if (tank.current_batch_id) {
+    const { data: batch } = await supabase
+      .from('batches')
+      .select('id, recipe_name, status, og, fg')
+      .eq('id', tank.current_batch_id)
+      .single()
+    activeBatch = batch
+  }
 
   return (
     <div className="min-h-screen bg-[#060606] text-zinc-100 p-6 md:p-8 pt-8 selection:bg-primary/30">
@@ -170,7 +169,7 @@ export default async function TankPage({ params }: PageProps) {
                   </div>
 
                   {/* Unassign */}
-                  <form action={unassignBatch}>
+                  <form action={unassignBatch as any}>
                     <input type="hidden" name="tankId" value={tank.id} />
                     <Button type="submit" variant="ghost" className="w-full text-zinc-700 hover:text-red-500 hover:bg-red-500/5 rounded-xl gap-2 border border-transparent hover:border-red-500/20">
                       <LucideUnlink className="h-4 w-4" />
@@ -184,7 +183,7 @@ export default async function TankPage({ params }: PageProps) {
                     <p className="text-zinc-600 font-medium text-sm">Tank is empty & available</p>
                   </div>
                   {allBatches && allBatches.length > 0 ? (
-                    <form action={assignBatch} className="space-y-2">
+                    <form action={assignBatch as any} className="space-y-2">
                       <input type="hidden" name="tankId" value={tank.id} />
                       <select
                         name="batchId"
@@ -241,7 +240,7 @@ export default async function TankPage({ params }: PageProps) {
               </div>
 
               {/* Fixed: Sanitation form now includes a notes text field */}
-              <form action={logSanitation} className="pt-2 border-t border-white/5 space-y-2">
+              <form action={logSanitation as any} className="pt-2 border-t border-white/5 space-y-2">
                 <input type="hidden" name="tankId" value={tank.id} />
                 <Input
                   name="notes"

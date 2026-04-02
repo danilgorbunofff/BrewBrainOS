@@ -2,16 +2,17 @@
 
 import { useRef } from 'react'
 import { toast } from 'sonner'
-
 import { ActionResult } from '@/types/database'
 
-interface ToastOnSubmitProps {
+interface FormWithToastProps {
   children: React.ReactNode
   action: (formData: FormData) => Promise<ActionResult | any>
   successMessage?: string
   errorMessage?: string
   resetOnSuccess?: boolean
   onSuccess?: () => void
+  onBeforeSubmit?: () => void
+  formRef?: React.RefObject<HTMLFormElement | null>
 }
 
 export function FormWithToast({
@@ -21,13 +22,18 @@ export function FormWithToast({
   errorMessage = 'Something went wrong',
   resetOnSuccess = true,
   onSuccess,
-}: ToastOnSubmitProps) {
-  const formRef = useRef<HTMLFormElement>(null)
+  onBeforeSubmit,
+  formRef: externalRef,
+}: FormWithToastProps) {
+  const internalRef = useRef<HTMLFormElement>(null)
+  const formRef = externalRef ?? internalRef
 
   const handleAction = async (formData: FormData) => {
+    onBeforeSubmit?.()
+
     try {
       const result = await action(formData)
-      
+
       // Standardized ActionResult handling
       if (result && typeof result === 'object' && 'success' in result) {
         if (result.success) {

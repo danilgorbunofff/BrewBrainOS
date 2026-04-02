@@ -4,9 +4,11 @@ import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { LucideTrash2, LucideLoader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
+import { ActionResult } from '@/types/database'
 
 interface DeleteConfirmButtonProps {
-  action: (formData: FormData) => Promise<void>
+  action: (formData: FormData) => Promise<ActionResult | any>
   hiddenInputs: Record<string, string>
   itemName: string
   className?: string
@@ -31,11 +33,20 @@ export function DeleteConfirmButton({
 
     startTransition(async () => {
       try {
-        await action(formData)
-      } catch {
-        // Error will propagate through Next error boundary
+        const result = await action(formData)
+        
+        // Handle standardized ActionResult
+        if (result && typeof result === 'object' && 'success' in result) {
+          if (result.success) {
+            toast.success(`Deleted ${itemName}`)
+            setConfirming(false)
+          } else {
+            toast.error(result.error || `Failed to delete ${itemName}`)
+          }
+        }
+      } catch (err: any) {
+        toast.error(err.message || 'An unexpected error occurred')
       }
-      setConfirming(false)
     })
   }
 

@@ -4,24 +4,30 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { setActiveBreweryId } from '@/lib/active-brewery'
+import { brewerySchema } from '@/lib/schemas'
+import { ActionResult } from '@/types/database'
 
-export async function setupBrewery(formData: FormData) {
+export async function setupBrewery(formData: FormData): Promise<ActionResult | void> {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    throw new Error('Unauthorized')
+    return { success: false, error: 'Unauthorized: Please log in again.' }
   }
 
-  const name = formData.get('name') as string
-  if (!name || name.trim() === '') {
-    throw new Error('Brewery name is required')
+  const rawData = {
+    name: formData.get('name') as string,
+  }
+
+  const result = brewerySchema.safeParse(rawData)
+  if (!result.success) {
+    return { success: false, error: result.error.issues[0].message }
   }
 
   const { data: newBrewery, error } = await supabase
     .from('breweries')
     .insert({
-      name: name.trim(),
+      name: result.data.name.trim(),
       owner_id: user.id
     })
     .select('id')
@@ -29,7 +35,7 @@ export async function setupBrewery(formData: FormData) {
 
   if (error || !newBrewery) {
     console.error('Failed to setup brewery:', error)
-    return { error: error?.message || 'Database Error: Could not create brewery.' }
+    return { success: false, error: error?.message || 'Database Error: Could not create brewery.' }
   }
 
   // Automatically set the new brewery as active

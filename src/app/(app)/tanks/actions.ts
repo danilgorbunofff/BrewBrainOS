@@ -2,47 +2,63 @@
 
 import { revalidatePath } from 'next/cache'
 import { requireActiveBrewery } from '@/lib/require-brewery'
+import { tankSchema } from '@/lib/schemas'
+import { ActionResult } from '@/types/database'
 
-export async function addTank(formData: FormData) {
-  const { supabase, brewery } = await requireActiveBrewery()
+export async function addTank(formData: FormData): Promise<ActionResult> {
+  try {
+    const { supabase, brewery } = await requireActiveBrewery()
 
-  const name = formData.get('name') as string
-  const capacity = formData.get('capacity') as string
+    const rawData = {
+      name: formData.get('name') as string,
+      capacity: formData.get('capacity') ? parseFloat(formData.get('capacity') as string) : undefined,
+    }
 
-  if (!name || name.trim() === '') {
-    throw new Error('Tank name is required')
+    const result = tankSchema.safeParse(rawData)
+    
+    if (!result.success) {
+      return { success: false, error: result.error.issues[0].message }
+    }
+
+    const { error } = await supabase.from('tanks').insert({
+      ...result.data,
+      brewery_id: brewery.id,
+      status: 'ready' // Defaulting to our new union type 'ready'
+    })
+
+    if (error) {
+      console.error('Failed to add tank:', error)
+      return { success: false, error: 'Database error: Failed to create tank' }
+    }
+
+    revalidatePath('/tanks')
+    return { success: true, data: null }
+  } catch (e: any) {
+    return { success: false, error: e.message || 'Authentication error' }
   }
-
-  const { error } = await supabase.from('tanks').insert({
-    name: name.trim(),
-    capacity: capacity ? parseFloat(capacity) : null,
-    brewery_id: brewery.id,
-    status: 'empty'
-  })
-
-  if (error) {
-    console.error('Failed to add tank:', error)
-    throw new Error('Failed to create tank')
-  }
-
-  revalidatePath('/tanks')
 }
 
-export async function deleteTank(formData: FormData) {
-  const { supabase, brewery } = await requireActiveBrewery()
+export async function deleteTank(formData: FormData): Promise<ActionResult> {
+  try {
+    const { supabase, brewery } = await requireActiveBrewery()
+    const tankId = formData.get('tankId') as string
 
-  const tankId = formData.get('tankId') as string
+    if (!tankId) return { success: false, error: 'Tank ID is required' }
 
-  const { error } = await supabase
-    .from('tanks')
-    .delete()
-    .eq('id', tankId)
-    .eq('brewery_id', brewery.id)
+    const { error } = await supabase
+      .from('tanks')
+      .delete()
+      .eq('id', tankId)
+      .eq('brewery_id', brewery.id)
 
-  if (error) {
-    console.error('Failed to delete tank:', error)
-    throw new Error('Failed to delete tank')
+    if (error) {
+      console.error('Failed to delete tank:', error)
+      return { success: false, error: 'Failed to delete tank from database' }
+    }
+
+    revalidatePath('/tanks')
+    return { success: true, data: null }
+  } catch (e: any) {
+    return { success: false, error: e.message || 'Operation failed' }
   }
-
-  revalidatePath('/tanks')
 }

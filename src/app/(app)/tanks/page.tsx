@@ -10,6 +10,7 @@ import { TankLimitBadge, TankAddGate } from '@/components/TankLimitGate'
 import { LucideWaves } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getActiveBrewery } from '@/lib/active-brewery'
+import { RealtimeRefresh } from '@/components/RealtimeRefresh'
 
 export const metadata = {
   title: 'Vessels | BrewBrain OS',
@@ -59,6 +60,8 @@ export default async function TanksPage() {
             <AddTankForm />
           </TankAddGate>
         </div>
+
+        <RealtimeRefresh table="tanks" breweryId={brewery.id} />
 
         <Suspense fallback={<TanksSkeleton />}>
           <TanksContent breweryId={brewery.id} />

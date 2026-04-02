@@ -1,82 +1,93 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireActiveBrewery } from '@/lib/require-brewery'
+import { inventorySchema } from '@/lib/schemas'
+import { ActionResult } from '@/types/database'
 
-export async function addInventoryItem(formData: FormData) {
-  const { supabase, brewery } = await requireActiveBrewery()
+export async function addInventoryItem(formData: FormData): Promise<ActionResult> {
+  try {
+    const { supabase, brewery } = await requireActiveBrewery()
 
-  const item_type = formData.get('item_type') as string
-  const name = formData.get('name') as string
-  const current_stock = parseFloat(formData.get('current_stock') as string)
-  const unit = formData.get('unit') as string
-  const reorder_point = parseFloat(formData.get('reorder_point') as string)
+    const rawData = {
+      name: formData.get('name') as string,
+      item_type: formData.get('itemType') as any,
+      current_stock: formData.get('currentStock') ? Number(formData.get('currentStock')) : undefined,
+      reorder_point: formData.get('reorderPoint') ? Number(formData.get('reorderPoint')) : undefined,
+      unit: formData.get('unit') as string,
+    }
 
-  const { error } = await supabase
-    .from('inventory')
-    .insert({
-      brewery_id: brewery.id,
-      item_type,
-      name,
-      current_stock,
-      unit,
-      reorder_point
+    const result = inventorySchema.safeParse(rawData)
+    
+    if (!result.success) {
+      return { success: false, error: result.error.issues[0].message }
+    }
+
+    const { error } = await supabase.from('inventory').insert({
+      ...result.data,
+      brewery_id: brewery.id
     })
 
-  if (error) {
-    console.error('Add inventory error:', error)
-    throw new Error('Failed to add inventory item.')
-  }
+    if (error) {
+      console.error('Failed to add inventory item:', error)
+      return { success: false, error: 'Database error: Failed to create inventory item' }
+    }
 
-  revalidatePath('/inventory')
+    revalidatePath('/inventory')
+    return { success: true, data: null }
+  } catch (e: any) {
+    return { success: false, error: e.message || 'Authentication error' }
+  }
 }
 
-export async function adjustStock(formData: FormData) {
-  const { supabase, brewery } = await requireActiveBrewery()
+export async function deleteInventoryItem(formData: FormData): Promise<ActionResult> {
+  try {
+    const { supabase, brewery } = await requireActiveBrewery()
+    const itemId = formData.get('itemId') as string
 
-  const id = formData.get('id') as string
-  const adjustment = parseFloat(formData.get('adjustment') as string)
+    if (!itemId) return { success: false, error: 'Item ID is required' }
 
-  const { data: currentItem, error: fetchError } = await supabase
-    .from('inventory')
-    .select('current_stock')
-    .eq('id', id)
-    .eq('brewery_id', brewery.id) // ownership gate
-    .single()
+    const { error } = await supabase
+      .from('inventory')
+      .delete()
+      .eq('id', itemId)
+      .eq('brewery_id', brewery.id)
 
-  if (fetchError || !currentItem) throw new Error('Item not found or access denied')
+    if (error) {
+      console.error('Failed to delete inventory item:', error)
+      return { success: false, error: 'Failed to delete item from database' }
+    }
 
-  const newStock = Math.max(0, currentItem.current_stock + adjustment)
-
-  const { error: updateError } = await supabase
-    .from('inventory')
-    .update({ current_stock: newStock })
-    .eq('id', id)
-
-  if (updateError) {
-    console.error('Adjust stock error:', updateError)
-    throw new Error('Failed to adjust stock')
+    revalidatePath('/inventory')
+    return { success: true, data: null }
+  } catch (e: any) {
+    return { success: false, error: e.message || 'Operation failed' }
   }
-
-  revalidatePath('/inventory')
 }
 
-export async function deleteInventoryItem(formData: FormData) {
-  const { supabase, brewery } = await requireActiveBrewery()
+export async function updateStock(formData: FormData): Promise<ActionResult> {
+  try {
+    const { supabase, brewery } = await requireActiveBrewery()
+    const itemId = formData.get('itemId') as string
+    const newStock = Number(formData.get('stock'))
 
-  const itemId = formData.get('itemId') as string
+    if (!itemId) return { success: false, error: 'Item ID is required' }
+    if (isNaN(newStock)) return { success: false, error: 'Invalid stock amount' }
 
-  const { error } = await supabase
-    .from('inventory')
-    .delete()
-    .eq('id', itemId)
-    .eq('brewery_id', brewery.id)
+    const { error } = await supabase
+      .from('inventory')
+      .update({ current_stock: newStock })
+      .eq('id', itemId)
+      .eq('brewery_id', brewery.id)
 
-  if (error) {
-    console.error('Failed to delete inventory item:', error)
-    throw new Error('Failed to delete inventory item')
+    if (error) {
+      console.error('Failed to update stock:', error)
+      return { success: false, error: 'Failed to update stock level' }
+    }
+
+    revalidatePath('/inventory')
+    return { success: true, data: null }
+  } catch (e: any) {
+    return { success: false, error: e.message || 'Operation failed' }
   }
-
-  revalidatePath('/inventory')
 }

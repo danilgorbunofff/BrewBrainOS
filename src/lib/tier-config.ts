@@ -3,7 +3,8 @@
  * Single source of truth for tier names, limits, and Stripe price IDs.
  */
 
-export type TierSlug = 'free' | 'nano' | 'production' | 'multi_site'
+import { TierSlug } from '@/types/database'
+export type { TierSlug }
 
 export interface TierLimits {
   maxTanks: number        // -1 = unlimited

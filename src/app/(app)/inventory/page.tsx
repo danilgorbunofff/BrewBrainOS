@@ -7,6 +7,7 @@ import { InventoryTable } from '@/components/InventoryTable'
 import { BluetoothScalePanel } from '@/components/BluetoothScalePanel'
 import { LucidePackageSearch, LucideAlertCircle } from 'lucide-react'
 import { getActiveBrewery } from '@/lib/active-brewery'
+import { RealtimeRefresh } from '@/components/RealtimeRefresh'
 
 export default async function InventoryPage() {
   const supabase = await createClient()
@@ -38,6 +39,7 @@ export default async function InventoryPage() {
 
   return (
     <div className="min-h-screen bg-[#060606] text-zinc-100 p-4 md:p-8 pt-6 md:pt-8 pb-24 md:pb-8 selection:bg-primary/30 overflow-x-hidden">
+      <RealtimeRefresh table="inventory" breweryId={brewery.id} />
       <div className="max-w-6xl mx-auto space-y-6 md:space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
         
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-8 border-b border-white/5 pb-6 md:pb-10">

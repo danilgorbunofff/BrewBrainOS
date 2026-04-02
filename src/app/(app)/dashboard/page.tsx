@@ -14,6 +14,7 @@ import { InitializeBreweryForm } from '@/components/InitializeBreweryForm'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { getActiveBrewery } from '@/lib/active-brewery'
+import { RealtimeRefresh } from '@/components/RealtimeRefresh'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -27,6 +28,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#060606] text-zinc-100 p-6 md:p-8 pt-8 pb-32 md:pb-8 selection:bg-primary/30">
+      <RealtimeRefresh table="batches" breweryId={brewery?.id || ''} />
       <div className="max-w-6xl mx-auto space-y-6">
         
         {/* Header */}

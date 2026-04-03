@@ -41,7 +41,7 @@ function EmptyLogbook({ query }: { query: string }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="max-w-xs mx-auto space-y-2 text-center py-4">
+    <div className="mx-auto space-y-2 text-center py-4">
       <div className="relative mx-auto mb-6 h-16 w-16">
         <div className="absolute inset-0 rounded-2xl bg-primary/5 border border-primary/10 animate-pulse" style={{ animationDuration: '3s' }} />
         <div className="relative h-16 w-16 rounded-2xl bg-zinc-900/80 border border-white/5 flex items-center justify-center shadow-xl">
@@ -52,7 +52,7 @@ function EmptyLogbook({ query }: { query: string }) {
       <p className="text-sm text-zinc-600 font-medium italic">
         {query
           ? 'Try a different search term.'
-          : 'Your production records will appear here once you initiate your first batch cycle.'}
+          : <>Your production records will appear here <br /> once you initiate your first batch cycle.</>}
       </p>
       {!query && (
         <div className="pt-4">
@@ -81,10 +81,21 @@ function EmptyLogbook({ query }: { query: string }) {
   )
 }
 
+const getStatusColor = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'fermenting': return 'text-primary bg-primary/10 border-primary/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]'
+    case 'conditioning': return 'text-blue-400 bg-blue-400/10 border-blue-400/20 shadow-[0_0_15px_rgba(96,165,250,0.1)]'
+    case 'packaging': return 'text-purple-400 bg-purple-400/10 border-purple-400/20 shadow-[0_0_15px_rgba(168,85,247,0.1)]'
+    case 'complete': return 'text-green-400 bg-green-400/10 border-green-400/20'
+    case 'dumped': return 'text-red-500 bg-red-500/10 border-red-500/20'
+    default: return 'bg-zinc-800 text-zinc-500 border border-white/5'
+  }
+}
+
 // ─── Desktop Row ─────────────────────────────────────────────────────────────
 
 function BatchRow({ batch }: { batch: Batch }) {
-  const isActive = batch.status === 'fermenting'
+  const isPulsing = ['fermenting', 'conditioning', 'packaging'].includes(batch.status.toLowerCase())
   return (
     <TableRow className="border-white/5 hover:bg-white/[0.02] transition-colors group cursor-pointer">
       <TableCell className="py-6 px-6">
@@ -105,12 +116,10 @@ function BatchRow({ batch }: { batch: Batch }) {
       <TableCell className="text-right px-6">
         <Link href={`/batches/${batch.id}`}>
           <span className={cn(
-            'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest',
-            isActive
-              ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]'
-              : 'bg-zinc-800 text-zinc-500 border border-white/5'
+            'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all duration-300',
+            getStatusColor(batch.status)
           )}>
-            {isActive && <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />}
+            {isPulsing && <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse opacity-70" />}
             {batch.status}
           </span>
         </Link>
@@ -265,7 +274,7 @@ export function BatchesTable({ batches }: { batches: Batch[] }) {
               </div>
             ) : (
               filtered.map(batch => {
-                const isActive = batch.status === 'fermenting'
+                const isPulsing = ['fermenting', 'conditioning', 'packaging'].includes(batch.status.toLowerCase())
                 return (
                   <div key={batch.id} className="glass border-white/5 rounded-2xl overflow-hidden">
                     <Link href={`/batches/${batch.id}`} className="block p-4 active:bg-white/[0.03] transition-colors">
@@ -275,12 +284,10 @@ export function BatchesTable({ batches }: { batches: Batch[] }) {
                           <p className="text-[10px] text-zinc-600 font-mono uppercase mt-0.5">ID: {batch.id.slice(0, 8)}</p>
                         </div>
                         <span className={cn(
-                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shrink-0',
-                          isActive
-                            ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]'
-                            : 'bg-zinc-800 text-zinc-500 border border-white/5'
+                          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shrink-0 border transition-all duration-300',
+                          getStatusColor(batch.status)
                         )}>
-                          {isActive && <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />}
+                          {isPulsing && <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse opacity-70" />}
                           {batch.status}
                         </span>
                       </div>

@@ -23,8 +23,17 @@ export async function addInventoryItem(formData: FormData): Promise<ActionResult
       return { success: false, error: result.error.issues[0].message }
     }
 
+    const typeMap: Record<string, string> = {
+      hop: 'Hops',
+      grain: 'Grain',
+      yeast: 'Yeast',
+      adjunct: 'Adjunct',
+      packaging: 'Packaging'
+    }
+
     const { error } = await supabase.from('inventory').insert({
       ...result.data,
+      item_type: typeMap[result.data.item_type] || result.data.item_type,
       brewery_id: brewery.id
     })
 

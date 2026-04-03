@@ -22,7 +22,7 @@ interface InventoryItem {
   reorder_point: number | null
 }
 
-const categories = ['All', 'Hops', 'Grain', 'Yeast', 'Adjunct']
+const categories = ['All', 'Hops', 'Grain', 'Yeast', 'Adjunct', 'Packaging']
 const VIRTUAL_THRESHOLD = 100
 
 // ─── Empty State ──────────────────────────────────────────────────────────────

@@ -6,6 +6,7 @@ import { LucideTrash2, LucideLoader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { ActionResult } from '@/types/database'
+import { useRouter } from 'next/navigation'
 
 interface DeleteConfirmButtonProps {
   action: (formData: FormData) => Promise<ActionResult | any>
@@ -14,6 +15,7 @@ interface DeleteConfirmButtonProps {
   className?: string
   size?: 'default' | 'sm' | 'icon' | 'icon-sm'
   onOptimisticDelete?: () => void
+  redirectOnSuccess?: string
 }
 
 export function DeleteConfirmButton({
@@ -23,9 +25,11 @@ export function DeleteConfirmButton({
   className,
   size = 'icon-sm',
   onOptimisticDelete,
+  redirectOnSuccess,
 }: DeleteConfirmButtonProps) {
   const [confirming, setConfirming] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const router = useRouter()
 
   const handleSubmit = () => {
     // Fire optimistic update immediately before async work begins
@@ -44,11 +48,19 @@ export function DeleteConfirmButton({
         if (result && typeof result === 'object' && 'success' in result) {
           if (result.success) {
             toast.success(`Deleted ${itemName}`)
+            if (redirectOnSuccess) {
+              router.push(redirectOnSuccess)
+            }
           } else {
             toast.error(result.error || `Failed to delete ${itemName}`)
           }
         }
       } catch (err: any) {
+        // NEXT_REDIRECT is the error Next.js throws internally when redirect() is called in a server action.
+        // We should ignore this if we want to handle movement smoothly or if it happens unexpectedly.
+        if (err.message && (err.message.includes('NEXT_REDIRECT') || err.digest?.includes('NEXT_REDIRECT'))) {
+          return
+        }
         toast.error(err.message || 'An unexpected error occurred')
       }
     })

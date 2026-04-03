@@ -93,6 +93,7 @@ export default async function BatchDetailPage({ params }: PageProps) {
               action={deleteBatch}
               hiddenInputs={{ batchId: batch.id }}
               itemName={batch.recipe_name}
+              redirectOnSuccess="/batches"
             />
           </div>
         </div>
@@ -171,6 +172,7 @@ export default async function BatchDetailPage({ params }: PageProps) {
               <form action={updateBatchFG as any} className="flex gap-2">
                 <input type="hidden" name="batchId" value={batch.id} />
                 <Input
+                  key={`fg-${id}-${batch.fg}`}
                   name="fg"
                   type="number"
                   step="0.001"

@@ -45,6 +45,17 @@ export async function deleteTank(formData: FormData): Promise<ActionResult> {
 
     if (!tankId) return { success: false, error: 'Tank ID is required' }
 
+    // First delete dependent records (like sanitation logs) to avoid foreign key violations
+    const { error: logsError } = await supabase
+      .from('sanitation_logs')
+      .delete()
+      .eq('tank_id', tankId)
+
+    if (logsError) {
+      console.error('Failed to clear sanitation logs:', logsError)
+      return { success: false, error: 'Failed to clear related cleaning logs' }
+    }
+
     const { error } = await supabase
       .from('tanks')
       .delete()

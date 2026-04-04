@@ -55,8 +55,18 @@ export async function updateBatchFG(formData: FormData): Promise<ActionResult> {
       return { success: false, error: 'Failed to update final gravity' }
     }
 
+    // Also create a reading so it shows on the dashboard chart
+    const { data: { user } } = await supabase.auth.getUser()
+    await supabase.from('batch_readings').insert({
+      batch_id: batchId,
+      gravity: fg,
+      logger_id: user?.id,
+      notes: 'Manual gravity log'
+    })
+
     revalidatePath(`/batches/${batchId}`)
     revalidatePath('/batches')
+    revalidatePath('/dashboard')
     return { success: true, data: null }
   } catch (e: any) {
     return { success: false, error: e.message || 'Authentication error' }

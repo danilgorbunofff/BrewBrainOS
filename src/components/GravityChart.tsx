@@ -12,7 +12,7 @@ interface Reading {
 export function GravityChart({ readings }: { readings: Reading[] }) {
   if (!readings || readings.length < 2) {
     return (
-      <div className="flex items-center justify-center h-48 text-zinc-700 text-sm font-medium">
+      <div className="flex items-center justify-center h-48 text-muted-foreground text-sm font-medium">
         Need at least 2 readings to show a chart.
       </div>
     )

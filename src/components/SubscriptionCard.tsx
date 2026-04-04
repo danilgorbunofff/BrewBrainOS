@@ -16,12 +16,12 @@ export function SubscriptionCard() {
     active: { label: 'Active', color: 'text-green-400 bg-green-500/10 border-green-500/20' },
     trialing: { label: 'Trial', color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
     past_due: { label: 'Past Due', color: 'text-red-400 bg-red-500/10 border-red-500/20' },
-    canceled: { label: 'Canceled', color: 'text-zinc-500 bg-white/5 border-white/10' },
-    inactive: { label: 'No Plan', color: 'text-zinc-600 bg-white/[0.02] border-white/5' },
-  }[status] || { label: status, color: 'text-zinc-500 bg-white/5 border-white/10' }
+    canceled: { label: 'Canceled', color: 'text-muted-foreground bg-secondary border-border' },
+    inactive: { label: 'No Plan', color: 'text-muted-foreground bg-surface border-border' },
+  }[status] || { label: status, color: 'text-muted-foreground bg-secondary border-border' }
 
   return (
-    <Card className="glass border-white/5">
+    <Card className="glass border-border">
       <CardHeader className="pb-4">
         <CardTitle className="text-lg font-black tracking-tight flex items-center gap-2">
           <LucideCreditCard className="h-5 w-5 text-primary/60" />
@@ -30,11 +30,11 @@ export function SubscriptionCard() {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Current Plan */}
-        <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl space-y-3">
+        <div className="p-4 bg-surface border border-border rounded-2xl space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Current Plan</p>
-              <p className="text-2xl font-black tracking-tight text-white mt-0.5">{tierName}</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Current Plan</p>
+              <p className="text-2xl font-black tracking-tight text-foreground mt-0.5">{tierName}</p>
             </div>
             <span className={cn(
               'px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border',
@@ -46,7 +46,7 @@ export function SubscriptionCard() {
 
           {/* Period info */}
           {isActive && currentPeriodEnd && (
-            <div className="flex items-center gap-2 text-xs text-zinc-600">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <LucideCheck className="h-3.5 w-3.5 text-green-400" />
               <span className="font-medium">
                 Renews {new Date(currentPeriodEnd).toLocaleDateString('en-US', {
@@ -67,7 +67,7 @@ export function SubscriptionCard() {
 
           {/* White Glove */}
           {whiteGlovePaid && (
-            <div className="flex items-center gap-2 text-xs text-zinc-500">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <LucideCheck className="h-3.5 w-3.5 text-primary" />
               <span className="font-medium">White Glove Setup included</span>
             </div>
@@ -77,12 +77,12 @@ export function SubscriptionCard() {
         {/* Manage link */}
         <Link
           href="/billing"
-          className="flex items-center justify-between px-4 py-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/5 hover:border-primary/20 transition-all group"
+          className="flex items-center justify-between px-4 py-3 rounded-xl bg-surface border border-border hover:bg-secondary hover:border-primary/20 transition-all group"
         >
-          <span className="text-sm font-bold text-zinc-400 group-hover:text-white transition-colors">
+          <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">
             {tier === 'free' ? 'View Plans & Upgrade' : 'Manage Subscription'}
           </span>
-          <LucideArrowRight className="h-4 w-4 text-zinc-700 group-hover:text-primary transition-colors" />
+          <LucideArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
         </Link>
       </CardContent>
     </Card>

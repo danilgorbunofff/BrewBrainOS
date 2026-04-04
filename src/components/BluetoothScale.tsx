@@ -288,12 +288,12 @@ export function BluetoothScale({ onWeightCaptured, className, compact = false }:
   if (!isSupported) {
     if (compact) return null
     return (
-      <div className={cn('rounded-2xl border border-white/5 bg-white/[0.01] p-6', className)}>
-        <div className="flex items-center gap-3 text-zinc-600">
+      <div className={cn('rounded-2xl border border-border bg-surface p-6', className)}>
+        <div className="flex items-center gap-3 text-muted-foreground">
           <LucideBluetoothOff className="h-5 w-5 shrink-0" />
           <div>
-            <p className="text-sm font-bold text-zinc-500">Bluetooth Not Available</p>
-            <p className="text-xs font-medium text-zinc-700 mt-0.5">
+            <p className="text-sm font-bold text-muted-foreground">Bluetooth Not Available</p>
+            <p className="text-xs font-medium text-muted-foreground mt-0.5">
               Use Chrome or Edge on desktop/Android for BLE scale support.
             </p>
           </div>
@@ -358,7 +358,7 @@ export function BluetoothScale({ onWeightCaptured, className, compact = false }:
         ? 'border-green-500/20 bg-green-500/[0.02]'
         : state === 'error'
           ? 'border-red-500/20 bg-red-500/[0.02]'
-          : 'border-white/5 bg-white/[0.01]',
+          : 'border-border bg-surface',
       className
     )}>
       <div className="p-6 space-y-5">
@@ -371,21 +371,21 @@ export function BluetoothScale({ onWeightCaptured, className, compact = false }:
                 ? 'bg-green-500/10 border-green-500/20'
                 : state === 'connecting'
                   ? 'bg-blue-500/10 border-blue-500/20'
-                  : 'bg-white/5 border-white/5'
+                  : 'bg-secondary border-border'
             )}>
               {state === 'connecting' ? (
                 <LucideLoader2 className="h-5 w-5 animate-spin text-blue-400" />
               ) : state === 'connected' ? (
                 <LucideBluetoothConnected className="h-5 w-5 text-green-400" />
               ) : (
-                <LucideBluetooth className="h-5 w-5 text-zinc-500" />
+                <LucideBluetooth className="h-5 w-5 text-muted-foreground" />
               )}
             </div>
             <div>
-              <h3 className="text-sm font-black tracking-tight text-white">
+              <h3 className="text-sm font-black tracking-tight text-foreground">
                 {state === 'connected' ? deviceName : 'BLE Scale'}
               </h3>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                 {state === 'disconnected' && 'Not Connected'}
                 {state === 'connecting' && 'Pairing…'}
                 {state === 'connected' && 'Streaming'}
@@ -410,7 +410,7 @@ export function BluetoothScale({ onWeightCaptured, className, compact = false }:
               onClick={disconnect}
               size="sm"
               variant="ghost"
-              className="gap-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-500/10"
+              className="gap-1.5 text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
             >
               <LucideBluetoothOff className="h-3.5 w-3.5" />
               Disconnect
@@ -429,14 +429,14 @@ export function BluetoothScale({ onWeightCaptured, className, compact = false }:
         {/* Live weight display */}
         {state === 'connected' && (
           <div className="space-y-4">
-            <div className="p-5 rounded-xl bg-black/30 border border-white/5 text-center">
+            <div className="p-5 rounded-xl bg-background/30 border border-border text-center">
               {reading ? (
                 <div className="space-y-1">
                   <div className="flex items-baseline justify-center gap-2">
-                    <span className="text-5xl font-black font-mono tracking-tighter text-white tabular-nums">
+                    <span className="text-5xl font-black font-mono tracking-tighter text-foreground tabular-nums">
                       {reading.weight.toFixed(2)}
                     </span>
-                    <span className="text-lg font-bold uppercase text-zinc-500">
+                    <span className="text-lg font-bold uppercase text-muted-foreground">
                       {reading.unit}
                     </span>
                   </div>
@@ -456,9 +456,9 @@ export function BluetoothScale({ onWeightCaptured, className, compact = false }:
                 </div>
               ) : (
                 <div className="space-y-2 py-2">
-                  <LucideScale className="h-8 w-8 text-zinc-700 mx-auto" />
-                  <p className="text-xs font-bold text-zinc-600">Waiting for weight data…</p>
-                  <p className="text-[10px] text-zinc-700 font-medium">Place an item on the scale</p>
+                  <LucideScale className="h-8 w-8 text-muted-foreground mx-auto" />
+                  <p className="text-xs font-bold text-muted-foreground">Waiting for weight data…</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Place an item on the scale</p>
                 </div>
               )}
             </div>
@@ -480,9 +480,9 @@ export function BluetoothScale({ onWeightCaptured, className, compact = false }:
 
         {/* Info when disconnected */}
         {state === 'disconnected' && (
-          <div className="p-4 rounded-xl bg-white/[0.01] border border-white/5 space-y-2">
-            <p className="text-xs font-bold text-zinc-500">Compatible Scales</p>
-            <ul className="space-y-1 text-[11px] text-zinc-600 font-medium">
+          <div className="p-4 rounded-xl bg-surface border border-border space-y-2">
+            <p className="text-xs font-bold text-muted-foreground">Compatible Scales</p>
+            <ul className="space-y-1 text-[11px] text-muted-foreground font-medium">
               <li className="flex items-center gap-2">
                 <span className="text-blue-400">•</span>
                 A&D FX-i / FZ-i series (Bluetooth)

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { SearchFilter } from '@/components/SearchFilter'
 import { ExportCSVButton } from '@/components/ExportCSVButton'
-import { DeleteConfirmButton } from '@/components/DeleteConfirmButton'
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { cn } from '@/lib/utils'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -44,12 +44,12 @@ function EmptyLogbook({ query }: { query: string }) {
     <div className="mx-auto space-y-2 text-center py-4">
       <div className="relative mx-auto mb-6 h-16 w-16">
         <div className="absolute inset-0 rounded-2xl bg-primary/5 border border-primary/10 animate-pulse" style={{ animationDuration: '3s' }} />
-        <div className="relative h-16 w-16 rounded-2xl bg-zinc-900/80 border border-white/5 flex items-center justify-center shadow-xl">
-          <LucideFlaskConical className="h-7 w-7 text-zinc-600" />
+        <div className="relative h-16 w-16 rounded-2xl bg-card/80 border border-border flex items-center justify-center shadow-xl">
+          <LucideFlaskConical className="h-7 w-7 text-muted-foreground" />
         </div>
       </div>
-      <h3 className="text-xl font-bold text-zinc-400">{query ? 'No matches' : 'Empty Logbook'}</h3>
-      <p className="text-sm text-zinc-600 font-medium italic">
+      <h3 className="text-xl font-bold text-muted-foreground">{query ? 'No matches' : 'Empty Logbook'}</h3>
+      <p className="text-sm text-muted-foreground font-medium italic">
         {query
           ? 'Try a different search term.'
           : <>Your production records will appear here <br /> once you initiate your first batch cycle.</>}
@@ -63,10 +63,10 @@ function EmptyLogbook({ query }: { query: string }) {
                 Start a Batch
               </Button>
             } />
-            <DialogContent className="sm:max-w-md bg-[#0a0a0a]/95 backdrop-blur-xl border-white/5 shadow-2xl">
+            <DialogContent className="sm:max-w-md bg-[#0a0a0a]/95 backdrop-blur-xl border-border shadow-2xl">
               <DialogHeader>
-                <DialogTitle className="text-xl font-black text-white">Start a New Batch</DialogTitle>
-                <DialogDescription className="text-zinc-400 font-medium">
+                <DialogTitle className="text-xl font-black text-foreground">Start a New Batch</DialogTitle>
+                <DialogDescription className="text-muted-foreground font-medium">
                   Enter the recipe and target original gravity to initiate a new batch cycle.
                 </DialogDescription>
               </DialogHeader>
@@ -88,7 +88,7 @@ const getStatusColor = (status: string) => {
     case 'packaging': return 'text-purple-400 bg-purple-400/10 border-purple-400/20 shadow-[0_0_15px_rgba(168,85,247,0.1)]'
     case 'complete': return 'text-green-400 bg-green-400/10 border-green-400/20'
     case 'dumped': return 'text-red-500 bg-red-500/10 border-red-500/20'
-    default: return 'bg-zinc-800 text-zinc-500 border border-white/5'
+    default: return 'bg-card text-muted-foreground border border-border'
   }
 }
 
@@ -97,19 +97,19 @@ const getStatusColor = (status: string) => {
 function BatchRow({ batch }: { batch: Batch }) {
   const isPulsing = ['fermenting', 'conditioning', 'packaging'].includes(batch.status.toLowerCase())
   return (
-    <TableRow className="border-white/5 hover:bg-white/[0.02] transition-colors group cursor-pointer">
+    <TableRow className="border-border hover:bg-surface transition-colors group cursor-pointer">
       <TableCell className="py-6 px-6">
         <Link href={`/batches/${batch.id}`} className="flex flex-col">
-          <span className="font-black text-lg tracking-tight text-white group-hover:text-primary transition-colors">
+          <span className="font-black text-lg tracking-tight text-foreground group-hover:text-primary transition-colors">
             {batch.recipe_name}
           </span>
-          <span className="text-[10px] text-zinc-600 font-mono uppercase">ID: {batch.id.slice(0, 8)}</span>
+          <span className="text-[10px] text-muted-foreground font-mono uppercase">ID: {batch.id.slice(0, 8)}</span>
         </Link>
       </TableCell>
-      <TableCell className="text-zinc-400 font-medium">
+      <TableCell className="text-muted-foreground font-medium">
         {new Date(batch.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
       </TableCell>
-      <TableCell className="text-zinc-300 font-mono italic">{batch.og?.toFixed(3) || '--'}</TableCell>
+      <TableCell className="text-foreground font-mono italic">{batch.og?.toFixed(3) || '--'}</TableCell>
       <TableCell className="text-primary font-mono font-black text-lg drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]">
         {batch.fg?.toFixed(3) || '--'}
       </TableCell>
@@ -125,7 +125,7 @@ function BatchRow({ batch }: { batch: Batch }) {
         </Link>
       </TableCell>
       <TableCell className="text-right pr-4">
-        <DeleteConfirmButton action={deleteBatch} hiddenInputs={{ batchId: batch.id }} itemName={batch.recipe_name} />
+        <DeleteConfirmDialog action={deleteBatch} hiddenInputs={{ batchId: batch.id }} itemName={batch.recipe_name} />
       </TableCell>
     </TableRow>
   )
@@ -144,20 +144,20 @@ function VirtualDesktopTable({ batches }: { batches: Batch[] }) {
   })
 
   const headerCells = (
-    <TableRow className="border-white/5 hover:bg-transparent">
-      <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6 px-6">Recipe Identifier</TableHead>
-      <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6">Initiated</TableHead>
-      <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6">Target OG</TableHead>
-      <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6">Current FG</TableHead>
-      <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6 text-right px-6">Cycle Status</TableHead>
-      <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6 w-10" />
+    <TableRow className="border-border hover:bg-transparent">
+      <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6 px-6">Recipe Identifier</TableHead>
+      <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6">Initiated</TableHead>
+      <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6">Target OG</TableHead>
+      <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6">Current FG</TableHead>
+      <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6 text-right px-6">Cycle Status</TableHead>
+      <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6 w-10" />
     </TableRow>
   )
 
   return (
-    <div className="glass border-white/5 overflow-hidden rounded-2xl">
+    <div className="glass border-border overflow-hidden rounded-2xl">
       <Table>
-        <TableHeader className="bg-zinc-950/50">{headerCells}</TableHeader>
+        <TableHeader className="bg-background/50">{headerCells}</TableHeader>
       </Table>
       <div ref={parentRef} className="overflow-auto" style={{ maxHeight: '520px' }}>
         <Table>
@@ -177,7 +177,7 @@ function VirtualDesktopTable({ batches }: { batches: Batch[] }) {
                       transform: `translateY(${vRow.start}px)`,
                     }}
                   >
-                    <td colSpan={6} className="p-0 border-b border-white/5">
+                    <td colSpan={6} className="p-0 border-b border-border">
                       <table className="w-full">
                         <tbody>
                           <BatchRow batch={batch} />
@@ -199,16 +199,16 @@ function VirtualDesktopTable({ batches }: { batches: Batch[] }) {
 
 function DesktopTable({ batches, query }: { batches: Batch[]; query: string }) {
   return (
-    <div className="glass border-white/5 overflow-hidden rounded-2xl hidden md:block">
+    <div className="glass border-border overflow-hidden rounded-2xl hidden md:block">
       <Table>
-        <TableHeader className="bg-zinc-950/50">
-          <TableRow className="border-white/5 hover:bg-transparent">
-            <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6 px-6">Recipe Identifier</TableHead>
-            <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6">Initiated</TableHead>
-            <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6">Target OG</TableHead>
-            <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6">Current FG</TableHead>
-            <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6 text-right px-6">Cycle Status</TableHead>
-            <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6 w-10" />
+        <TableHeader className="bg-background/50">
+          <TableRow className="border-border hover:bg-transparent">
+            <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6 px-6">Recipe Identifier</TableHead>
+            <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6">Initiated</TableHead>
+            <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6">Target OG</TableHead>
+            <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6">Current FG</TableHead>
+            <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6 text-right px-6">Cycle Status</TableHead>
+            <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6 w-10" />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -240,7 +240,7 @@ export function BatchesTable({ batches }: { batches: Batch[] }) {
       {(filtered, query) => (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-700">
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
               {filtered.length} {filtered.length === 1 ? 'batch' : 'batches'}{query ? ' found' : ''}
             </p>
             <ExportCSVButton
@@ -253,7 +253,7 @@ export function BatchesTable({ batches }: { batches: Batch[] }) {
                 { key: 'fg', label: 'FG' },
                 { key: 'created_at', label: 'Created' },
               ]}
-              className="text-zinc-600 hover:text-white border border-white/5"
+              className="text-muted-foreground hover:text-foreground border border-border"
             />
           </div>
 
@@ -269,19 +269,19 @@ export function BatchesTable({ batches }: { batches: Batch[] }) {
           {/* ── Mobile Card Layout (<md) ── */}
           <div className="md:hidden space-y-3 pb-20">
             {filtered.length === 0 ? (
-              <div className="glass border-white/5 rounded-2xl py-16 text-center">
+              <div className="glass border-border rounded-2xl py-16 text-center">
                 <EmptyLogbook query={query} />
               </div>
             ) : (
               filtered.map(batch => {
                 const isPulsing = ['fermenting', 'conditioning', 'packaging'].includes(batch.status.toLowerCase())
                 return (
-                  <div key={batch.id} className="glass border-white/5 rounded-2xl overflow-hidden">
-                    <Link href={`/batches/${batch.id}`} className="block p-4 active:bg-white/[0.03] transition-colors">
+                  <div key={batch.id} className="glass border-border rounded-2xl overflow-hidden">
+                    <Link href={`/batches/${batch.id}`} className="block p-4 active:bg-surface-hover transition-colors">
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-black text-base tracking-tight text-white truncate">{batch.recipe_name}</h3>
-                          <p className="text-[10px] text-zinc-600 font-mono uppercase mt-0.5">ID: {batch.id.slice(0, 8)}</p>
+                          <h3 className="font-black text-base tracking-tight text-foreground truncate">{batch.recipe_name}</h3>
+                          <p className="text-[10px] text-muted-foreground font-mono uppercase mt-0.5">ID: {batch.id.slice(0, 8)}</p>
                         </div>
                         <span className={cn(
                           'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shrink-0 border transition-all duration-300',
@@ -293,26 +293,26 @@ export function BatchesTable({ batches }: { batches: Batch[] }) {
                       </div>
                       <div className="flex items-center gap-4 text-sm">
                         <div className="flex-1 min-w-0">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700 mb-0.5">Date</p>
-                          <p className="text-zinc-400 font-medium text-xs truncate">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Date</p>
+                          <p className="text-muted-foreground font-medium text-xs truncate">
                             {new Date(batch.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                           </p>
                         </div>
                         <div className="text-center">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700 mb-0.5">OG</p>
-                          <p className="text-zinc-300 font-mono italic text-xs">{batch.og?.toFixed(3) || '--'}</p>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">OG</p>
+                          <p className="text-foreground font-mono italic text-xs">{batch.og?.toFixed(3) || '--'}</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700 mb-0.5">FG</p>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">FG</p>
                           <p className="text-primary font-mono font-black text-sm drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]">
                             {batch.fg?.toFixed(3) || '--'}
                           </p>
                         </div>
-                        <LucideChevronRight className="h-4 w-4 text-zinc-700 shrink-0" />
+                        <LucideChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                       </div>
                     </Link>
-                    <div className="flex items-center justify-end px-4 py-2 border-t border-white/5 bg-zinc-950/30">
-                      <DeleteConfirmButton action={deleteBatch} hiddenInputs={{ batchId: batch.id }} itemName={batch.recipe_name} />
+                    <div className="flex items-center justify-end px-4 py-2 border-t border-border bg-background/30">
+                      <DeleteConfirmDialog action={deleteBatch} hiddenInputs={{ batchId: batch.id }} itemName={batch.recipe_name} />
                     </div>
                   </div>
                 )

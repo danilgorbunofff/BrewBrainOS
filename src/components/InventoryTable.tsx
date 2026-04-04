@@ -33,12 +33,12 @@ function EmptyState({ query, showAddCta }: { query: string; showAddCta?: boolean
       <div className="max-w-xs mx-auto space-y-2">
         <div className="relative mx-auto mb-6 h-16 w-16">
           <div className="absolute inset-0 rounded-2xl bg-primary/5 border border-primary/10 animate-pulse" style={{ animationDuration: '3s' }} />
-          <div className="relative h-16 w-16 rounded-2xl bg-zinc-900/80 border border-white/5 flex items-center justify-center shadow-xl">
-            <LucideBoxes className="h-7 w-7 text-zinc-600" />
+          <div className="relative h-16 w-16 rounded-2xl bg-card/80 border border-border flex items-center justify-center shadow-xl">
+            <LucideBoxes className="h-7 w-7 text-muted-foreground" />
           </div>
         </div>
-        <h3 className="text-xl font-bold text-zinc-400">{query ? 'No matches' : 'Empty Silos'}</h3>
-        <p className="text-sm text-zinc-600 font-medium italic">
+        <h3 className="text-xl font-bold text-muted-foreground">{query ? 'No matches' : 'Empty Silos'}</h3>
+        <p className="text-sm text-muted-foreground font-medium italic">
           {query
             ? 'Try a different search term.'
             : 'Define your raw material footprint using the form above.'}
@@ -58,24 +58,24 @@ function EmptyState({ query, showAddCta }: { query: string; showAddCta?: boolean
 function MobileInventoryCard({ item }: { item: InventoryItem }) {
   const isLowStock = item.current_stock <= (item.reorder_point || 0)
   return (
-    <div className="rounded-2xl border border-white/5 bg-white/[0.01] overflow-hidden">
+    <div className="rounded-2xl border border-border bg-surface overflow-hidden">
       <div className="p-4 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             {isLowStock && <LucideAlertCircle className="h-4 w-4 text-primary animate-pulse shrink-0" />}
-            <h3 className="font-black text-base tracking-tight text-white truncate">{item.name}</h3>
+            <h3 className="font-black text-base tracking-tight text-foreground truncate">{item.name}</h3>
           </div>
-          <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5 shrink-0">
+          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground bg-secondary px-2.5 py-1 rounded-lg border border-border shrink-0">
             {item.item_type}
           </span>
         </div>
 
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700 mb-0.5">Stock Level</p>
-            <span className={cn('font-mono font-black text-2xl tracking-tighter', isLowStock ? 'text-primary' : 'text-zinc-400')}>
+            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Stock Level</p>
+            <span className={cn('font-mono font-black text-2xl tracking-tighter', isLowStock ? 'text-primary' : 'text-muted-foreground')}>
               {item.current_stock}
-              <span className="text-xs font-medium text-zinc-700 ml-1.5 uppercase font-sans tracking-normal">{item.unit}</span>
+              <span className="text-xs font-medium text-muted-foreground ml-1.5 uppercase font-sans tracking-normal">{item.unit}</span>
             </span>
             {isLowStock && <p className="text-[9px] font-black uppercase text-primary/50 tracking-widest mt-0.5">Reorder Required</p>}
           </div>
@@ -83,14 +83,14 @@ function MobileInventoryCard({ item }: { item: InventoryItem }) {
             <form action={updateStock as any}>
               <input type="hidden" name="itemId" value={item.id} />
               <input type="hidden" name="stock" value={Math.max(0, item.current_stock - 1)} />
-              <Button type="submit" variant="ghost" size="icon" className="size-9 text-zinc-600 hover:text-red-500 hover:bg-red-500/10 border border-white/5 rounded-xl">
+              <Button type="submit" variant="ghost" size="icon" className="size-9 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 border border-border rounded-xl">
                 <LucideMinus className="h-4 w-4" />
               </Button>
             </form>
             <form action={updateStock as any}>
               <input type="hidden" name="itemId" value={item.id} />
               <input type="hidden" name="stock" value={item.current_stock + 1} />
-              <Button type="submit" variant="ghost" size="icon" className="size-9 text-zinc-600 hover:text-green-500 hover:bg-green-500/10 border border-white/5 rounded-xl">
+              <Button type="submit" variant="ghost" size="icon" className="size-9 text-muted-foreground hover:text-green-500 hover:bg-green-500/10 border border-border rounded-xl">
                 <LucidePlus className="h-4 w-4" />
               </Button>
             </form>
@@ -107,23 +107,23 @@ function MobileInventoryCard({ item }: { item: InventoryItem }) {
 function InventoryRow({ item }: { item: InventoryItem }) {
   const isLowStock = item.current_stock <= (item.reorder_point || 0)
   return (
-    <TableRow className="border-white/5 hover:bg-white/[0.02] transition-colors group">
+    <TableRow className="border-border hover:bg-surface transition-colors group">
       <TableCell className="py-6 px-8">
-        <div className="flex items-center gap-3 font-black text-lg tracking-tight text-white group-hover:text-primary transition-colors">
+        <div className="flex items-center gap-3 font-black text-lg tracking-tight text-foreground group-hover:text-primary transition-colors">
           {isLowStock && <LucideAlertCircle className="h-5 w-5 text-primary animate-pulse" />}
           {item.name}
         </div>
       </TableCell>
       <TableCell>
-        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 bg-white/5 px-3 py-1 rounded-lg border border-white/5">
+        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-secondary px-3 py-1 rounded-lg border border-border">
           {item.item_type}
         </span>
       </TableCell>
       <TableCell>
         <div className="flex flex-col gap-1">
-          <span className={cn('font-mono font-black text-xl tracking-tighter', isLowStock ? 'text-primary' : 'text-zinc-600')}>
+          <span className={cn('font-mono font-black text-xl tracking-tighter', isLowStock ? 'text-primary' : 'text-muted-foreground')}>
             {item.current_stock}
-            <span className="text-xs font-medium text-zinc-700 ml-1.5 uppercase font-sans tracking-normal">{item.unit}</span>
+            <span className="text-xs font-medium text-muted-foreground ml-1.5 uppercase font-sans tracking-normal">{item.unit}</span>
           </span>
           {isLowStock && <span className="text-[9px] font-black uppercase text-primary/50 tracking-widest">Reorder Required</span>}
         </div>
@@ -133,14 +133,14 @@ function InventoryRow({ item }: { item: InventoryItem }) {
           <form action={updateStock as any}>
             <input type="hidden" name="itemId" value={item.id} />
             <input type="hidden" name="stock" value={Math.max(0, item.current_stock - 1)} />
-            <Button type="submit" variant="ghost" size="icon" className="size-10 text-zinc-600 hover:text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/20">
+            <Button type="submit" variant="ghost" size="icon" className="size-10 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/20">
               <LucideMinus className="h-5 w-5" />
             </Button>
           </form>
           <form action={updateStock as any}>
             <input type="hidden" name="itemId" value={item.id} />
             <input type="hidden" name="stock" value={item.current_stock + 1} />
-            <Button type="submit" variant="ghost" size="icon" className="size-10 text-zinc-600 hover:text-green-500 hover:bg-green-500/10 border border-transparent hover:border-green-500/20">
+            <Button type="submit" variant="ghost" size="icon" className="size-10 text-muted-foreground hover:text-green-500 hover:bg-green-500/10 border border-transparent hover:border-green-500/20">
               <LucidePlus className="h-5 w-5" />
             </Button>
           </form>
@@ -165,14 +165,14 @@ function VirtualDesktopTable({ items }: { items: InventoryItem[] }) {
   })
 
   return (
-    <div className="rounded-2xl border border-white/5 bg-white/[0.01] backdrop-blur-3xl overflow-hidden">
+    <div className="rounded-2xl border border-border bg-surface backdrop-blur-3xl overflow-hidden">
       <Table>
-        <TableHeader className="bg-zinc-950/50">
-          <TableRow className="border-white/5 hover:bg-transparent">
-            <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6 px-8">Component Identifier</TableHead>
-            <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6">Classification</TableHead>
-            <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6">Stock Status</TableHead>
-            <TableHead className="text-right text-xs font-black uppercase tracking-widest text-zinc-500 py-6 px-8">Tactical Actions</TableHead>
+        <TableHeader className="bg-background/50">
+          <TableRow className="border-border hover:bg-transparent">
+            <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6 px-8">Component Identifier</TableHead>
+            <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6">Classification</TableHead>
+            <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6">Stock Status</TableHead>
+            <TableHead className="text-right text-xs font-black uppercase tracking-widest text-muted-foreground py-6 px-8">Tactical Actions</TableHead>
           </TableRow>
         </TableHeader>
       </Table>
@@ -200,7 +200,7 @@ function VirtualDesktopTable({ items }: { items: InventoryItem[] }) {
                     }}
                   >
                     {/* Render as a single-row table to reuse InventoryRow cells cleanly */}
-                    <td colSpan={4} className="p-0 border-b border-white/5">
+                    <td colSpan={4} className="p-0 border-b border-border">
                       <table className="w-full">
                         <tbody>
                           <InventoryRow item={item} />
@@ -222,14 +222,14 @@ function VirtualDesktopTable({ items }: { items: InventoryItem[] }) {
 
 function DesktopTable({ items, query }: { items: InventoryItem[]; query: string }) {
   return (
-    <div className="rounded-2xl border border-white/5 bg-white/[0.01] backdrop-blur-3xl overflow-hidden">
+    <div className="rounded-2xl border border-border bg-surface backdrop-blur-3xl overflow-hidden">
       <Table>
-        <TableHeader className="bg-zinc-950/50">
-          <TableRow className="border-white/5 hover:bg-transparent">
-            <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6 px-8">Component Identifier</TableHead>
-            <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6">Classification</TableHead>
-            <TableHead className="text-xs font-black uppercase tracking-widest text-zinc-500 py-6">Stock Status</TableHead>
-            <TableHead className="text-right text-xs font-black uppercase tracking-widest text-zinc-500 py-6 px-8">Tactical Actions</TableHead>
+        <TableHeader className="bg-background/50">
+          <TableRow className="border-border hover:bg-transparent">
+            <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6 px-8">Component Identifier</TableHead>
+            <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6">Classification</TableHead>
+            <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6">Stock Status</TableHead>
+            <TableHead className="text-right text-xs font-black uppercase tracking-widest text-muted-foreground py-6 px-8">Tactical Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -256,7 +256,7 @@ export function InventoryTable({ items }: { items: InventoryItem[] }) {
       {(filtered, query) => (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-700">
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
               {filtered.length} {filtered.length === 1 ? 'item' : 'items'}{query ? ' found' : ''}
             </p>
             <ExportCSVButton
@@ -269,17 +269,17 @@ export function InventoryTable({ items }: { items: InventoryItem[] }) {
                 { key: 'unit', label: 'Unit' },
                 { key: 'reorder_point', label: 'Reorder Point' },
               ]}
-              className="text-zinc-600 hover:text-white border border-white/5"
+              className="text-muted-foreground hover:text-foreground border border-border"
             />
           </div>
 
           <Tabs defaultValue="All" className="w-full max-w-full overflow-hidden gap-0">
-            <TabsList className="bg-zinc-950/50 border border-white/5 p-1.5 h-auto rounded-2xl mb-6 gap-1 flex w-full overflow-x-auto scrollbar-none">
+            <TabsList className="bg-background/50 border border-border p-1.5 h-auto rounded-2xl mb-6 gap-1 flex w-full overflow-x-auto scrollbar-none">
               {categories.map(cat => (
                 <TabsTrigger
                   key={cat}
                   value={cat}
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-zinc-500 font-black uppercase text-[10px] tracking-widest px-3 md:px-6 py-2.5 rounded-xl transition-all duration-300 whitespace-nowrap flex-1 min-w-0"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground font-black uppercase text-[10px] tracking-widest px-3 md:px-6 py-2.5 rounded-xl transition-all duration-300 whitespace-nowrap flex-1 min-w-0"
                 >
                   {cat}
                 </TabsTrigger>
@@ -309,7 +309,7 @@ export function InventoryTable({ items }: { items: InventoryItem[] }) {
                         <MobileInventoryCard key={item.id} item={item} />
                       ))
                     ) : (
-                      <div className="rounded-2xl border border-white/5 bg-white/[0.01]">
+                      <div className="rounded-2xl border border-border bg-surface">
                         <EmptyState query={query} showAddCta />
                       </div>
                     )}

@@ -31,7 +31,7 @@ export default async function DashboardPage() {
   const brewery = await getActiveBrewery()
 
   return (
-    <div className="min-h-screen bg-[#060606] text-zinc-100 p-6 md:p-8 pt-8 pb-32 md:pb-8 selection:bg-primary/30">
+    <div className="min-h-screen bg-background text-foreground p-6 md:p-8 pt-8 pb-32 md:pb-8 selection:bg-primary/30">
       <RealtimeRefresh table="batches" breweryId={brewery?.id || ''} />
       <div className="max-w-6xl mx-auto space-y-6">
         
@@ -41,7 +41,7 @@ export default async function DashboardPage() {
             <h1 className="text-3xl md:text-4xl font-black tracking-tighter">
               Brewery <span className="text-primary italic">Brain</span>
             </h1>
-            <p className="text-xs text-zinc-600 font-medium mt-1">
+            <p className="text-xs text-muted-foreground font-medium mt-1">
               {brewery ? `Welcome back. ${brewery.name} is online.` : 'Initialize your facility to get started.'}
             </p>
           </div>
@@ -51,8 +51,8 @@ export default async function DashboardPage() {
         {!brewery && (
           <div className="rounded-2xl border border-orange-600/20 bg-orange-600/[0.02] p-16 text-center animate-in fade-in slide-in-from-bottom-12 duration-1000">
             <div className="max-w-md mx-auto space-y-6">
-              <h2 className="text-4xl font-black text-white tracking-tighter italic">Initialize facility</h2>
-              <p className="text-zinc-500 font-medium leading-relaxed">Establish your digital footprint. Define your brewery&apos;s identity to synchronize hardware and logs.</p>
+              <h2 className="text-4xl font-black text-foreground tracking-tighter italic">Initialize facility</h2>
+              <p className="text-muted-foreground font-medium leading-relaxed">Establish your digital footprint. Define your brewery&apos;s identity to synchronize hardware and logs.</p>
               <InitializeBreweryForm />
             </div>
           </div>
@@ -73,28 +73,34 @@ export default async function DashboardPage() {
 async function DashboardContent({ breweryId }: { breweryId: string }) {
   const supabase = await createClient()
 
-  const [batchRes, tankRes, inventoryRes, readingsRes] = await Promise.all([
+  const [batchRes, tankRes, inventoryRes] = await Promise.all([
     supabase.from('batches').select('id, recipe_name, status, created_at, og, fg')
       .eq('brewery_id', breweryId).order('created_at', { ascending: false }),
     supabase.from('tanks').select('id, name, status, current_batch_id')
       .eq('brewery_id', breweryId),
     supabase.from('inventory').select('id, name, current_stock, reorder_point, unit, item_type')
       .eq('brewery_id', breweryId),
-    supabase.from('batch_readings').select('gravity, created_at')
-      .order('created_at', { ascending: true })
-      .limit(14),
   ])
 
   const batches = batchRes.data || []
   const tanks = tankRes.data || []
   const inventory = inventoryRes.data || []
+  const batchIds = batches.map(b => b.id)
+
+  // Only fetch readings for batches belonging to this brewery
+  const readingsRes = batchIds.length > 0 
+    ? await supabase.from('batch_readings').select('gravity, created_at')
+        .in('batch_id', batchIds)
+        .order('created_at', { ascending: true })
+        .limit(14)
+    : { data: [] }
 
   const stats = {
     activeBatches: batches.filter(b => b.status === 'fermenting' || b.status === 'conditioning').length,
     fermenting: batches.filter(b => b.status === 'fermenting').length,
     conditioning: batches.filter(b => b.status === 'conditioning').length,
     totalTanks: tanks.length,
-    tanksInUse: tanks.filter(t => t.current_batch_id).length,
+    tanksInUse: tanks.filter(t => t.current_batch_id || t.status === 'fermenting').length,
     lowStockItems: inventory.filter(i => i.current_stock <= (i.reorder_point || 0)).length,
   }
 
@@ -113,7 +119,7 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
       case 'conditioning': return 'text-blue-400 bg-blue-400/10 border-blue-400/20'
       case 'packaging': return 'text-purple-400 bg-purple-400/10 border-purple-400/20'
       case 'complete': return 'text-green-400 bg-green-400/10 border-green-400/20'
-      default: return 'text-zinc-500 bg-white/5 border-white/5'
+      default: return 'text-muted-foreground bg-secondary border-border'
     }
   }
 
@@ -138,26 +144,26 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
       {/* Main Grid: Production Table + Gravity Chart */}
       <div className="grid md:grid-cols-5 gap-4 animate-in fade-in slide-in-from-bottom-12 duration-1000">
         {/* Current Production */}
-        <div className="md:col-span-3 rounded-2xl border border-white/5 bg-white/[0.01] overflow-hidden">
-          <div className="px-5 py-3 border-b border-white/5 flex items-center justify-between">
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Current Production</p>
-            <Link href="/batches" className="text-[10px] text-zinc-700 font-bold hover:text-primary transition-colors flex items-center gap-1">
+        <div className="md:col-span-3 rounded-2xl border border-border bg-surface overflow-hidden">
+          <div className="px-5 py-3 border-b border-border flex items-center justify-between">
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Current Production</p>
+            <Link href="/batches" className="text-[10px] text-muted-foreground font-bold hover:text-primary transition-colors flex items-center gap-1">
               View All <LucideArrowRight className="h-3 w-3" />
             </Link>
           </div>
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-divider">
             {recentBatches.length > 0 ? recentBatches.map(batch => (
               <Link
                 key={batch.id}
                 href={`/batches/${batch.id}`}
-                className="flex items-center justify-between px-5 py-3 hover:bg-white/[0.02] transition-colors group"
+                className="flex items-center justify-between px-5 py-3 hover:bg-surface-hover transition-colors group"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-mono text-zinc-700">{batch.id.slice(0, 6)}</span>
-                  <span className="text-sm font-bold text-zinc-300 group-hover:text-primary transition-colors">{batch.recipe_name}</span>
+                  <span className="text-[10px] font-mono text-muted-foreground">{batch.id.slice(0, 6)}</span>
+                  <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{batch.recipe_name}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-mono text-zinc-600">{batch.og?.toFixed(3) || '—'}</span>
+                  <span className="text-[10px] font-mono text-muted-foreground">{batch.og?.toFixed(3) || '—'}</span>
                   <span className={cn(
                     'text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border',
                     statusColor(batch.status)
@@ -168,8 +174,8 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
               </Link>
             )) : (
               <div className="px-5 py-12 text-center">
-                <LucideClipboardList className="h-8 w-8 text-zinc-800 mx-auto mb-2" />
-                <p className="text-sm text-zinc-700 font-medium">No batches yet</p>
+                <LucideClipboardList className="h-8 w-8 text-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground font-medium">No batches yet</p>
                 <Link href="/batches" className="text-xs text-primary font-bold mt-1 inline-block">Create one →</Link>
               </div>
             )}
@@ -177,8 +183,8 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
         </div>
 
         {/* Gravity Trend */}
-        <div className="md:col-span-2 rounded-2xl border border-white/5 bg-white/[0.01] p-5 flex flex-col">
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-4">
+        <div className="md:col-span-2 rounded-2xl border border-border bg-surface p-5 flex flex-col">
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">
             Gravity Trend{recentBatches[0] ? ` — ${recentBatches[0].recipe_name}` : ''}
           </p>
           <div className="flex-1 flex items-end gap-[3px] min-h-[100px]">
@@ -196,21 +202,21 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
               [65, 58, 52, 44, 38, 33, 28, 24, 20, 18, 16, 14, 13, 12].map((val, i) => (
                 <div
                   key={i}
-                  className="flex-1 rounded-t-sm bg-white/5"
+                  className="flex-1 rounded-t-sm bg-secondary"
                   style={{ height: `${val}%` }}
                 />
               ))
             )}
           </div>
           <div className="flex items-center justify-between mt-3">
-            <span className="text-[9px] font-mono text-zinc-700">Day 1</span>
+            <span className="text-[9px] font-mono text-muted-foreground">Day 1</span>
             <span className="text-[9px] font-mono text-primary/70">
               {gravityData.length >= 2
                 ? `1.${gravityData[gravityData.length - 1]?.toString().padStart(3, '0')} current`
                 : 'No readings yet'
               }
             </span>
-            <span className="text-[9px] font-mono text-zinc-700">Latest</span>
+            <span className="text-[9px] font-mono text-muted-foreground">Latest</span>
           </div>
         </div>
       </div>
@@ -218,14 +224,14 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
       {/* Bottom Grid: Low Stock + Quick Actions */}
       <div className="grid md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-16 duration-1000">
         {/* Low Stock Alerts */}
-        <div className="rounded-2xl border border-white/5 bg-white/[0.01] overflow-hidden">
-          <div className="px-5 py-3 border-b border-white/5 flex items-center justify-between">
+        <div className="rounded-2xl border border-border bg-surface overflow-hidden">
+          <div className="px-5 py-3 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <LucideAlertCircle className="h-3.5 w-3.5 text-red-400/60" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Low Stock Alerts</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Low Stock Alerts</p>
             </div>
             {lowStockList.length > 0 && (
-              <Link href="/inventory" className="text-[10px] text-zinc-700 font-bold hover:text-primary transition-colors">
+              <Link href="/inventory" className="text-[10px] text-muted-foreground font-bold hover:text-primary transition-colors">
                 Manage →
               </Link>
             )}
@@ -236,11 +242,11 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
                 {lowStockList.map(item => (
                   <div key={item.id} className="flex items-center justify-between p-3 rounded-xl bg-red-500/[0.03] border border-red-500/10">
                     <div>
-                      <p className="font-bold text-xs text-zinc-300">{item.name}</p>
-                      <p className="text-[9px] text-zinc-600 font-black uppercase">{item.item_type}</p>
+                      <p className="font-bold text-xs text-foreground">{item.name}</p>
+                      <p className="text-[9px] text-muted-foreground font-black uppercase">{item.item_type}</p>
                     </div>
                     <span className="text-sm font-mono font-black text-red-400">
-                      {item.current_stock} <span className="text-[9px] text-zinc-600 font-sans">{item.unit}</span>
+                      {item.current_stock} <span className="text-[9px] text-muted-foreground font-sans">{item.unit}</span>
                     </span>
                   </div>
                 ))}
@@ -252,9 +258,9 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
         </div>
 
         {/* Quick Actions */}
-        <div className="rounded-2xl border border-white/5 bg-white/[0.01] overflow-hidden">
-          <div className="px-5 py-3 border-b border-white/5">
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Quick Actions</p>
+        <div className="rounded-2xl border border-border bg-surface overflow-hidden">
+          <div className="px-5 py-3 border-b border-border">
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Quick Actions</p>
           </div>
           <div className="p-3 space-y-1">
             {[
@@ -262,25 +268,21 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
               { label: 'Batches', href: '/batches', icon: LucideClipboardList, desc: `${stats.activeBatches} active` },
               { label: 'Inventory', href: '/inventory', icon: LucidePackageSearch, desc: stats.lowStockItems > 0 ? `${stats.lowStockItems} alerts` : 'All clear' },
             ].map(action => (
-              <Link key={action.href} href={action.href} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group">
-                <div className="h-8 w-8 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
-                  <action.icon className="h-3.5 w-3.5 text-zinc-600 group-hover:text-primary transition-colors" />
+              <Link key={action.href} href={action.href} className="flex items-center gap-3 p-3 rounded-xl hover:bg-secondary transition-all group">
+                <div className="h-8 w-8 rounded-lg bg-secondary border border-border flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
+                  <action.icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-bold text-zinc-400 group-hover:text-white transition-colors">{action.label}</p>
-                  <p className="text-[10px] text-zinc-700">{action.desc}</p>
+                  <p className="text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">{action.label}</p>
+                  <p className="text-[10px] text-muted-foreground">{action.desc}</p>
                 </div>
-                <LucideArrowRight className="h-3.5 w-3.5 text-zinc-800 group-hover:text-primary transition-colors" />
+                <LucideArrowRight className="h-3.5 w-3.5 text-foreground group-hover:text-primary transition-colors" />
               </Link>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Voice Logger — hidden on mobile, available via floating button instead */}
-      <div className="hidden md:block relative group rounded-2xl p-1 bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.1),transparent_70%)] animate-in fade-in duration-1000">
-        <VoiceLoggerGate />
-      </div>
     </>
   )
 }
@@ -290,13 +292,13 @@ function DashboardSkeleton() {
     <div className="space-y-6 animate-pulse">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[0, 1, 2, 3].map(i => (
-          <div key={i} className="h-24 rounded-2xl bg-white/[0.02] border border-white/5" />
+          <div key={i} className="h-24 rounded-2xl bg-surface border border-border" />
         ))}
       </div>
-      <div className="h-40 rounded-2xl bg-white/[0.02] border border-white/5" />
+      <div className="h-40 rounded-2xl bg-surface border border-border" />
       <div className="grid md:grid-cols-5 gap-4">
-        <div className="md:col-span-3 h-64 rounded-2xl bg-white/[0.02] border border-white/5" />
-        <div className="md:col-span-2 h-64 rounded-2xl bg-white/[0.02] border border-white/5" />
+        <div className="md:col-span-3 h-64 rounded-2xl bg-surface border border-border" />
+        <div className="md:col-span-2 h-64 rounded-2xl bg-surface border border-border" />
       </div>
     </div>
   )
@@ -310,12 +312,12 @@ function KPICard({ label, value, accent, danger }: {
   return (
     <div className={cn(
       "rounded-2xl p-4 border transition-all",
-      danger ? "border-red-500/20 bg-red-500/[0.03]" : "border-white/5 bg-white/[0.02]"
+      danger ? "border-red-500/20 bg-red-500/[0.03]" : "border-border bg-surface"
     )}>
-      <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-2">{label}</p>
+      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-2">{label}</p>
       <p className={cn(
         "text-3xl font-black tracking-tighter",
-        danger ? "text-red-400" : accent ? "text-primary" : "text-zinc-500"
+        danger ? "text-red-400" : accent ? "text-primary" : "text-muted-foreground"
       )}>
         {value}
       </p>

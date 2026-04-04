@@ -1,0 +1,5 @@
+item_type,name,current_stock,unit,reorder_point
+Hops,Citra,22.5,lbs,5
+Grain,Pale Ale Malt,550,lbs,100
+Yeast,US-05,5,sachets,1
+Adjunct,Lactose,10.2,lbs,2

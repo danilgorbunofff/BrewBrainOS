@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   LucideUser, LucideSettings, LucideBuilding2,
-  LucideArrowLeft, LucideMail, LucideShield, LucideLogOut
+  LucideArrowLeft, LucideMail, LucideShield, LucideLogOut, LucideDatabase
 } from 'lucide-react'
 import { ThemeSelector } from '@/components/ThemeSelector'
 import { ActivityLog } from '@/components/ActivityLog'
 import { SubscriptionCard } from '@/components/SubscriptionCard'
+import { PushNotificationManager } from '@/components/PushNotificationManager'
 import { getActiveBrewery } from '@/lib/active-brewery'
 
 export const metadata = {
@@ -74,12 +75,12 @@ export default async function SettingsPage() {
   const initials = email.substring(0, 2).toUpperCase()
 
   return (
-    <div className="min-h-screen bg-[#060606] text-zinc-100 p-6 md:p-8 pt-8 pb-32 md:pb-8 selection:bg-primary/30">
+    <div className="min-h-screen bg-background text-foreground p-6 md:p-8 pt-8 pb-32 md:pb-8 selection:bg-primary/30">
       <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
 
         {/* Header */}
-        <div className="border-b border-white/5 pb-10">
-          <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-600 hover:text-primary transition-colors mb-4">
+        <div className="border-b border-border pb-10">
+          <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors mb-4">
             <LucideArrowLeft className="h-3.5 w-3.5" />
             Back to Dashboard
           </Link>
@@ -88,8 +89,8 @@ export default async function SettingsPage() {
               <LucideSettings className="h-7 w-7 text-primary" />
             </div>
             <div>
-              <h1 className="text-4xl font-black tracking-tighter text-white">Settings Hub</h1>
-              <p className="text-zinc-500 font-medium mt-1">Manage your account and brewery preferences.</p>
+              <h1 className="text-4xl font-black tracking-tighter text-foreground">Settings Hub</h1>
+              <p className="text-muted-foreground font-medium mt-1">Manage your account and brewery preferences.</p>
             </div>
           </div>
         </div>
@@ -97,7 +98,7 @@ export default async function SettingsPage() {
         <div className="grid md:grid-cols-2 gap-6">
 
           {/* Account Info */}
-          <Card className="glass border-white/5">
+          <Card className="glass border-border">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg font-black tracking-tight flex items-center gap-2">
                 <LucideUser className="h-5 w-5 text-primary/60" />
@@ -105,29 +106,29 @@ export default async function SettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-4 p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
+              <div className="flex items-center gap-4 p-4 bg-surface border border-border rounded-2xl">
                 <div className="h-14 w-14 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
                   <span className="text-xl font-black text-primary">{initials}</span>
                 </div>
                 <div className="overflow-hidden">
-                  <p className="text-xs font-black uppercase tracking-widest text-zinc-600 mb-1">Active Session</p>
-                  <p className="font-bold text-zinc-200 truncate">{email}</p>
-                  <p className="text-xs font-mono text-zinc-700 mt-0.5">ID: {user.id.slice(0, 16)}…</p>
+                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Active Session</p>
+                  <p className="font-bold text-foreground truncate">{email}</p>
+                  <p className="text-xs font-mono text-muted-foreground mt-0.5">ID: {user.id.slice(0, 16)}…</p>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                  <LucideMail className="h-4 w-4 text-zinc-500 shrink-0" />
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-border">
+                  <LucideMail className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Email</p>
-                    <p className="text-sm font-medium text-zinc-300">{email}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Email</p>
+                    <p className="text-sm font-medium text-foreground">{email}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                  <LucideShield className="h-4 w-4 text-zinc-500 shrink-0" />
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-border">
+                  <LucideShield className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Account Status</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Account Status</p>
                     <p className="text-sm font-medium text-green-400">Verified &amp; Active</p>
                   </div>
                 </div>
@@ -143,7 +144,7 @@ export default async function SettingsPage() {
           </Card>
 
           {/* Brewery Info */}
-          <Card className="glass border-white/5">
+          <Card className="glass border-border">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg font-black tracking-tight flex items-center gap-2">
                 <LucideBuilding2 className="h-5 w-5 text-primary/60" />
@@ -154,29 +155,29 @@ export default async function SettingsPage() {
               {brewery ? (
                 <div className="space-y-3">
                   <div className="p-4 bg-primary/5 border border-primary/10 rounded-2xl">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-1">Name</p>
-                    <p className="text-2xl font-black tracking-tight text-white">{brewery.name}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Name</p>
+                    <p className="text-2xl font-black tracking-tight text-foreground">{brewery.name}</p>
                   </div>
                   {brewery.license_number && (
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                      <LucideShield className="h-4 w-4 text-zinc-500 shrink-0" />
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-border">
+                      <LucideShield className="h-4 w-4 text-muted-foreground shrink-0" />
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">License / TTB</p>
-                        <p className="text-sm font-mono font-medium text-zinc-300">{brewery.license_number}</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">License / TTB</p>
+                        <p className="text-sm font-mono font-medium text-foreground">{brewery.license_number}</p>
                       </div>
                     </div>
                   )}
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                    <LucideUser className="h-4 w-4 text-zinc-500 shrink-0" />
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-border">
+                    <LucideUser className="h-4 w-4 text-muted-foreground shrink-0" />
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Brewery ID</p>
-                      <p className="text-xs font-mono text-zinc-500">{brewery.id}</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Brewery ID</p>
+                      <p className="text-xs font-mono text-muted-foreground">{brewery.id}</p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="py-6 text-center border border-dashed border-white/10 rounded-2xl">
-                  <p className="text-zinc-600 font-medium text-sm mb-3">No brewery initialized yet.</p>
+                <div className="py-6 text-center border border-dashed border-border rounded-2xl">
+                  <p className="text-muted-foreground font-medium text-sm mb-3">No brewery initialized yet.</p>
                   <Link href="/dashboard">
                     <Button size="sm" className="rounded-xl">Initialize Brewery</Button>
                   </Link>
@@ -185,8 +186,27 @@ export default async function SettingsPage() {
             </CardContent>
           </Card>
 
+          {/* Data Management */}
+          <Card className="glass border-border">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-black tracking-tight flex items-center gap-2">
+                <LucideDatabase className="h-5 w-5 text-primary/60" />
+                Data Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+               <p className="text-sm text-muted-foreground font-medium">Bulk import your Tanks and Inventory using CSV files.</p>
+               <Link href="/settings/import" className="block">
+                 <Button variant="outline" className="w-full font-bold border-primary/20 text-primary hover:bg-primary/10">Launch White-Glove Importer</Button>
+               </Link>
+            </CardContent>
+          </Card>
+
           {/* Theme Selector (client component) */}
           <ThemeSelector />
+
+          {/* Push Notifications */}
+          <PushNotificationManager />
 
           {/* Subscription Status */}
           <SubscriptionCard />

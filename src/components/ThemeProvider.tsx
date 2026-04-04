@@ -20,7 +20,7 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   return (
-    <NextThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+    <NextThemeProvider attribute="class" defaultTheme="dark" enableSystem>
       {children}
     </NextThemeProvider>
   )

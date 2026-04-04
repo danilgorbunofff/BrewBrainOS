@@ -72,7 +72,7 @@ export function QRScanner() {
   }
 
   return (
-    <div className="relative mx-auto max-w-sm overflow-hidden rounded-2xl border border-zinc-800 bg-black aspect-square shadow-2xl">
+    <div className="relative mx-auto max-w-sm overflow-hidden rounded-2xl border border-zinc-800 bg-background aspect-square shadow-2xl">
       {isMounted && isScanning ? (
         <Scanner
           onScan={handleScan}
@@ -84,7 +84,7 @@ export function QRScanner() {
           }}
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center bg-zinc-900 absolute inset-0 text-zinc-400 font-bold p-8 text-center animate-pulse">
+        <div className="flex h-full w-full items-center justify-center bg-card absolute inset-0 text-muted-foreground font-bold p-8 text-center animate-pulse">
           Processing...
         </div>
       )}

@@ -19,13 +19,50 @@ interface MonthlyRow {
 }
 
 interface TTBReportTableProps {
-  monthlyReport: MonthlyRow[]
+  batches: any[]
+  avgTankCapacity: number
   breweryName: string
   licenseNumber: string | null
 }
 
-export function TTBReportTable({ monthlyReport, breweryName, licenseNumber }: TTBReportTableProps) {
+export function TTBReportTable({ batches, avgTankCapacity, breweryName, licenseNumber }: TTBReportTableProps) {
   const [expanded, setExpanded] = useState(true)
+
+  // Group batches dynamically on the client so that New Date() respects the local browser timezone
+  const monthlyData: Record<string, MonthlyRow & { monthKey: string, batchesList: any[] }> = {}
+  
+  for (const batch of batches) {
+    const date = new Date(batch.created_at)
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+    const monthLabel = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    if (!monthlyData[monthKey]) {
+      monthlyData[monthKey] = {
+        month: monthLabel, monthKey, totalBatches: 0, completedBatches: 0,
+        activeBatches: 0, dumpedBatches: 0, estimatedBBL: 0, gallons: 0, avgOG: 0, avgFG: 0, batchesList: []
+      }
+    }
+    const m = monthlyData[monthKey]
+    m.totalBatches++
+    m.batchesList.push(batch)
+
+    if (batch.status === 'complete' || batch.status === 'packaging') {
+      m.completedBatches++
+      m.estimatedBBL += avgTankCapacity
+      m.gallons += avgTankCapacity * 31
+    }
+    if (batch.status === 'fermenting' || batch.status === 'conditioning') m.activeBatches++
+    if (batch.status === 'dumped') m.dumpedBatches++
+  }
+
+  for (const key of Object.keys(monthlyData)) {
+    const m = monthlyData[key]
+    const withOG = m.batchesList.filter(b => b.og)
+    const withFG = m.batchesList.filter(b => b.fg)
+    m.avgOG = withOG.length > 0 ? withOG.reduce((s, b) => s + Number(b.og), 0) / withOG.length : 0
+    m.avgFG = withFG.length > 0 ? withFG.reduce((s, b) => s + Number(b.fg), 0) / withFG.length : 0
+  }
+
+  const monthlyReport = Object.values(monthlyData).sort((a, b) => b.monthKey.localeCompare(a.monthKey))
 
   const exportCSV = () => {
     const headers = [
@@ -200,21 +237,21 @@ export function TTBReportTable({ monthlyReport, breweryName, licenseNumber }: TT
   }
 
   return (
-    <div className="rounded-2xl border border-white/5 bg-white/[0.01] overflow-hidden">
+    <div className="rounded-2xl border border-border bg-surface overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-3 border-b border-white/5 flex items-center justify-between">
+      <div className="px-5 py-3 border-b border-border flex items-center justify-between">
         <button
           onClick={() => setExpanded(!expanded)}
           className="flex items-center gap-2 group"
         >
           <LucideFileBarChart className="h-4 w-4 text-primary/60" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-zinc-300 transition-colors">
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
             TTB Monthly Production Report
           </p>
           {expanded ? (
-            <LucideChevronUp className="h-3.5 w-3.5 text-zinc-700" />
+            <LucideChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
           ) : (
-            <LucideChevronDown className="h-3.5 w-3.5 text-zinc-700" />
+            <LucideChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           )}
         </button>
         <div className="flex items-center gap-2">
@@ -222,7 +259,7 @@ export function TTBReportTable({ monthlyReport, breweryName, licenseNumber }: TT
             onClick={exportCSV}
             variant="outline"
             size="sm"
-            className="text-xs gap-1.5 border-white/10 text-zinc-400 hover:text-primary hover:border-primary/30 h-8"
+            className="text-xs gap-1.5 border-border text-muted-foreground hover:text-primary hover:border-primary/30 h-8"
           >
             <LucideDownload className="h-3.5 w-3.5" />
             CSV
@@ -231,7 +268,7 @@ export function TTBReportTable({ monthlyReport, breweryName, licenseNumber }: TT
             onClick={exportPDF}
             variant="outline"
             size="sm"
-            className="text-xs gap-1.5 border-white/10 text-zinc-400 hover:text-primary hover:border-primary/30 h-8"
+            className="text-xs gap-1.5 border-border text-muted-foreground hover:text-primary hover:border-primary/30 h-8"
           >
             <LucideDownload className="h-3.5 w-3.5" />
             PDF
@@ -244,30 +281,30 @@ export function TTBReportTable({ monthlyReport, breweryName, licenseNumber }: TT
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/5">
+              <tr className="border-b border-border">
                 {['Month', 'Batches', 'Completed', 'Active', 'Dumped', 'BBL', 'Gallons', 'Avg OG', 'Avg FG'].map(h => (
-                  <th key={h} className="px-5 py-3 text-left text-[9px] font-black uppercase tracking-widest text-zinc-600">
+                  <th key={h} className="px-5 py-3 text-left text-[9px] font-black uppercase tracking-widest text-muted-foreground">
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-divider">
               {monthlyReport.length > 0 ? monthlyReport.map((row) => (
-                <tr key={row.month} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="px-5 py-3 font-bold text-zinc-300 whitespace-nowrap">{row.month}</td>
-                  <td className="px-5 py-3 font-mono text-zinc-400">{row.totalBatches}</td>
+                <tr key={row.month} className="hover:bg-surface transition-colors">
+                  <td className="px-5 py-3 font-bold text-foreground whitespace-nowrap">{row.month}</td>
+                  <td className="px-5 py-3 font-mono text-muted-foreground">{row.totalBatches}</td>
                   <td className="px-5 py-3 font-mono text-green-400">{row.completedBatches}</td>
                   <td className="px-5 py-3 font-mono text-primary">{row.activeBatches}</td>
                   <td className="px-5 py-3 font-mono text-red-400">{row.dumpedBatches || '—'}</td>
                   <td className="px-5 py-3 font-mono font-bold text-primary">{row.estimatedBBL.toFixed(1)}</td>
-                  <td className="px-5 py-3 font-mono text-zinc-400">{Math.round(row.gallons)}</td>
-                  <td className="px-5 py-3 font-mono text-zinc-500">{row.avgOG ? row.avgOG.toFixed(3) : '—'}</td>
-                  <td className="px-5 py-3 font-mono text-zinc-500">{row.avgFG ? row.avgFG.toFixed(3) : '—'}</td>
+                  <td className="px-5 py-3 font-mono text-muted-foreground">{Math.round(row.gallons)}</td>
+                  <td className="px-5 py-3 font-mono text-muted-foreground">{row.avgOG ? row.avgOG.toFixed(3) : '—'}</td>
+                  <td className="px-5 py-3 font-mono text-muted-foreground">{row.avgFG ? row.avgFG.toFixed(3) : '—'}</td>
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={9} className="px-5 py-12 text-center text-zinc-700 font-medium">
+                  <td colSpan={9} className="px-5 py-12 text-center text-muted-foreground font-medium">
                     No batch data yet. Create batches to generate TTB production reports.
                   </td>
                 </tr>
@@ -279,12 +316,12 @@ export function TTBReportTable({ monthlyReport, breweryName, licenseNumber }: TT
               <tfoot>
                 <tr className="border-t-2 border-primary/20 bg-primary/[0.02]">
                   <td className="px-5 py-3 font-black text-primary text-xs uppercase tracking-widest">Grand Total</td>
-                  <td className="px-5 py-3 font-mono font-bold text-zinc-300">{totals.batches}</td>
+                  <td className="px-5 py-3 font-mono font-bold text-foreground">{totals.batches}</td>
                   <td className="px-5 py-3 font-mono font-bold text-green-400">{totals.completed}</td>
                   <td className="px-5 py-3" />
                   <td className="px-5 py-3" />
                   <td className="px-5 py-3 font-mono font-black text-primary text-lg">{totals.bbl.toFixed(1)}</td>
-                  <td className="px-5 py-3 font-mono font-bold text-zinc-300">{Math.round(totals.gallons).toLocaleString()}</td>
+                  <td className="px-5 py-3 font-mono font-bold text-foreground">{Math.round(totals.gallons).toLocaleString()}</td>
                   <td className="px-5 py-3" />
                   <td className="px-5 py-3" />
                 </tr>

@@ -127,3 +127,47 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+self.addEventListener('push', (event: any) => {
+  if (event.data) {
+    try {
+      const data = event.data.json();
+      const options: any = {
+        body: data.body,
+        icon: data.icon || '/icon-192x192.png',
+        badge: data.badge || '/icon-192x192.png',
+        vibrate: [100, 50, 100],
+        data: { url: data.url || '/' },
+        ...data,
+      };
+      event.waitUntil(self.registration.showNotification(data.title || 'BrewBrain', options));
+    } catch (e) {
+      event.waitUntil(
+        self.registration.showNotification('BrewBrain', { body: event.data.text() })
+      );
+    }
+  }
+});
+
+self.addEventListener('notificationclick', (event: any) => {
+  event.notification.close();
+  const urlToOpen = new URL(event.notification.data?.url || '/', self.location.origin).href;
+
+  const promiseChain = self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+    let matchingClient = null;
+    for (let i = 0; i < windowClients.length; i++) {
+      const windowClient = windowClients[i];
+      if (windowClient.url === urlToOpen) {
+        matchingClient = windowClient;
+        break;
+      }
+    }
+    if (matchingClient) {
+      return (matchingClient as any).focus();
+    } else {
+      return self.clients.openWindow(urlToOpen);
+    }
+  });
+
+  event.waitUntil(promiseChain);
+});

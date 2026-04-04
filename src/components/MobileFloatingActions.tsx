@@ -196,10 +196,10 @@ export function MobileFloatingActions() {
       <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-50 md:hidden flex flex-row items-center gap-3">
         <button
           onClick={() => setShowQR(true)}
-          className="h-12 w-12 rounded-full bg-zinc-900/90 backdrop-blur-xl border border-white/10 flex items-center justify-center shadow-lg shadow-black/40 active:scale-95 transition-all"
+          className="h-12 w-12 rounded-full bg-card/90 backdrop-blur-xl border border-border flex items-center justify-center shadow-lg shadow-black/40 active:scale-95 transition-all"
           aria-label="Scan QR Code"
         >
-          <LucideQrCode className="h-5 w-5 text-zinc-400" />
+          <LucideQrCode className="h-5 w-5 text-muted-foreground" />
         </button>
 
         <button
@@ -213,15 +213,15 @@ export function MobileFloatingActions() {
 
       {/* ── Voice Recording Modal ── */}
       {showVoiceModal && (
-        <div className="fixed inset-0 z-[60] md:hidden flex flex-col bg-black/95 backdrop-blur-xl">
+        <div className="fixed inset-0 z-[60] md:hidden flex flex-col bg-background backdrop-blur-xl">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-white/5">
-            <h2 className="text-lg font-black text-white tracking-tight">Voice Log</h2>
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <h2 className="text-lg font-black text-foreground tracking-tight">Voice Log</h2>
             <button
               onClick={closeVoiceModal}
-              className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center"
+              className="h-10 w-10 rounded-full bg-secondary/50 flex items-center justify-center"
             >
-              <LucideX className="h-5 w-5 text-white" />
+              <LucideX className="h-5 w-5 text-foreground" />
             </button>
           </div>
 
@@ -244,10 +244,10 @@ export function MobileFloatingActions() {
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary animate-pulse">
                     Recording
                   </p>
-                  <p className="text-base font-bold text-zinc-400">
+                  <p className="text-base font-bold text-muted-foreground">
                     Speak your production reading...
                   </p>
-                  <p className="text-xs text-zinc-600 italic">
+                  <p className="text-xs text-muted-foreground italic">
                     &quot;Gravity 1.012, temperature 68, looking clear&quot;
                   </p>
                 </div>
@@ -256,9 +256,9 @@ export function MobileFloatingActions() {
                   onClick={stopRecording}
                   className="h-16 w-16 rounded-full bg-red-500/90 border-2 border-red-400/30 flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.3)] active:scale-95 transition-all"
                 >
-                  <LucideSquare className="h-6 w-6 text-white fill-white" />
+                  <LucideSquare className="h-6 w-6 text-foreground fill-foreground" />
                 </button>
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600">
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   Tap to stop
                 </p>
               </div>
@@ -277,7 +277,7 @@ export function MobileFloatingActions() {
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
                     Analyzing
                   </p>
-                  <p className="text-base font-bold text-zinc-400">
+                  <p className="text-base font-bold text-muted-foreground">
                     BrewBrain AI is extracting data...
                   </p>
                 </div>
@@ -289,11 +289,11 @@ export function MobileFloatingActions() {
               <div className="w-full max-w-sm space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Transcript */}
                 {extractedData.transcript && (
-                  <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-4">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 mb-2">
+                  <div className="rounded-2xl border border-border bg-surface p-4">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-2">
                       What you said
                     </p>
-                    <p className="text-sm font-medium text-zinc-300 leading-relaxed italic">
+                    <p className="text-sm font-medium text-foreground leading-relaxed italic">
                       &ldquo;{extractedData.transcript}&rdquo;
                     </p>
                   </div>
@@ -301,7 +301,7 @@ export function MobileFloatingActions() {
 
                 {/* Extracted Metrics */}
                 <div className="space-y-2">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600 px-1">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">
                     Extracted Data
                   </p>
 
@@ -311,15 +311,15 @@ export function MobileFloatingActions() {
                       "rounded-xl border p-3",
                       extractedData.gravity != null
                         ? "border-primary/20 bg-primary/5"
-                        : "border-white/5 bg-white/[0.02]"
+                        : "border-border bg-surface"
                     )}>
                       <div className="flex items-center gap-2 mb-1">
                         <LucideFlaskConical className="h-3.5 w-3.5 text-primary/60" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Gravity</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Gravity</span>
                       </div>
                       <p className={cn(
                         "font-mono font-black text-xl tracking-tighter",
-                        extractedData.gravity != null ? "text-primary" : "text-zinc-700"
+                        extractedData.gravity != null ? "text-primary" : "text-muted-foreground"
                       )}>
                         {extractedData.gravity?.toFixed(3) ?? '—'}
                       </p>
@@ -330,15 +330,15 @@ export function MobileFloatingActions() {
                       "rounded-xl border p-3",
                       extractedData.temperature != null
                         ? "border-blue-400/20 bg-blue-400/5"
-                        : "border-white/5 bg-white/[0.02]"
+                        : "border-border bg-surface"
                     )}>
                       <div className="flex items-center gap-2 mb-1">
                         <LucideThermometer className="h-3.5 w-3.5 text-blue-400/60" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Temp</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Temp</span>
                       </div>
                       <p className={cn(
                         "font-mono font-black text-xl tracking-tighter",
-                        extractedData.temperature != null ? "text-blue-400" : "text-zinc-700"
+                        extractedData.temperature != null ? "text-blue-400" : "text-muted-foreground"
                       )}>
                         {extractedData.temperature != null ? `${extractedData.temperature}°` : '—'}
                       </p>
@@ -347,12 +347,12 @@ export function MobileFloatingActions() {
 
                   {/* Notes */}
                   {extractedData.notes && (
-                    <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
+                    <div className="rounded-xl border border-border bg-surface p-3">
                       <div className="flex items-center gap-2 mb-1">
-                        <LucideStickyNote className="h-3.5 w-3.5 text-zinc-500" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Notes</span>
+                        <LucideStickyNote className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Notes</span>
                       </div>
-                      <p className="text-sm text-zinc-400 font-medium">
+                      <p className="text-sm text-muted-foreground font-medium">
                         {extractedData.notes}
                       </p>
                     </div>
@@ -360,9 +360,9 @@ export function MobileFloatingActions() {
 
                   {/* Batch ID */}
                   {extractedData.batch_id && (
-                    <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-zinc-600">Batch: </span>
-                      <span className="text-sm text-zinc-400 font-mono font-bold">{extractedData.batch_id}</span>
+                    <div className="rounded-xl border border-border bg-surface p-3">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Batch: </span>
+                      <span className="text-sm text-muted-foreground font-mono font-bold">{extractedData.batch_id}</span>
                     </div>
                   )}
                 </div>
@@ -371,7 +371,7 @@ export function MobileFloatingActions() {
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={retryRecording}
-                    className="flex-1 h-12 rounded-xl bg-white/5 border border-white/10 text-zinc-400 font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                    className="flex-1 h-12 rounded-xl bg-secondary border border-border text-muted-foreground font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
                   >
                     <LucideRotateCcw className="h-4 w-4" />
                     Re-record
@@ -398,18 +398,18 @@ export function MobileFloatingActions() {
 
       {/* ── QR Scanner Modal ── */}
       {showQR && (
-        <div className="fixed inset-0 z-[60] md:hidden bg-black/95 backdrop-blur-xl flex flex-col">
+        <div className="fixed inset-0 z-[60] md:hidden bg-background backdrop-blur-xl flex flex-col">
           <div className="flex items-center justify-between p-4">
-            <h2 className="text-lg font-black text-white tracking-tight">Scan QR Code</h2>
+            <h2 className="text-lg font-black text-foreground tracking-tight">Scan QR Code</h2>
             <button
               onClick={() => setShowQR(false)}
-              className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center"
+              className="h-10 w-10 rounded-full bg-secondary/50 flex items-center justify-center"
             >
-              <LucideX className="h-5 w-5 text-white" />
+              <LucideX className="h-5 w-5 text-foreground" />
             </button>
           </div>
           <div className="flex-1 flex items-center justify-center p-6">
-            <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 aspect-square shadow-2xl">
+            <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-border aspect-square shadow-2xl">
               <Scanner
                 onScan={handleScan}
                 onError={(err: any) => {
@@ -424,7 +424,7 @@ export function MobileFloatingActions() {
               <div className="pointer-events-none absolute inset-0 z-10 border-4 border-primary/20 rounded-2xl" />
             </div>
           </div>
-          <p className="text-center text-xs text-zinc-500 font-medium pb-8">
+          <p className="text-center text-xs text-muted-foreground font-medium pb-8">
             Point camera at a BrewBrain vessel QR code
           </p>
         </div>

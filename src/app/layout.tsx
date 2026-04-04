@@ -35,11 +35,12 @@ export default function RootLayout({
       lang="en"
       className={`${fontSans.variable} ${fontHeading.variable} h-full antialiased`}
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
     >
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
           {children}
-          <Toaster theme="dark" position="top-center" />
+          <Toaster position="top-center" />
         </ThemeProvider>
       </body>
     </html>

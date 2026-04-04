@@ -17,7 +17,7 @@ export function SignOutForm() {
   return (
     <button 
       onClick={handleSignOut}
-      className="flex w-full cursor-pointer items-center px-2 py-1.5 text-sm text-red-500 hover:text-red-400 hover:bg-white/5 rounded-sm transition-colors"
+      className="flex w-full cursor-pointer items-center px-2 py-1.5 text-sm text-red-500 hover:text-red-400 hover:bg-secondary rounded-sm transition-colors"
     >
       <LogOut className="mr-2 h-4 w-4" />
       <span>Log out session</span>

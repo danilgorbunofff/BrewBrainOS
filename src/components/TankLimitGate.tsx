@@ -23,7 +23,7 @@ export function TankLimitBadge({ currentCount }: TankLimitBadgeProps) {
       <div className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${
         atLimit
           ? 'bg-red-500/10 border-red-500/20 text-red-400'
-          : 'bg-white/[0.03] border-white/5 text-zinc-500'
+          : 'bg-surface-hover border-border text-muted-foreground'
       }`}>
         {isUnlimited ? `${currentCount} Tanks` : `${currentCount}/${maxTanks} Tanks`}
       </div>
@@ -54,7 +54,7 @@ export function TankAddGate({ currentCount, children }: { currentCount: number; 
   if (atLimit) {
     return (
       <div className="relative group">
-        <div className="px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-2 text-zinc-600">
+        <div className="px-4 py-2.5 rounded-xl bg-surface border border-border flex items-center gap-2 text-muted-foreground">
           <LucideLock className="h-4 w-4" />
           <span className="text-xs font-bold">Tank limit reached</span>
         </div>

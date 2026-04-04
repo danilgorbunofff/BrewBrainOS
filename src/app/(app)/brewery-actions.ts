@@ -63,3 +63,39 @@ export async function createBrewery(formData: FormData) {
 
   revalidatePath('/', 'layout')
 }
+
+/**
+ * Permanently delete a brewery and all its associated data.
+ */
+export async function deleteBrewery(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const breweryId = formData.get('breweryId') as string
+  if (!breweryId) throw new Error('Brewery ID required')
+
+  // Verify ownership
+  const { data: brewery } = await supabase
+    .from('breweries')
+    .select('id')
+    .eq('id', breweryId)
+    .eq('owner_id', user.id)
+    .single()
+
+  if (!brewery) throw new Error('Brewery not found or access denied')
+
+  // Execute deletion (cascades to tanks, batches, inventory via DB constraints)
+  const { error } = await supabase
+    .from('breweries')
+    .delete()
+    .eq('id', breweryId)
+
+  if (error) {
+    console.error('Failed to delete brewery:', error)
+    return { success: false, error: error.message || 'Database error during deletion' }
+  }
+
+  revalidatePath('/', 'layout')
+  return { success: true }
+}

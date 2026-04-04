@@ -21,7 +21,7 @@ export function ThemeSelector() {
   if (!mounted) return null
 
   return (
-    <Card className="glass border-white/5">
+    <Card className="glass border-border">
       <CardHeader className="pb-4">
         <CardTitle className="text-lg font-black tracking-tight flex items-center gap-2">
           <LucidePalette className="h-5 w-5 text-primary/60" />
@@ -37,16 +37,16 @@ export function ThemeSelector() {
               'w-full flex items-center justify-between p-3 rounded-xl border transition-all text-left',
               theme === t.value
                 ? 'bg-primary/5 border-primary/20'
-                : 'bg-white/[0.02] border-white/5 hover:bg-white/5'
+                : 'bg-surface border-border hover:bg-secondary'
             )}
           >
             <div className="flex items-center gap-3">
-              <t.icon className={cn('h-4 w-4', theme === t.value ? 'text-primary' : 'text-zinc-600')} />
+              <t.icon className={cn('h-4 w-4', theme === t.value ? 'text-primary' : 'text-muted-foreground')} />
               <div>
-                <p className={cn('font-bold text-sm', theme === t.value ? 'text-white' : 'text-zinc-500')}>
+                <p className={cn('font-bold text-sm', theme === t.value ? 'text-foreground' : 'text-muted-foreground')}>
                   {t.label}
                 </p>
-                <p className="text-xs text-zinc-600">{t.description}</p>
+                <p className="text-xs text-muted-foreground">{t.description}</p>
               </div>
             </div>
             {theme === t.value && (

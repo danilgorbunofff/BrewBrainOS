@@ -2,7 +2,7 @@ import { LucideLayoutDashboard } from 'lucide-react'
 
 export default function Loading() {
   return (
-    <div className="min-h-screen bg-[#060606] text-zinc-100 p-6 md:p-8 pt-8 flex items-center justify-center">
+    <div className="min-h-screen bg-background text-foreground p-6 md:p-8 pt-8 flex items-center justify-center">
       <div className="flex flex-col items-center gap-6 animate-in fade-in duration-700">
         <div className="relative group">
           {/* Animated glow */}
@@ -15,7 +15,7 @@ export default function Loading() {
         </div>
         
         <div className="space-y-2 text-center">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 animate-pulse">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground animate-pulse">
             Synchronizing Production Data
           </p>
           <div className="flex gap-1 justify-center">

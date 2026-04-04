@@ -53,7 +53,6 @@ export default function BillingPage() {
   const { tier: currentTier, status, isActive, tierName, whiteGlovePaid, currentPeriodEnd } = useSubscription()
   const [loading, setLoading] = useState<TierSlug | null>(null)
   const [whiteGlove, setWhiteGlove] = useState(false)
-  const [portalLoading, setPortalLoading] = useState(false)
 
   async function handleSubscribe(tier: TierSlug) {
     setLoading(tier)
@@ -74,33 +73,15 @@ export default function BillingPage() {
     }
   }
 
-  async function handleManage() {
-    setPortalLoading(true)
-    try {
-      const res = await fetch('/api/stripe/portal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      })
-      const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url
-      }
-    } catch (err) {
-      console.error('Portal failed:', err)
-    } finally {
-      setPortalLoading(false)
-    }
-  }
-
   const paidTiers = TIERS.filter(t => t.price > 0)
 
   return (
-    <div className="min-h-screen bg-[#060606] text-zinc-100 p-6 md:p-8 pt-8 pb-32 md:pb-8 selection:bg-primary/30">
+    <div className="min-h-screen bg-background text-foreground p-6 md:p-8 pt-8 pb-32 md:pb-8 selection:bg-primary/30">
       <div className="max-w-5xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
 
         {/* Header */}
-        <div className="border-b border-white/5 pb-10">
-          <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-600 hover:text-primary transition-colors mb-4">
+        <div className="border-b border-border pb-10">
+          <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors mb-4">
             <LucideArrowLeft className="h-3.5 w-3.5" />
             Back to Dashboard
           </Link>
@@ -109,8 +90,8 @@ export default function BillingPage() {
               <LucideCreditCard className="h-7 w-7 text-primary" />
             </div>
             <div>
-              <h1 className="text-4xl font-black tracking-tighter text-white">Plans & Billing</h1>
-              <p className="text-zinc-500 font-medium mt-1">Choose the plan that scales with your production.</p>
+              <h1 className="text-4xl font-black tracking-tighter text-foreground">Plans & Billing</h1>
+              <p className="text-muted-foreground font-medium mt-1">Choose the plan that scales with your production.</p>
             </div>
           </div>
         </div>
@@ -123,13 +104,13 @@ export default function BillingPage() {
                 <LucideCheck className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-bold text-zinc-300">
+                <p className="text-sm font-bold text-foreground">
                   Your current plan: <span className="text-primary font-black">{tierName}</span>
                 </p>
-                <p className="text-xs text-zinc-600 font-medium mt-0.5">
+                <p className="text-xs text-muted-foreground font-medium mt-0.5">
                   Status: <span className={cn(
                     'font-bold',
-                    status === 'active' ? 'text-green-400' : status === 'past_due' ? 'text-red-400' : 'text-zinc-500'
+                    status === 'active' ? 'text-green-400' : status === 'past_due' ? 'text-red-400' : 'text-muted-foreground'
                   )}>{status}</span>
                   {currentPeriodEnd && (
                     <> · Renews {new Date(currentPeriodEnd).toLocaleDateString('en-US', {
@@ -141,13 +122,6 @@ export default function BillingPage() {
                 </p>
               </div>
             </div>
-            <button
-              onClick={handleManage}
-              disabled={portalLoading}
-              className="px-4 py-2 rounded-xl border border-white/10 bg-white/[0.03] text-sm font-bold text-zinc-300 hover:bg-white/5 hover:text-white transition-all disabled:opacity-50"
-            >
-              {portalLoading ? 'Loading…' : 'Manage Subscription'}
-            </button>
           </div>
         )}
 
@@ -165,7 +139,7 @@ export default function BillingPage() {
                   'relative rounded-2xl border overflow-hidden transition-all duration-300 group',
                   plan.popular
                     ? 'border-primary/30 bg-primary/[0.02] shadow-[0_0_40px_rgba(245,158,11,0.05)]'
-                    : 'border-white/5 bg-white/[0.01] hover:border-white/10',
+                    : 'border-border bg-surface hover:border-border',
                   isCurrent && 'ring-2 ring-primary/40'
                 )}
               >
@@ -182,31 +156,31 @@ export default function BillingPage() {
                     <div className="flex items-center gap-2">
                       <div className={cn(
                         'h-9 w-9 rounded-xl flex items-center justify-center',
-                        plan.popular ? 'bg-primary/10 border border-primary/20' : 'bg-white/5 border border-white/5'
+                        plan.popular ? 'bg-primary/10 border border-primary/20' : 'bg-secondary border border-border'
                       )}>
                         <Icon className={cn(
                           'h-4.5 w-4.5',
-                          plan.popular ? 'text-primary' : 'text-zinc-500'
+                          plan.popular ? 'text-primary' : 'text-muted-foreground'
                         )} />
                       </div>
-                      <h3 className="text-lg font-black tracking-tight text-white">{plan.name}</h3>
+                      <h3 className="text-lg font-black tracking-tight text-foreground">{plan.name}</h3>
                     </div>
-                    <p className="text-xs text-zinc-500 font-medium">{plan.tagline}</p>
+                    <p className="text-xs text-muted-foreground font-medium">{plan.tagline}</p>
                   </div>
 
                   {/* Price */}
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-black tracking-tighter text-white">${plan.price}</span>
-                    <span className="text-sm font-bold text-zinc-600">/mo</span>
+                    <span className="text-4xl font-black tracking-tighter text-foreground">${plan.price}</span>
+                    <span className="text-sm font-bold text-muted-foreground">/mo</span>
                   </div>
 
                   {/* Features */}
                   <ul className="space-y-2.5">
                     {features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2.5 text-sm text-zinc-400">
+                      <li key={feature} className="flex items-center gap-2.5 text-sm text-muted-foreground">
                         <LucideCheck className={cn(
                           'h-3.5 w-3.5 shrink-0',
-                          plan.popular ? 'text-primary' : 'text-zinc-600'
+                          plan.popular ? 'text-primary' : 'text-muted-foreground'
                         )} />
                         <span className="font-medium">{feature}</span>
                       </li>
@@ -220,10 +194,10 @@ export default function BillingPage() {
                     className={cn(
                       'w-full py-3 rounded-xl text-sm font-bold transition-all duration-200',
                       isCurrent
-                        ? 'bg-white/5 border border-white/10 text-zinc-500 cursor-default'
+                        ? 'bg-secondary border border-border text-muted-foreground cursor-default'
                         : plan.popular
                           ? 'bg-primary text-black hover:bg-primary/90 shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:shadow-[0_0_30px_rgba(245,158,11,0.3)]'
-                          : 'bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/10 hover:text-white',
+                          : 'bg-secondary border border-border text-foreground hover:bg-secondary/50 hover:text-primary-foreground',
                       (loading === plan.slug) && 'opacity-60'
                     )}
                   >
@@ -236,15 +210,15 @@ export default function BillingPage() {
         </div>
 
         {/* White Glove Setup */}
-        <div className="rounded-2xl border border-white/5 bg-white/[0.01] overflow-hidden">
+        <div className="rounded-2xl border border-border bg-surface overflow-hidden">
           <div className="p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-start gap-4">
               <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-orange-600/20 border border-primary/20 flex items-center justify-center shrink-0">
                 <LucidePackageCheck className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="text-xl font-black tracking-tight text-white">White Glove Setup</h3>
-                <p className="text-sm text-zinc-500 font-medium mt-1 max-w-lg">
+                <h3 className="text-xl font-black tracking-tight text-foreground">White Glove Setup</h3>
+                <p className="text-sm text-muted-foreground font-medium mt-1 max-w-lg">
                   One-time ${WHITE_GLOVE_PRICE} fee. We import your Excel data, configure your facility, and ship 100 waterproof QR stickers for your tanks.
                 </p>
                 {whiteGlovePaid && (
@@ -258,7 +232,7 @@ export default function BillingPage() {
               <label className="flex items-center gap-3 cursor-pointer group shrink-0">
                 <div className={cn(
                   'h-6 w-11 rounded-full transition-all duration-200 relative',
-                  whiteGlove ? 'bg-primary' : 'bg-zinc-800 border border-white/10'
+                  whiteGlove ? 'bg-primary' : 'bg-card border border-border'
                 )}>
                   <div className={cn(
                     'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-all duration-200',
@@ -271,7 +245,7 @@ export default function BillingPage() {
                   onChange={(e) => setWhiteGlove(e.target.checked)}
                   className="sr-only"
                 />
-                <span className="text-sm font-bold text-zinc-400 group-hover:text-white transition-colors">
+                <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">
                   Add to subscription (+${WHITE_GLOVE_PRICE})
                 </span>
               </label>
@@ -280,8 +254,8 @@ export default function BillingPage() {
         </div>
 
         {/* FAQ */}
-        <div className="rounded-2xl border border-white/5 bg-white/[0.01] p-6 md:p-8 space-y-4">
-          <h3 className="text-lg font-black tracking-tight text-white">Frequently Asked Questions</h3>
+        <div className="rounded-2xl border border-border bg-surface p-6 md:p-8 space-y-4">
+          <h3 className="text-lg font-black tracking-tight text-foreground">Frequently Asked Questions</h3>
           <div className="grid md:grid-cols-2 gap-4">
             {[
               {
@@ -301,9 +275,9 @@ export default function BillingPage() {
                 a: 'All new accounts start on the Free tier with full access to core features, limited only in scale.',
               },
             ].map((faq) => (
-              <div key={faq.q} className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
-                <p className="text-sm font-bold text-zinc-300">{faq.q}</p>
-                <p className="text-xs text-zinc-600 font-medium mt-1">{faq.a}</p>
+              <div key={faq.q} className="p-4 rounded-xl bg-surface border border-border">
+                <p className="text-sm font-bold text-foreground">{faq.q}</p>
+                <p className="text-xs text-muted-foreground font-medium mt-1">{faq.a}</p>
               </div>
             ))}
           </div>

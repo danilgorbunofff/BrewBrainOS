@@ -19,7 +19,7 @@ const typeConfig = {
 
 export function ActivityLog({ activities }: { activities: ActivityEntry[] }) {
   return (
-    <Card className="glass border-white/5">
+    <Card className="glass border-border">
       <CardHeader className="pb-4">
         <CardTitle className="text-lg font-black tracking-tight flex items-center gap-2">
           <LucideHistory className="h-5 w-5 text-primary/60" />
@@ -35,7 +35,7 @@ export function ActivityLog({ activities }: { activities: ActivityEntry[] }) {
               return (
                 <div
                   key={entry.id}
-                  className="flex items-start gap-3 p-3 rounded-xl hover:bg-white/[0.02] transition-colors group"
+                  className="flex items-start gap-3 p-3 rounded-xl hover:bg-surface transition-colors group"
                 >
                   {/* Timeline dot */}
                   <div className="flex flex-col items-center pt-0.5">
@@ -43,14 +43,14 @@ export function ActivityLog({ activities }: { activities: ActivityEntry[] }) {
                       <Icon className={cn('h-3.5 w-3.5', config.color)} />
                     </div>
                     {i < activities.length - 1 && (
-                      <div className="w-px h-full min-h-[1.5rem] bg-white/5 mt-1" />
+                      <div className="w-px h-full min-h-[1.5rem] bg-secondary mt-1" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-zinc-300 group-hover:text-white transition-colors">{entry.label}</p>
-                    <p className="text-xs text-zinc-600 font-medium truncate">{entry.detail}</p>
+                    <p className="text-sm font-bold text-foreground group-hover:text-foreground transition-colors">{entry.label}</p>
+                    <p className="text-xs text-muted-foreground font-medium truncate">{entry.detail}</p>
                   </div>
-                  <span className="text-[10px] font-mono text-zinc-700 shrink-0 pt-1">
+                  <span className="text-[10px] font-mono text-muted-foreground shrink-0 pt-1">
                     {formatRelativeTime(entry.timestamp)}
                   </span>
                 </div>
@@ -58,7 +58,7 @@ export function ActivityLog({ activities }: { activities: ActivityEntry[] }) {
             })}
           </div>
         ) : (
-          <p className="text-sm text-zinc-600 font-medium text-center py-6">No recent activity recorded.</p>
+          <p className="text-sm text-muted-foreground font-medium text-center py-6">No recent activity recorded.</p>
         )}
       </CardContent>
     </Card>

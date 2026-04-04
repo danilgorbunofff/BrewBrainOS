@@ -34,10 +34,10 @@ export function AddInventoryItemDialog() {
         <LucidePlus className="size-5" />
         Provision Slot
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] glass border-white/5 p-8">
+      <DialogContent className="sm:max-w-[425px] glass border-border p-8">
         <DialogHeader className="space-y-1">
           <DialogTitle className="text-3xl font-black tracking-tighter">Inventory Sync</DialogTitle>
-          <DialogDescription className="text-zinc-500">
+          <DialogDescription className="text-muted-foreground">
             Register a new logistical component to the floor inventory.
           </DialogDescription>
         </DialogHeader>
@@ -52,18 +52,18 @@ export function AddInventoryItemDialog() {
             <input type="hidden" name="unit" value={unit} />
 
             <div className="grid gap-2">
-              <Label htmlFor="inv-name" className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Component Identifier</Label>
+              <Label htmlFor="inv-name" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Component Identifier</Label>
               <Input id="inv-name" name="name" required placeholder="e.g. Cascade Hops T90" />
             </div>
 
             <div className="grid grid-cols-2 gap-6">
               <div className="grid gap-2">
-                <Label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Classification</Label>
+                <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Classification</Label>
                 <Select value={itemType} onValueChange={(v) => v && setItemType(v)}>
-                  <SelectTrigger className="h-11 rounded-xl bg-white/5 border-white/10 text-zinc-300 font-bold">
+                  <SelectTrigger className="h-11 rounded-xl bg-secondary border-border text-foreground font-bold">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="glass border-white/5 text-zinc-200">
+                  <SelectContent className="glass border-border text-foreground">
                     <SelectItem value="hop">Hops</SelectItem>
                     <SelectItem value="grain">Grain</SelectItem>
                     <SelectItem value="yeast">Yeast</SelectItem>
@@ -73,12 +73,12 @@ export function AddInventoryItemDialog() {
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Measurement Unit</Label>
+                <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Measurement Unit</Label>
                 <Select value={unit} onValueChange={(v) => v && setUnit(v)}>
-                  <SelectTrigger className="h-11 rounded-xl bg-white/5 border-white/10 text-zinc-300 font-bold">
+                  <SelectTrigger className="h-11 rounded-xl bg-secondary border-border text-foreground font-bold">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="glass border-white/5 text-zinc-200">
+                  <SelectContent className="glass border-border text-foreground">
                     <SelectItem value="kg">kg</SelectItem>
                     <SelectItem value="lbs">lbs</SelectItem>
                     <SelectItem value="oz">oz</SelectItem>
@@ -92,13 +92,13 @@ export function AddInventoryItemDialog() {
             <div className="grid grid-cols-2 gap-6">
               <div className="grid gap-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="inv-stock" className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Initial Reserve</Label>
+                  <Label htmlFor="inv-stock" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Initial Reserve</Label>
                   <BluetoothScale compact onWeightCaptured={handleWeightCaptured} />
                 </div>
                 <Input ref={stockInputRef} id="inv-stock" name="currentStock" type="number" step="0.1" required defaultValue="0" min="0" className="font-mono" />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="inv-reorder" className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Alert Threshold</Label>
+                <Label htmlFor="inv-reorder" className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Alert Threshold</Label>
                 <Input id="inv-reorder" name="reorderPoint" type="number" step="0.1" required defaultValue="5" min="0" className="font-mono text-primary" />
               </div>
             </div>

@@ -75,7 +75,7 @@ export async function processQueue() {
           } else {
             console.error('Failed to process offline sync:', item.id, result?.error)
             failCount++
-            toast.error(`Could not process offline log: ${result?.error}`)
+            toast.error(`Offline log failed: ${result?.error}. Please submit a new log.`, { duration: 30000 })
           }
         } catch (e) {
           console.error('Network error syncing item:', item.id, e)

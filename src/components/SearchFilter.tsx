@@ -33,12 +33,12 @@ export function SearchFilter<T extends Record<string, any>>({
   return (
     <>
       <div className="relative">
-        <LucideSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-700" />
+        <LucideSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
-          className="pl-10 bg-white/[0.02] border-white/5 font-medium text-sm h-10 rounded-xl"
+          className="pl-10 bg-surface border-border font-medium text-sm h-10 rounded-xl"
         />
       </div>
       {children(filtered, query)}

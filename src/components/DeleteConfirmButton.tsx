@@ -16,6 +16,8 @@ interface DeleteConfirmButtonProps {
   size?: 'default' | 'sm' | 'icon' | 'icon-sm'
   onOptimisticDelete?: () => void
   redirectOnSuccess?: string
+  label?: string
+  buttonVariant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
 }
 
 export function DeleteConfirmButton({
@@ -26,6 +28,8 @@ export function DeleteConfirmButton({
   size = 'icon-sm',
   onOptimisticDelete,
   redirectOnSuccess,
+  label,
+  buttonVariant = 'ghost',
 }: DeleteConfirmButtonProps) {
   const [confirming, setConfirming] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -83,7 +87,7 @@ export function DeleteConfirmButton({
           variant="ghost"
           size="sm"
           onClick={() => setConfirming(false)}
-          className="h-7 px-2 text-xs rounded-lg text-zinc-500"
+          className="h-7 px-2 text-xs rounded-lg text-muted-foreground"
         >
           No
         </Button>
@@ -93,13 +97,14 @@ export function DeleteConfirmButton({
 
   return (
     <Button
-      variant="ghost"
+      variant={buttonVariant}
       size={size}
       onClick={() => setConfirming(true)}
-      className={cn('text-zinc-700 hover:text-red-500 hover:bg-red-500/10 transition-colors', className)}
+      className={cn('text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors', className)}
       title={`Delete ${itemName}`}
     >
-      <LucideTrash2 className="h-3.5 w-3.5" />
+      <LucideTrash2 className={cn("h-3.5 w-3.5", label && "mr-2")} />
+      {label && <span>{label}</span>}
     </Button>
   )
 }

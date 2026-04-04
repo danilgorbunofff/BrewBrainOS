@@ -28,9 +28,9 @@ export function AddTankForm({ onOptimisticAdd }: AddTankFormProps) {
       successMessage="Vessel added successfully"
       resetOnSuccess
     >
-      <div className="glass p-2 rounded-2xl flex flex-row items-center gap-2 border-white/10 glow-primary shadow-2xl">
+      <div className="glass p-2 rounded-2xl flex flex-row items-center gap-2 border-border glow-primary shadow-2xl">
         <Input name="name" placeholder="Tank ID" required className="bg-transparent border-none focus-visible:ring-0 w-32 font-bold" />
-        <div className="h-6 w-px bg-white/10 mx-2" />
+        <div className="h-6 w-px bg-secondary/50 mx-2" />
         <Input name="capacity" type="number" placeholder="BBL" className="bg-transparent border-none focus-visible:ring-0 w-20 font-mono" />
         <SubmitButton size="icon" className="shrink-0 aspect-square" pendingText="">
           <LucidePlus className="h-5 w-5" />

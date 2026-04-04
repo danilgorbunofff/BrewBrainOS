@@ -22,7 +22,7 @@ export function InitializeBreweryForm() {
           placeholder="Official Brewery Name" 
           required 
           disabled={isPending}
-          className="text-center h-14 text-lg font-bold bg-white/5 border-white/10 focus:border-primary/50 transition-all" 
+          className="text-center h-14 text-lg font-bold bg-secondary border-border focus:border-primary/50 transition-all" 
         />
         <Button 
           type="submit" 

@@ -54,17 +54,17 @@ export function OnboardingChecklist({ hasBrewery, hasTanks, hasBatches, hasInven
             <LucideRocket className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-black text-white tracking-tight">Getting Started</h3>
-            <p className="text-xs text-zinc-600 font-medium">{completedCount}/{steps.length} steps completed</p>
+            <h3 className="font-black text-foreground tracking-tight">Getting Started</h3>
+            <p className="text-xs text-muted-foreground font-medium">{completedCount}/{steps.length} steps completed</p>
           </div>
         </div>
-        <button onClick={handleDismiss} className="p-1 rounded-lg hover:bg-white/5 transition-colors">
-          <LucideX className="h-4 w-4 text-zinc-700" />
+        <button onClick={handleDismiss} className="p-1 rounded-lg hover:bg-secondary transition-colors">
+          <LucideX className="h-4 w-4 text-muted-foreground" />
         </button>
       </div>
 
       {/* Progress bar */}
-      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-5">
+      <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden mb-5">
         <div
           className="h-full bg-primary rounded-full transition-all duration-700"
           style={{ width: `${progress}%` }}
@@ -80,20 +80,20 @@ export function OnboardingChecklist({ hasBrewery, hasTanks, hasBatches, hasInven
               'flex items-center gap-3 p-3 rounded-xl transition-all',
               step.completed
                 ? 'opacity-50'
-                : 'hover:bg-white/5 border border-transparent hover:border-primary/10'
+                : 'hover:bg-secondary border border-transparent hover:border-primary/10'
             )}
           >
             <div className={cn(
               'h-6 w-6 rounded-full flex items-center justify-center shrink-0 border transition-colors',
               step.completed
                 ? 'bg-green-500/20 border-green-500/30 text-green-400'
-                : 'bg-white/5 border-white/10 text-zinc-700'
+                : 'bg-secondary border-border text-muted-foreground'
             )}>
               {step.completed && <LucideCheck className="h-3 w-3" />}
             </div>
             <span className={cn(
               'text-sm font-bold',
-              step.completed ? 'text-zinc-600 line-through' : 'text-zinc-300'
+              step.completed ? 'text-muted-foreground line-through' : 'text-foreground'
             )}>
               {step.label}
             </span>

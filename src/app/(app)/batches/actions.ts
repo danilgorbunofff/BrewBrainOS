@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { requireActiveBrewery } from '@/lib/require-brewery'
 import { ActionResult } from '@/types/database'
 
@@ -44,11 +45,11 @@ export async function deleteBatch(formData: FormData): Promise<ActionResult> {
   try {
     const { supabase, brewery } = await requireActiveBrewery()
     const batchId = formData.get('batchId') as string
+    const redirectTo = formData.get('redirectTo') as string
 
     if (!batchId) return { success: false, error: 'Batch ID is required' }
 
     // Also clear any tank that references this batch
-    // Standardizing status to 'ready' instead of 'empty'
     await supabase
       .from('tanks')
       .update({ current_batch_id: null, status: 'ready' })
@@ -67,8 +68,14 @@ export async function deleteBatch(formData: FormData): Promise<ActionResult> {
     }
 
     revalidatePath('/batches')
+    
+    if (redirectTo) {
+      redirect(redirectTo)
+    }
+
     return { success: true, data: null }
   } catch (e: any) {
+    if (e.message?.includes('NEXT_REDIRECT') || e.digest?.includes('NEXT_REDIRECT')) throw e
     return { success: false, error: e.message || 'Operation failed' }
   }
 }

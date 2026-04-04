@@ -17,6 +17,7 @@ interface Tank {
   status: string | null
   capacity: number | null
   brewery_id: string
+  current_batch_id?: string | null
 }
 
 type OptimisticAction =
@@ -50,6 +51,7 @@ function TankCard({
   onOptimisticDelete: () => void
 }) {
   const isFermenting = tank.status === 'fermenting'
+  const needsBatch = isFermenting && !tank.current_batch_id
 
   return (
     <motion.div
@@ -69,7 +71,10 @@ function TankCard({
           tank.brewery_id === '' && "pointer-events-none opacity-70 cursor-wait"
         )}
       >
-        <Card className="h-full relative border-white/5 overflow-hidden hover:border-primary/20 transition-colors duration-300">
+        <Card className={cn(
+          "h-full relative border-border overflow-hidden transition-colors duration-300",
+          needsBatch ? "border-orange-500/50 bg-orange-500/[0.02]" : "hover:border-primary/20"
+        )}>
           {/* Fermenting pulse indicator */}
           {isFermenting && (
             <motion.div
@@ -78,7 +83,10 @@ function TankCard({
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <span className="flex h-3 w-3 rounded-full bg-primary shadow-[0_0_15px_rgba(245,158,11,0.8)] animate-pulse" />
+              <span className={cn(
+                "flex h-3 w-3 rounded-full animate-pulse shadow-[0_0_15px_rgba(245,158,11,0.8)]",
+                needsBatch ? "bg-orange-500" : "bg-primary"
+              )} />
             </motion.div>
           )}
 
@@ -96,8 +104,11 @@ function TankCard({
           </div>
 
           <CardHeader className="pb-2">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1">
-              {isFermenting ? 'Active Cycle' : 'Ready'}
+            <span className={cn(
+              "text-[10px] font-black uppercase tracking-[0.2em] mb-1",
+              needsBatch ? "text-orange-500" : "text-muted-foreground"
+            )}>
+              {needsBatch ? 'No Batch Assigned' : isFermenting ? 'Active Cycle' : 'Ready'}
             </span>
             <CardTitle className="text-4xl tracking-tighter group-hover:text-primary transition-colors">
               {tank.name}
@@ -106,11 +117,11 @@ function TankCard({
 
           <CardContent className="space-y-4">
             {/* Animated progress bar */}
-            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+            <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
               <motion.div
                 className={cn(
                   'h-full rounded-full',
-                  isFermenting ? 'bg-primary' : 'bg-zinc-700'
+                  isFermenting ? (needsBatch ? 'bg-orange-500/50' : 'bg-primary') : 'bg-muted-foreground/30'
                 )}
                 initial={{ width: '0%' }}
                 animate={{ width: isFermenting ? '65%' : '0%' }}
@@ -119,10 +130,13 @@ function TankCard({
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-sm font-bold text-zinc-400 capitalize">
+              <span className={cn(
+                "text-sm font-bold capitalize",
+                needsBatch ? "text-orange-500/70" : "text-muted-foreground"
+              )}>
                 {tank.status?.replace('-', ' ')}
               </span>
-              <span className="text-xs font-mono font-black text-zinc-600">
+              <span className="text-xs font-mono font-black text-muted-foreground">
                 {tank.capacity || '??'} BBL
               </span>
             </div>
@@ -143,7 +157,7 @@ function EmptyVessels({ addFormRef }: { addFormRef: React.RefObject<HTMLDivEleme
 
   return (
     <motion.div
-      className="col-span-full py-24 text-center glass rounded-[3rem] border-white/5"
+      className="col-span-full py-24 text-center glass rounded-[3rem] border-border"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -151,15 +165,15 @@ function EmptyVessels({ addFormRef }: { addFormRef: React.RefObject<HTMLDivEleme
       {/* Animated vessel illustration */}
       <div className="relative mx-auto mb-8 w-24 h-24">
         <div className="absolute inset-0 rounded-full bg-primary/5 border border-primary/10 animate-ping" style={{ animationDuration: '3s' }} />
-        <div className="relative bg-zinc-900/80 h-24 w-24 rounded-3xl flex items-center justify-center border border-white/5 shadow-2xl">
-          <LucideWaves className="h-10 w-10 text-zinc-600" />
+        <div className="relative bg-card/80 h-24 w-24 rounded-3xl flex items-center justify-center border border-border shadow-2xl">
+          <LucideWaves className="h-10 w-10 text-muted-foreground" />
         </div>
       </div>
 
-      <h3 className="text-2xl font-black text-white tracking-tight mb-2">
+      <h3 className="text-2xl font-black text-foreground tracking-tight mb-2">
         No Vessels Initialized
       </h3>
-      <p className="text-zinc-500 font-medium max-w-xs mx-auto mb-8">
+      <p className="text-muted-foreground font-medium max-w-xs mx-auto mb-8">
         Standardize your production floor by registering your fermenters and brite tanks.
       </p>
 

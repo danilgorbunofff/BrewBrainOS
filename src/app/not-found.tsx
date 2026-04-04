@@ -4,11 +4,11 @@ import { LucideArrowLeft } from 'lucide-react'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[#060606] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="text-center space-y-8 max-w-md animate-in fade-in slide-in-from-bottom-8 duration-700">
         {/* Big 404 */}
         <div className="relative">
-          <p className="text-[150px] md:text-[200px] font-black tracking-tighter text-zinc-900 leading-none select-none">
+          <p className="text-[150px] md:text-[200px] font-black tracking-tighter text-muted/50 leading-none select-none">
             404
           </p>
           <div className="absolute inset-0 flex items-center justify-center">
@@ -19,8 +19,8 @@ export default function NotFound() {
         </div>
 
         <div className="space-y-3">
-          <h1 className="text-3xl font-black tracking-tighter text-white">Signal Lost</h1>
-          <p className="text-zinc-500 font-medium leading-relaxed">
+          <h1 className="text-3xl font-black tracking-tighter text-foreground">Signal Lost</h1>
+          <p className="text-muted-foreground font-medium leading-relaxed">
             This page doesn&apos;t exist in the BrewBrain network. It may have been moved, deleted, or you might have an incorrect URL.
           </p>
         </div>
@@ -33,13 +33,13 @@ export default function NotFound() {
             </Button>
           </Link>
           <Link href="/">
-            <Button variant="outline" className="border-white/10 font-bold">
+            <Button variant="outline" className="border-border font-bold">
               Landing Page
             </Button>
           </Link>
         </div>
 
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-800">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">
           BrewBrain OS • Error 404
         </p>
       </div>

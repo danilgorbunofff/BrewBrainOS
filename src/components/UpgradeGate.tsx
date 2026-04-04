@@ -57,10 +57,10 @@ export function UpgradeGate({
             <LucideLock className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-white tracking-tight">
+            <h3 className="text-lg font-black text-foreground tracking-tight">
               {featureName}
             </h3>
-            <p className="text-sm text-zinc-500 font-medium mt-1">
+            <p className="text-sm text-muted-foreground font-medium mt-1">
               This feature requires the{' '}
               <span className="text-primary font-bold capitalize">
                 {requiredTier.replace('_', '-')}

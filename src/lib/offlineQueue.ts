@@ -35,6 +35,16 @@ export async function enqueueAction(action: Omit<OfflineAction, 'id' | 'timestam
   
   // Dispatch an event so the banner can update
   window.dispatchEvent(new Event('offline-queue-updated'))
+
+  // Register background sync if supported
+  if ('serviceWorker' in navigator && 'SyncManager' in window) {
+    try {
+      const registration = await navigator.serviceWorker.ready
+      await (registration as any).sync.register('sync-offline-queue')
+    } catch (e) {
+      console.warn('Background sync registration failed:', e)
+    }
+  }
 }
 
 let isProcessing = false
@@ -121,10 +131,16 @@ export function useOfflineQueue() {
     const handleQueueUpdate = () => {
       getOfflineQueue().then(q => setQueueCount(q.length))
     }
+    const handleSWMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'PROCESS_OFFLINE_QUEUE') {
+        processQueue()
+      }
+    }
 
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
     window.addEventListener('offline-queue-updated', handleQueueUpdate)
+    navigator.serviceWorker?.addEventListener('message', handleSWMessage)
 
     // Try processing on mount just in case we are online
     processQueue()
@@ -133,6 +149,7 @@ export function useOfflineQueue() {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
       window.removeEventListener('offline-queue-updated', handleQueueUpdate)
+      navigator.serviceWorker?.removeEventListener('message', handleSWMessage)
     }
   }, [])
 

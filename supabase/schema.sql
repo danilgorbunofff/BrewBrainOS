@@ -169,3 +169,22 @@ ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users manage their own push subscriptions" ON push_subscriptions
   FOR ALL USING (auth.uid() = user_id);
+
+-- ─────────────────────────────────────────────
+-- FEEDBACK (Telemetry)
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS feedback (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  url TEXT,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can insert feedback" ON feedback
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can view own feedback" ON feedback
+  FOR SELECT USING (auth.uid() = user_id);

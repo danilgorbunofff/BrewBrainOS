@@ -111,7 +111,7 @@ export default function BillingPage() {
                   Status: <span className={cn(
                     'font-bold',
                     status === 'active' ? 'text-green-400' : status === 'past_due' ? 'text-red-400' : 'text-muted-foreground'
-                  )}>{status}</span>
+                  )}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>
                   {currentPeriodEnd && (
                     <> · Renews {new Date(currentPeriodEnd).toLocaleDateString('en-US', {
                       month: 'long',
@@ -136,7 +136,7 @@ export default function BillingPage() {
               <div
                 key={plan.slug}
                 className={cn(
-                  'relative rounded-2xl border overflow-hidden transition-all duration-300 group',
+                  'relative rounded-2xl border overflow-hidden transition-all duration-300 group flex flex-col',
                   plan.popular
                     ? 'border-primary/30 bg-primary/[0.02] shadow-[0_0_40px_rgba(245,158,11,0.05)]'
                     : 'border-border bg-surface hover:border-border',
@@ -150,7 +150,7 @@ export default function BillingPage() {
                   </div>
                 )}
 
-                <div className="p-6 space-y-5">
+                <div className="p-6 space-y-5 flex flex-col flex-grow">
                   {/* Tier header */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
@@ -175,7 +175,7 @@ export default function BillingPage() {
                   </div>
 
                   {/* Features */}
-                  <ul className="space-y-2.5">
+                  <ul className="space-y-2.5 flex-grow">
                     {features.map((feature) => (
                       <li key={feature} className="flex items-center gap-2.5 text-sm text-muted-foreground">
                         <LucideCheck className={cn(
@@ -192,12 +192,12 @@ export default function BillingPage() {
                     onClick={() => handleSubscribe(plan.slug)}
                     disabled={isCurrent || loading === plan.slug}
                     className={cn(
-                      'w-full py-3 rounded-xl text-sm font-bold transition-all duration-200',
+                      'w-full py-3 rounded-xl text-sm font-bold transition-all duration-200 mt-auto',
                       isCurrent
                         ? 'bg-secondary border border-border text-muted-foreground cursor-default'
                         : plan.popular
                           ? 'bg-primary text-black hover:bg-primary/90 shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:shadow-[0_0_30px_rgba(245,158,11,0.3)]'
-                          : 'bg-secondary border border-border text-foreground hover:bg-secondary/50 hover:text-primary-foreground',
+                          : 'bg-secondary border border-border text-foreground hover:bg-secondary/50 hover:text-primary hover:border-primary/30',
                       (loading === plan.slug) && 'opacity-60'
                     )}
                   >

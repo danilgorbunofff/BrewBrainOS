@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { requireActiveBrewery } from '@/lib/require-brewery'
 import { inventorySchema } from '@/lib/schemas'
 import { ActionResult } from '@/types/database'
+import { sendInventoryAlert } from '@/app/actions/push-actions'
 
 export async function addInventoryItem(formData: FormData): Promise<ActionResult> {
   try {
@@ -92,6 +93,18 @@ export async function updateStock(formData: FormData): Promise<ActionResult> {
     if (error) {
       console.error('Failed to update stock:', error)
       return { success: false, error: 'Failed to update stock level' }
+    }
+
+    // Check against reorder point for push notification
+    const { data: item } = await supabase
+      .from('inventory')
+      .select('name, reorder_point')
+      .eq('id', itemId)
+      .single()
+
+    if (item && item.reorder_point != null && newStock <= item.reorder_point) {
+      // Fire and forget
+      sendInventoryAlert(brewery.id, item.name, newStock).catch(console.error)
     }
 
     revalidatePath('/inventory')

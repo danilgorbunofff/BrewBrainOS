@@ -4,6 +4,7 @@ import { CommandPalette } from '@/components/CommandPalette'
 import { OfflineSyncBanner } from '@/components/OfflineSyncBanner'
 import { SubscriptionProvider } from '@/components/SubscriptionProvider'
 import { DevTools } from '@/components/DevTools'
+import { FeedbackButton } from '@/components/FeedbackButton'
 import { getActiveBrewery, getUserBreweries } from '@/lib/active-brewery'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -72,6 +73,7 @@ export default async function AppLayout({
           {children}
         </main>
         </div>
+        <FeedbackButton />
       </SubscriptionProvider>
     </>
   )

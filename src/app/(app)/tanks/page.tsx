@@ -3,8 +3,10 @@ import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { TankLimitBadge, TankAddGate } from '@/components/TankLimitGate'
 import { TanksGrid } from '@/components/TanksGrid'
-import { LucideWaves } from 'lucide-react'
+import { LucideWaves, LucidePrinter } from 'lucide-react'
 import { getActiveBrewery } from '@/lib/active-brewery'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 import { RealtimeRefresh } from '@/components/RealtimeRefresh'
 
 export const metadata = {
@@ -48,6 +50,15 @@ export default async function TanksPage() {
               <p className="text-muted-foreground font-medium">Monitoring and allocation of fermentation infrastructure.</p>
               <TankLimitBadge currentCount={currentTankCount} />
             </div>
+          </div>
+
+          <div className="flex items-center gap-4 shrink-0 self-start md:self-auto">
+            <Link href="/tanks/print">
+              <Button variant="outline" className="gap-2 font-bold border-primary/20 hover:bg-primary/10 text-primary">
+                <LucidePrinter className="h-4 w-4" />
+                Print QR Labels
+              </Button>
+            </Link>
           </div>
         </div>
 

@@ -145,6 +145,14 @@
 }
 
 @layer base {
+  html[data-scroll-behavior="smooth"] {
+    scroll-behavior: smooth;
+  }
+
+  html {
+    scroll-padding-top: 6rem;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }

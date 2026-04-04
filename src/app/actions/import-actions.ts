@@ -57,6 +57,9 @@ export async function importInventory(data: any[]) {
         current_stock: parseFloat(row.current_stock) || 0,
         unit: row.unit || 'kg',
         reorder_point: parseFloat(row.reorder_point) || 0,
+        lot_number: row.lot_number || null,
+        expiration_date: row.expiration_date || null,
+        manufacturer: row.manufacturer || null,
       }
     })
 

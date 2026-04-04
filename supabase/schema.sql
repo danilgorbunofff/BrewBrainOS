@@ -52,6 +52,29 @@ CREATE TABLE IF NOT EXISTS inventory (
   current_stock DECIMAL NOT NULL DEFAULT 0,
   unit          TEXT DEFAULT 'kg',
   reorder_point DECIMAL DEFAULT 0,
+  lot_number    TEXT,                    -- Unique identifier for material batch
+  expiration_date DATE,                  -- When the material expires
+  manufacturer  TEXT,                    -- Supplier/manufacturer name
+  
+  -- Degradation Metrics Tracking
+  degradation_tracked BOOLEAN DEFAULT FALSE,    -- Is this item tracked for degradation?
+  received_date DATE DEFAULT CURRENT_DATE,      -- When ingredient arrived (triggers degradation calc)
+  storage_condition TEXT DEFAULT 'cool_dry',    -- 'cool_dry' | 'cool_humid' | 'room_temp' | 'warm'
+  last_degradation_calc DATE DEFAULT CURRENT_DATE, -- Last time degradation was recalculated
+  
+  -- Hop HSI (Hop Storage Index)
+  hsi_initial DECIMAL DEFAULT NULL,             -- Initial HSI value (0-100)
+  hsi_current DECIMAL DEFAULT NULL,             -- Current HSI value (degrades over time)
+  hsi_loss_rate DECIMAL DEFAULT 0.15,           -- Monthly HSI loss % (hops degrade ~0.15% per month)
+  
+  -- Grain Moisture Content
+  grain_moisture_initial DECIMAL DEFAULT NULL,  -- Initial moisture content %
+  grain_moisture_current DECIMAL DEFAULT NULL,  -- Current moisture content %
+  
+  -- PPG (Points Per Pound Per Gallon)
+  ppg_initial DECIMAL DEFAULT NULL,             -- Initial PPG (typical range: 30-45)
+  ppg_current DECIMAL DEFAULT NULL,             -- Current PPG after losses
+  
   created_at    TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
 
@@ -63,6 +86,35 @@ CREATE TABLE IF NOT EXISTS sanitation_logs (
   notes      TEXT,
   cleaned_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
+
+-- DEGRADATION LOGS (Audit trail for ingredient freshness tracking)
+CREATE TABLE IF NOT EXISTS degradation_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  inventory_id UUID REFERENCES inventory(id) ON DELETE CASCADE NOT NULL,
+  brewery_id UUID REFERENCES breweries(id) ON DELETE CASCADE NOT NULL,
+  
+  -- Before & After snapshots
+  hsi_before DECIMAL,
+  hsi_after DECIMAL,
+  grain_moisture_before DECIMAL,
+  grain_moisture_after DECIMAL,
+  ppg_before DECIMAL,
+  ppg_after DECIMAL,
+  
+  -- Change metadata
+  change_reason TEXT CHECK (change_reason IN ('auto_calc', 'manual_input', 'storage_change', 'quality_test')) NOT NULL,
+  storage_condition_at_time TEXT,
+  days_elapsed INTEGER,
+  
+  -- Audit trail
+  logged_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_degradation_logs_inventory ON degradation_logs(inventory_id);
+CREATE INDEX IF NOT EXISTS idx_degradation_logs_brewery ON degradation_logs(brewery_id);
+CREATE INDEX IF NOT EXISTS idx_degradation_logs_created ON degradation_logs(created_at);
 
 -- BATCH READINGS (voice-logged sensor data)
 -- NOTE: column is `created_at` (was `logged_at` in old schema) to match app code
@@ -104,6 +156,7 @@ ALTER TABLE inventory       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sanitation_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE batch_readings  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subscriptions   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE degradation_logs ENABLE ROW LEVEL SECURITY;
 
 -- Breweries: owner can do anything
 CREATE POLICY "Owner manages brewery" ON breweries
@@ -147,6 +200,12 @@ CREATE POLICY "Owner manages batch readings" ON batch_readings
     )
   );
 
+-- Degradation logs: user must own the degradation's brewery
+CREATE POLICY "Owner manages degradation logs" ON degradation_logs
+  FOR ALL USING (
+    brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid())
+  );
+
 -- Subscriptions: user must own the brewery
 CREATE POLICY "Owner manages subscriptions" ON subscriptions
   FOR ALL USING (
@@ -169,6 +228,102 @@ ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users manage their own push subscriptions" ON push_subscriptions
   FOR ALL USING (auth.uid() = user_id);
+
+-- ─────────────────────────────────────────────
+-- SHRINKAGE ALERTS & ANOMALY DETECTION
+-- ─────────────────────────────────────────────
+-- INVENTORY_HISTORY: Track all stock movements
+CREATE TABLE IF NOT EXISTS inventory_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  inventory_id UUID REFERENCES inventory(id) ON DELETE CASCADE NOT NULL,
+  brewery_id UUID REFERENCES breweries(id) ON DELETE CASCADE NOT NULL,
+  previous_stock DECIMAL NOT NULL,
+  current_stock DECIMAL NOT NULL,
+  quantity_change DECIMAL NOT NULL,
+  change_type TEXT CHECK (change_type IN (
+    'stock_adjustment', 'recipe_usage', 'received', 'waste', 'other'
+  )) DEFAULT 'other',
+  reason TEXT,
+  batch_id UUID REFERENCES batches(id) ON DELETE SET NULL,
+  recorded_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+-- SHRINKAGE_ALERTS: Anomaly Detection Results
+CREATE TABLE IF NOT EXISTS shrinkage_alerts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  inventory_id UUID REFERENCES inventory(id) ON DELETE CASCADE NOT NULL,
+  brewery_id UUID REFERENCES breweries(id) ON DELETE CASCADE NOT NULL,
+  severity TEXT CHECK (severity IN ('low', 'medium', 'high', 'critical')) DEFAULT 'medium',
+  alert_type TEXT CHECK (alert_type IN (
+    'unusual_single_loss', 'pattern_degradation', 'sudden_spike', 'high_variance', 'variance_threshold_exceeded'
+  )) NOT NULL,
+  expected_stock DECIMAL NOT NULL,
+  actual_stock DECIMAL NOT NULL,
+  loss_amount DECIMAL NOT NULL,
+  loss_percentage DECIMAL NOT NULL,
+  average_monthly_loss DECIMAL,
+  z_score DECIMAL,
+  confidence_score DECIMAL NOT NULL,
+  status TEXT DEFAULT 'unresolved' CHECK (status IN (
+    'unresolved', 'acknowledged', 'investigating', 'resolved', 'false_positive'
+  )),
+  assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  notes TEXT,
+  resolved_at TIMESTAMP WITH TIME ZONE,
+  detected_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+-- SHRINKAGE_BASELINES: Per-item baseline metrics
+CREATE TABLE IF NOT EXISTS shrinkage_baselines (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  inventory_id UUID REFERENCES inventory(id) ON DELETE CASCADE NOT NULL,
+  brewery_id UUID REFERENCES breweries(id) ON DELETE CASCADE NOT NULL,
+  analysis_period_days INTEGER DEFAULT 90,
+  sample_count INTEGER,
+  average_monthly_loss DECIMAL DEFAULT 0,
+  monthly_loss_std_dev DECIMAL DEFAULT 0,
+  median_loss_percentage DECIMAL DEFAULT 0,
+  loss_threshold_warning DECIMAL DEFAULT 5,
+  loss_threshold_critical DECIMAL DEFAULT 15,
+  variance_multiplier DECIMAL DEFAULT 2.5,
+  last_calculated_at TIMESTAMP WITH TIME ZONE,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_inventory_history_inventory ON inventory_history(inventory_id);
+CREATE INDEX IF NOT EXISTS idx_inventory_history_brewery ON inventory_history(brewery_id);
+CREATE INDEX IF NOT EXISTS idx_inventory_history_created ON inventory_history(created_at);
+CREATE INDEX IF NOT EXISTS idx_inventory_history_batch ON inventory_history(batch_id);
+CREATE INDEX IF NOT EXISTS idx_shrinkage_alerts_inventory ON shrinkage_alerts(inventory_id);
+CREATE INDEX IF NOT EXISTS idx_shrinkage_alerts_brewery ON shrinkage_alerts(brewery_id);
+CREATE INDEX IF NOT EXISTS idx_shrinkage_alerts_status ON shrinkage_alerts(status);
+CREATE INDEX IF NOT EXISTS idx_shrinkage_alerts_severity ON shrinkage_alerts(severity);
+CREATE INDEX IF NOT EXISTS idx_shrinkage_alerts_created ON shrinkage_alerts(detected_at);
+CREATE INDEX IF NOT EXISTS idx_shrinkage_baselines_inventory ON shrinkage_baselines(inventory_id);
+CREATE INDEX IF NOT EXISTS idx_shrinkage_baselines_brewery ON shrinkage_baselines(brewery_id);
+
+-- RLS
+ALTER TABLE inventory_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE shrinkage_alerts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE shrinkage_baselines ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owner manages inventory history" ON inventory_history
+  FOR ALL USING (
+    brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid())
+  );
+
+CREATE POLICY "Owner manages shrinkage alerts" ON shrinkage_alerts
+  FOR ALL USING (
+    brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid())
+  );
+
+CREATE POLICY "Owner manages shrinkage baselines" ON shrinkage_baselines
+  FOR ALL USING (
+    brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid())
+  );
 
 -- ─────────────────────────────────────────────
 -- FEEDBACK (Telemetry)

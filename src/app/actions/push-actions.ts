@@ -141,3 +141,91 @@ export async function sendInventoryAlert(breweryId: string, itemName: string, cu
     console.error('Failed to send inventory alert:', e)
   }
 }
+
+/**
+ * Send push notification for reorder alert
+ */
+export async function sendReorderNotification(
+  breweryId: string,
+  itemName: string,
+  severity: 'info' | 'warning' | 'critical',
+  currentStock: number,
+  reorderPoint: number,
+  daysUntilStockout?: number
+) {
+  try {
+    const supabase = await createClient()
+
+    // Get brewery owner
+    const { data: brewery } = await supabase
+      .from('breweries')
+      .select('owner_id')
+      .eq('id', breweryId)
+      .single()
+
+    if (!brewery?.owner_id) return
+
+    const { data: subs, error } = await supabase
+      .from('push_subscriptions')
+      .select('*')
+      .eq('user_id', brewery.owner_id)
+
+    if (error || !subs || subs.length === 0) return
+
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT || 'mailto:test@example.com',
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '',
+      process.env.VAPID_PRIVATE_KEY || ''
+    )
+
+    const icon =
+      severity === 'critical'
+        ? '🚨'
+        : severity === 'warning'
+          ? '⚠️'
+          : 'ℹ️'
+
+    const title =
+      severity === 'critical'
+        ? `URGENT: ${itemName} Out Soon`
+        : severity === 'warning'
+          ? `Low Stock Warning: ${itemName}`
+          : `Reorder Point Hit: ${itemName}`
+
+    const details = daysUntilStockout
+      ? ` (${daysUntilStockout} days until stockout)`
+      : ''
+
+    const payload = JSON.stringify({
+      title: `${icon} ${title}`,
+      body: `${currentStock} in stock (reorder at ${reorderPoint})${details}`,
+      tag: `reorder-${breweryId}`,
+      data: {
+        alertType: 'reorder',
+        breweryId,
+        severity,
+      },
+      actions: [
+        {
+          action: 'view-inventory',
+          title: 'View Inventory',
+        },
+      ],
+      url: '/inventory',
+    })
+
+    await Promise.allSettled(
+      subs.map((sub) =>
+        webpush.sendNotification(
+          {
+            endpoint: sub.endpoint,
+            keys: { p256dh: sub.p256dh, auth: sub.auth },
+          },
+          payload
+        )
+      )
+    )
+  } catch (e) {
+    console.error('Failed to send reorder notification:', e)
+  }
+}

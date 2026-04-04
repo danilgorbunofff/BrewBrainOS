@@ -9,6 +9,7 @@ import {
 import { VoiceLogger } from '@/components/VoiceLogger'
 import { VoiceLoggerGate } from '@/components/VoiceLoggerGate'
 import { OnboardingChecklist } from '@/components/OnboardingChecklist'
+import { ReorderAlertsDashboard } from '@/components/ReorderAlertsDashboard'
 import { setupBrewery } from './actions'
 import { InitializeBreweryForm } from '@/components/InitializeBreweryForm'
 import { Button } from '@/components/ui/button'
@@ -131,6 +132,11 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
         <KPICard label="Tanks in Use" value={`${stats.tanksInUse}/${stats.totalTanks}`} accent />
         <KPICard label="Fermenting" value={stats.fermenting} accent />
         <KPICard label="Low Stock" value={stats.lowStockItems} danger={stats.lowStockItems > 0} />
+      </div>
+
+      {/* Reorder Alerts */}
+      <div className="animate-in fade-in slide-in-from-bottom-10 duration-800">
+        <ReorderAlertsDashboard breweryId={breweryId} />
       </div>
 
       {/* Onboarding */}

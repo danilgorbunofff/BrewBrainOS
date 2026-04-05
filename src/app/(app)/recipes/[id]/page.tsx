@@ -5,6 +5,7 @@ import { LucideArrowLeft, LucidePlus, LucideList } from 'lucide-react'
 import { getActiveBrewery } from '@/lib/active-brewery'
 import { addRecipeIngredient } from '../actions'
 import { RecipeScaler } from '@/components/RecipeScaler'
+import { IBUCalculator } from '@/components/IBUCalculator'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -56,7 +57,10 @@ export default async function RecipeDetailPage({ params }: PageProps) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <RecipeScaler ingredients={ingredients || []} baseVolume={recipe.batch_size_bbls} />
+          <div>
+             <RecipeScaler ingredients={ingredients || []} baseVolume={recipe.batch_size_bbls} />
+             <IBUCalculator defaultVolume={recipe.batch_size_bbls} />
+          </div>
 
           <div className="bg-surface border border-border rounded-2xl p-6">
             <h2 className="text-lg font-black tracking-tight mb-4 flex items-center gap-2">

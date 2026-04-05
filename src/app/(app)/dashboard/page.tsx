@@ -9,7 +9,7 @@ import {
 import { VoiceLogger } from '@/components/VoiceLogger'
 import { VoiceLoggerGate } from '@/components/VoiceLoggerGate'
 import { OnboardingChecklist } from '@/components/OnboardingChecklist'
-import { ReorderAlertsDashboard } from '@/components/ReorderAlertsDashboard'
+import ReorderAlertsDashboard from '@/components/ReorderAlertsDashboard'
 import { setupBrewery } from './actions'
 import { InitializeBreweryForm } from '@/components/InitializeBreweryForm'
 import { Button } from '@/components/ui/button'

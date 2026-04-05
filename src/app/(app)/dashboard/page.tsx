@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { getActiveBrewery } from '@/lib/active-brewery'
 import { RealtimeRefresh } from '@/components/RealtimeRefresh'
+import { logger } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -30,6 +31,8 @@ export default async function DashboardPage() {
   }
 
   const brewery = await getActiveBrewery()
+  
+  logger.info(`Dashboard accessed by user ${user.email}`, { breweryId: brewery?.id })
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6 md:p-8 pt-8 pb-32 md:pb-8 selection:bg-primary/30">

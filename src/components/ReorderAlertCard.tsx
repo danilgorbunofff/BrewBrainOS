@@ -34,23 +34,23 @@ interface ReorderAlertCardProps {
 
 const severityConfig = {
   info: {
-    bgColor: 'bg-blue-50',
-    borderColor: 'border-blue-200',
-    textColor: 'text-blue-700',
+    bgColor: 'bg-blue-500/5',
+    borderColor: 'border-blue-500/20',
+    textColor: 'text-blue-600 dark:text-blue-400',
     icon: 'ℹ️',
     badge: 'secondary',
   },
   warning: {
-    bgColor: 'bg-yellow-50',
-    borderColor: 'border-yellow-200',
-    textColor: 'text-yellow-700',
+    bgColor: 'bg-yellow-500/5',
+    borderColor: 'border-yellow-500/20',
+    textColor: 'text-yellow-600 dark:text-yellow-400',
     icon: '⚠️',
     badge: 'secondary',
   },
   critical: {
-    bgColor: 'bg-red-50',
-    borderColor: 'border-red-200',
-    textColor: 'text-red-700',
+    bgColor: 'bg-red-500/5',
+    borderColor: 'border-red-500/20',
+    textColor: 'text-red-600 dark:text-red-400',
     icon: '🚨',
     badge: 'destructive',
   },
@@ -130,14 +130,14 @@ export default function ReorderAlertCard({ alert, onStatusChange }: ReorderAlert
       <CardContent className="space-y-4">
         {/* Stock levels */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-md bg-white/50 p-3">
+          <div className="rounded-md bg-black/5 dark:bg-white/5 p-3">
             <p className="text-xs text-gray-600 font-medium">Current Stock</p>
             <p className="text-lg font-bold mt-1">
               {alert.current_quantity}
               <span className="text-xs text-gray-500 ml-1">{alert.inventory_item.unit_type}</span>
             </p>
           </div>
-          <div className="rounded-md bg-white/50 p-3">
+          <div className="rounded-md bg-black/5 dark:bg-white/5 p-3">
             <p className="text-xs text-gray-600 font-medium">Reorder Point</p>
             <p className="text-lg font-bold mt-1">
               {alert.reorder_point}
@@ -146,13 +146,13 @@ export default function ReorderAlertCard({ alert, onStatusChange }: ReorderAlert
           </div>
           <div className="rounded-md bg-white/50 p-3">
             <p className="text-xs text-gray-600 font-medium">% of Target</p>
-            <p className="text-lg font-bold mt-1 text-red-600">{percentageOfReorder}%</p>
+            <p className="text-lg font-bold mt-1 text-red-600 dark:text-red-400">{percentageOfReorder}%</p>
           </div>
         </div>
 
         {/* Suggested order quantity */}
         {alert.units_to_reorder && (
-          <div className="rounded-lg border-2 border-dashed border-current/20 bg-white p-3">
+          <div className="rounded-lg border-2 border-dashed border-current/10 bg-black/5 dark:bg-white/5 p-3">
             <p className="text-xs font-medium text-gray-600 mb-1">Suggested Order</p>
             <p className="text-base font-semibold">
               {alert.units_to_reorder} {alert.inventory_item.unit_type}

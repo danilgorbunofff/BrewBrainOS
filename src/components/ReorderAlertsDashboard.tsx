@@ -90,25 +90,25 @@ export default function ReorderAlertsDashboard({ breweryId }: ReorderAlertsDashb
   const hasWarning = summary.warning > 0
 
   return (
-    <Card className={hasCritical ? 'border-red-300 bg-red-50/30' : ''}>
+    <Card className={hasCritical ? 'border-red-500/30 bg-red-500/5' : ''}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2">
             {hasCritical && <AlertCircle className="h-5 w-5 text-red-600" />}
             {hasWarning && !hasCritical && <AlertCircle className="h-5 w-5 text-yellow-600" />}
-            {!hasCritical && !hasWarning && <CheckCircle2 className="h-5 w-5 text-green-600" />}
+            {!hasCritical && !hasWarning && <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />}
             <CardTitle>Reorder Alerts</CardTitle>
           </div>
           <CardDescription className="mt-2">
             {summary.total === 0 ? (
-              <span className="text-green-600 font-medium">All inventory levels healthy</span>
+              <span className="text-green-600 dark:text-green-400 font-medium">All inventory levels healthy</span>
             ) : (
               <span>
-                <span className={summary.critical > 0 ? 'text-red-600 font-medium' : ''}>
+                <span className={summary.critical > 0 ? 'text-red-600 dark:text-red-400 font-medium' : ''}>
                   {summary.critical} critical
                 </span>
                 {' • '}
-                <span className={summary.warning > 0 ? 'text-yellow-600 font-medium' : ''}>
+                <span className={summary.warning > 0 ? 'text-yellow-600 dark:text-yellow-400 font-medium' : ''}>
                   {summary.warning} warning
                 </span>
                 {' • '}
@@ -131,10 +131,10 @@ export default function ReorderAlertsDashboard({ breweryId }: ReorderAlertsDashb
 
       <CardContent className="space-y-4">
         {summary.total === 0 ? (
-          <div className="rounded-lg border-2 border-dashed border-green-300 bg-green-50 p-8 text-center">
-            <CheckCircle2 className="mx-auto mb-3 h-8 w-8 text-green-600" />
-            <p className="text-sm font-medium text-green-900">No reorder alerts</p>
-            <p className="text-xs text-green-700 mt-1">All items are at healthy stock levels</p>
+          <div className="rounded-lg border-2 border-dashed border-green-500/20 bg-green-500/5 p-8 text-center">
+            <CheckCircle2 className="mx-auto mb-3 h-8 w-8 text-green-500/80" />
+            <p className="text-sm font-medium text-green-600 dark:text-green-400">No reorder alerts</p>
+            <p className="text-xs text-green-600/70 dark:text-green-400/70 mt-1">All items are at healthy stock levels</p>
           </div>
         ) : (
           <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
@@ -172,9 +172,9 @@ export default function ReorderAlertsDashboard({ breweryId }: ReorderAlertsDashb
                   </div>
                 </div>
               ) : filteredAlerts.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
-                  <CheckCircle2 className="mx-auto mb-2 h-6 w-6 text-gray-400" />
-                  <p className="text-sm text-gray-600">
+                <div className="rounded-lg border border-dashed border-border bg-muted/20 p-8 text-center">
+                  <CheckCircle2 className="mx-auto mb-2 h-6 w-6 text-muted-foreground/60" />
+                  <p className="text-sm text-muted-foreground">
                     {filter === 'all'
                       ? 'No reorder alerts'
                       : filter === 'open'

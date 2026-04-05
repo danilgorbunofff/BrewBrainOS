@@ -62,7 +62,11 @@ function getDegradationBadge(item: InventoryItem) {
   const badges = []
 
   if (item.hsi_current !== null && item.hsi_current !== undefined) {
-    const hsiColor = item.hsi_current < 50 ? 'bg-red-100 text-red-800' : item.hsi_current < 75 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+    const hsiColor = item.hsi_current < 50 
+      ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' 
+      : item.hsi_current < 75 
+        ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20' 
+        : 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20'
     badges.push(
       <span key="hsi" className={cn('text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border', hsiColor)}>
         HSI {item.hsi_current.toFixed(0)}%
@@ -71,7 +75,11 @@ function getDegradationBadge(item: InventoryItem) {
   }
 
   if (item.grain_moisture_current !== null && item.grain_moisture_current !== undefined) {
-    const moistureColor = item.grain_moisture_current > 13 ? 'bg-red-100 text-red-800' : item.grain_moisture_current < 7 ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'
+    const moistureColor = item.grain_moisture_current > 13 
+      ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' 
+      : item.grain_moisture_current < 7 
+        ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20' 
+        : 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20'
     badges.push(
       <span key="moisture" className={cn('text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border', moistureColor)}>
         💧 {item.grain_moisture_current.toFixed(1)}%
@@ -80,7 +88,9 @@ function getDegradationBadge(item: InventoryItem) {
   }
 
   if (item.ppg_initial && item.ppg_current && ppgLoss > 5) {
-    const ppgColor = ppgLoss > 20 ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+    const ppgColor = ppgLoss > 20 
+      ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' 
+      : 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20'
     badges.push(
       <span key="ppg" className={cn('text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border', ppgColor)}>
         PPG -{ppgLoss.toFixed(1)}%

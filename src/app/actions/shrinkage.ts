@@ -11,6 +11,7 @@ import { getActiveBrewery } from '@/lib/active-brewery'
 import { detectShrinkageAnomaly, calculateShrinkageBaseline } from '@/lib/shrinkage'
 import { checkAndCreateReorderAlert } from '@/app/actions/reorder-actions'
 import { InventoryHistory, ShrinkageAlert, ActionResult } from '@/types/database'
+import { headers } from 'next/headers'
 
 /**
  * Record an inventory stock change (stock adjustment, recipe usage, receipt, waste)
@@ -28,6 +29,10 @@ export async function recordInventoryChange(
     const supabase = await createClient()
     const brewery = await getActiveBrewery()
     if (!brewery) return { success: false, error: 'No active brewery' }
+
+    const reqHeaders = await headers()
+    const ip = reqHeaders.get('x-forwarded-for') || reqHeaders.get('x-real-ip') || 'unknown'
+    const userAgent = reqHeaders.get('user-agent') || 'unknown'
 
     const quantity_change = current_stock - previous_stock
 
@@ -48,6 +53,8 @@ export async function recordInventoryChange(
         reason,
         batch_id,
         recorded_by: user?.id,
+        provenance_ip: ip,
+        provenance_user_agent: userAgent
       })
       .select()
       .single()

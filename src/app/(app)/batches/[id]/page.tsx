@@ -14,6 +14,11 @@ import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { GravityChart } from '@/components/GravityChart'
 import { cn } from '@/lib/utils'
 import { getActiveBrewery } from '@/lib/active-brewery'
+import { RealtimeRefresh } from '@/components/RealtimeRefresh'
+import { FermentationAlertsPanel } from '@/components/FermentationAlertsPanel'
+import { ManualReadingForm } from '@/components/ManualReadingForm'
+import { YeastViabilityCard } from '@/components/YeastViabilityCard'
+import { BatchReadingsTable } from '@/components/BatchReadingsTable'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -54,6 +59,19 @@ export default async function BatchDetailPage({ params }: PageProps) {
     .order('created_at', { ascending: false })
     .limit(20)
 
+  const { data: alerts } = await supabase
+    .from('fermentation_alerts')
+    .select('*')
+    .eq('batch_id', id)
+    .order('created_at', { ascending: false })
+
+  const { data: yeastLogs } = await supabase
+    .from('yeast_logs')
+    .select('*')
+    .eq('batch_id', id)
+    .order('created_at', { ascending: false })
+    .limit(10)
+
   const currentStatus = BATCH_STATUSES.find(s => s.value === batch.status)
   const abv = batch.og && batch.fg
     ? (((batch.og - batch.fg) * 131.25)).toFixed(1)
@@ -61,6 +79,10 @@ export default async function BatchDetailPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6 md:p-8 pt-8 selection:bg-primary/30">
+      <RealtimeRefresh table="batch_readings" breweryId={brewery.id} />
+      <RealtimeRefresh table="fermentation_alerts" breweryId={brewery.id} />
+      <RealtimeRefresh table="yeast_logs" breweryId={brewery.id} />
+
       <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
 
         {/* Header */}
@@ -107,6 +129,9 @@ export default async function BatchDetailPage({ params }: PageProps) {
             />
           </div>
         </div>
+
+        {/* Alerts Panel */}
+        <FermentationAlertsPanel alerts={alerts || []} batchId={batch.id} />
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -172,41 +197,14 @@ export default async function BatchDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
 
-          {/* Update FG */}
-          <Card className="glass border-border">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-black tracking-tight">Log Final Gravity</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground font-medium">Manually set the current final gravity reading for this batch.</p>
-              <form action={updateBatchFG as any} className="flex gap-2">
-                <input type="hidden" name="batchId" value={batch.id} />
-                <Input
-                  key={`fg-${id}-${batch.fg}`}
-                  name="fg"
-                  type="number"
-                  step="0.001"
-                  min="0.990"
-                  max="1.200"
-                  defaultValue={batch.fg?.toFixed(3) || ''}
-                  placeholder="e.g. 1.012"
-                  className="font-mono w-full"
-                  required
-                />
-                <Button type="submit" className="shrink-0">
-                  Commit
-                </Button>
-              </form>
-              {batch.og && batch.fg && (
-                <p className="text-xs text-muted-foreground font-mono">
-                  Attenuation: {(((batch.og - batch.fg) / (batch.og - 1)) * 100).toFixed(1)}%
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          {/* Manual Input (Multi-Sensor) */}
+          <ManualReadingForm batchId={batch.id} />
         </div>
 
-        {/* Readings Log */}
+        {/* Yeast Viability */}
+        <YeastViabilityCard batchId={batch.id} yeastLogs={yeastLogs || []} />
+
+        {/* Readings Log Table */}
         <Card className="glass border-border overflow-hidden">
           <CardHeader className="border-b border-border">
             <CardTitle className="text-lg font-black tracking-tight flex items-center gap-2">
@@ -215,40 +213,7 @@ export default async function BatchDetailPage({ params }: PageProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {readings && readings.length > 0 ? (
-              <div className="divide-y divide-divider">
-                {readings.map((reading) => (
-                  <div key={reading.id} className="flex items-center justify-between px-6 py-4 hover:bg-surface-hover transition-colors group">
-                    <div className="flex items-center gap-4">
-                      <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                        <LucideThermometer className="h-4 w-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-foreground">
-                          {reading.temperature ? `${reading.temperature}° ` : ''}
-                          {reading.gravity ? `Gravity ${reading.gravity}` : ''}
-                          {!reading.temperature && !reading.gravity ? '— No metrics extracted' : ''}
-                        </p>
-                        {reading.notes && reading.notes !== 'No notes.' && (
-                          <p className="text-xs text-muted-foreground font-medium mt-0.5">{reading.notes}</p>
-                        )}
-                      </div>
-                    </div>
-                    <span className="text-xs font-mono text-muted-foreground group-hover:text-muted-foreground transition-colors shrink-0 ml-4">
-                      {new Date(reading.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                      {' '}
-                      {new Date(reading.created_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-20 text-center">
-                <LucideAlertCircle className="h-10 w-10 text-foreground mx-auto mb-3" />
-                <p className="text-sm font-bold text-muted-foreground">No readings yet</p>
-                <p className="text-xs text-muted-foreground font-medium mt-1">Use the voice logger on a tank page to add readings.</p>
-              </div>
-            )}
+            <BatchReadingsTable readings={readings || []} />
           </CardContent>
         </Card>
 

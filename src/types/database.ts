@@ -97,6 +97,8 @@ export interface InventoryHistory {
   reason?: string | null
   batch_id?: string | null
   recorded_by?: string | null
+  provenance_ip?: string | null
+  provenance_user_agent?: string | null
   created_at: string
 }
 
@@ -124,6 +126,8 @@ export interface ShrinkageAlert {
   average_monthly_loss?: number | null
   z_score?: number | null
   confidence_score: number  // 0-100
+  ttb_reportable?: boolean
+  ttb_remarks?: string | null
   status: ShrinkageAlertStatus
   assigned_to?: string | null
   notes?: string | null
@@ -260,7 +264,113 @@ export interface SupplierPerformanceMetrics {
   would_order_again_percentage: number  // % of ratings with true
 }
 
+// ─────────────────────────────────────────────
+// FERMENTATION MONITORING TYPES
+// ─────────────────────────────────────────────
+
+export type FermentationAlertType =
+  | 'stuck_fermentation'
+  | 'temperature_deviation'
+  | 'ph_out_of_range'
+  | 'do_spike'
+  | 'over_pressure'
+  | 'glycol_failure'
+
+export type FermentationAlertSeverity = 'warning' | 'critical'
+export type FermentationAlertStatus = 'active' | 'acknowledged' | 'resolved'
+
+/** Fermentation Alert — anomaly detection result stored in DB */
+export interface FermentationAlert {
+  id: string
+  batch_id: string
+  brewery_id: string
+  alert_type: FermentationAlertType
+  severity: FermentationAlertSeverity
+  message: string
+  threshold_value?: number | null  // the configured threshold that was breached
+  actual_value?: number | null     // the value that triggered the alert
+  status: FermentationAlertStatus
+  acknowledged_by?: string | null
+  acknowledged_at?: string | null
+  resolved_at?: string | null
+  created_at: string
+}
+
+/** Alert Preferences — per-user notification settings for Fermentation Alerts */
+export interface AlertPreferences {
+  id: string
+  user_id: string
+  brewery_id: string
+  stuck_fermentation: boolean
+  temperature_deviation: boolean
+  ph_out_of_range: boolean
+  do_spike: boolean
+  over_pressure: boolean
+  glycol_failure: boolean
+  push_enabled: boolean
+  in_app_enabled: boolean
+  severity_filter: 'all' | 'critical_only'
+  updated_at: string
+}
+
+/** Yeast Log — cell density & viability tracking */
+export interface YeastLog {
+  id: string
+  batch_id: string
+  brewery_id: string
+  cell_density?: number | null   // million cells per mL
+  viability_pct?: number | null  // % viable cells (ideal: >85%)
+  pitch_rate?: number | null     // million cells / mL / °Plato
+  notes?: string | null
+  logged_by?: string | null
+  created_at: string
+}
+
+/** Batch Reading — sensor/manual reading for a batch */
+export interface BatchReading {
+  id: string
+  batch_id: string
+  gravity?: number | null
+  temperature?: number | null
+  ph?: number | null              // pH level (typical range 4.0–5.5)
+  dissolved_oxygen?: number | null // DO in ppm
+  pressure?: number | null        // Tank pressure in PSI
+  notes?: string | null
+  logger_id?: string | null
+  created_at: string
+}
+
 /** Generic result object for all server actions */
 export type ActionResult<T = any> = 
   | { success: true; data: T; error?: never }
   | { success: false; data?: never; error: string }
+
+// ─────────────────────────────────────────────
+// COMPLIANCE AUTOMATION TYPES
+// ─────────────────────────────────────────────
+
+export type DailyOperationType =
+  | 'removal_taxpaid'
+  | 'removal_tax_free'
+  | 'return_to_brewery'
+  | 'breakage_destruction'
+  | 'other'
+
+/** Daily Operations Log — 27 CFR 25.292 compliant log */
+export interface DailyOperationLog {
+  id: string
+  brewery_id: string
+  log_date: string  // ISO date format (YYYY-MM-DD)
+  operation_type: DailyOperationType
+  quantity: number
+  unit: string
+  batch_id?: string | null
+  inventory_id?: string | null
+  ttb_reportable: boolean
+  remarks?: string | null
+  logged_by?: string | null
+  provenance_ip?: string | null
+  provenance_user_agent?: string | null
+  created_at: string
+}
+

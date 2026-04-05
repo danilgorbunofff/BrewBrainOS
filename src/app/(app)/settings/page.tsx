@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   LucideUser, LucideSettings, LucideBuilding2,
-  LucideArrowLeft, LucideMail, LucideShield, LucideLogOut, LucideDatabase
+  LucideArrowLeft, LucideMail, LucideShield, LucideLogOut, LucideDatabase,
+  LucideWifi
 } from 'lucide-react'
 import { ThemeSelector } from '@/components/ThemeSelector'
 import { ActivityLog } from '@/components/ActivityLog'
@@ -23,6 +24,16 @@ export default async function SettingsPage() {
   if (!user) redirect('/login')
 
   const brewery = await getActiveBrewery()
+  let webhookToken: string | null = null
+
+  if (brewery) {
+    const { data: bData } = await supabase
+      .from('breweries')
+      .select('iot_webhook_token')
+      .eq('id', brewery.id)
+      .single()
+    if (bData) webhookToken = bData.iot_webhook_token
+  }
 
   // Build activity log from recent data
   const activities: { id: string; type: 'batch' | 'tank' | 'reading' | 'inventory'; label: string; detail: string; timestamp: string }[] = []
@@ -201,6 +212,35 @@ export default async function SettingsPage() {
                </Link>
             </CardContent>
           </Card>
+
+          {/* IoT Webhooks */}
+          {brewery && webhookToken && (
+            <Card className="glass border-border">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-black tracking-tight flex items-center gap-2">
+                  <LucideWifi className="h-5 w-5 text-primary/60" />
+                  IoT Integrations
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                 <p className="text-sm text-muted-foreground font-medium">
+                   Automate gravity and pH logging. Configure your external IoT sensors (like Tilt) to POST data to your webhook URL.
+                 </p>
+                 <div className="p-3 bg-surface border border-border rounded-xl">
+                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Webhook Token Request Header</p>
+                   <code className="text-xs font-mono text-green-400 break-all select-all block">
+                     Authorization: Bearer {webhookToken}
+                   </code>
+                 </div>
+                 <div className="p-3 bg-surface border border-border rounded-xl">
+                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Endpoint Path</p>
+                   <code className="text-xs font-mono text-foreground break-all select-all block">
+                     POST /api/iot/log
+                   </code>
+                 </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Theme Selector (client component) */}
           <ThemeSelector />

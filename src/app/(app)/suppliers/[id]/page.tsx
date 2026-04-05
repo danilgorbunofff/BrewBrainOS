@@ -9,12 +9,13 @@ import { notFound } from 'next/navigation'
 export default async function SupplierDetailPage({
   params
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const resolvedParams = await params
   const { brewery } = await requireActiveBrewery()
 
   // Get supplier
-  const supplierResult = await getSupplier(params.id)
+  const supplierResult = await getSupplier(resolvedParams.id)
   if (!supplierResult.success) {
     notFound()
   }
@@ -27,7 +28,7 @@ export default async function SupplierDetailPage({
   }
 
   // Get performance metrics
-  const performanceResult = await getSupplierPerformance(params.id)
+  const performanceResult = await getSupplierPerformance(resolvedParams.id)
   const performance = performanceResult.success ? performanceResult.data : null
 
   // Get purchase orders count

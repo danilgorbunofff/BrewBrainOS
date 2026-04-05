@@ -1,208 +1,124 @@
-import { requireActiveBrewery } from '@/lib/require-brewery'
-import { getSupplierAnalytics } from '@/app/actions/supplier-actions'
-import { notFound } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { SupplierScorecard } from '@/components/SupplierScorecard'
-import { SupplierComparisonTable } from '@/components/SupplierComparisonTable'
-import Link from 'next/link'
-import { LucideArrowRight, LucideBarChart3, LucideFilter } from 'lucide-react'
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
+import { getActiveBrewery } from '@/lib/active-brewery'
+import { getInventoryTrends, getBatchPerformance } from '@/app/actions/analytics-actions'
+import { InventoryTrendChart } from '@/components/analytics/InventoryTrendChart'
+import { BatchPerformanceChart } from '@/components/analytics/BatchPerformanceChart'
+import { LucideTrendingUp, LucideWallet, LucideActivity } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
-export default async function AnalyticsSuppliersPage() {
-  const { brewery } = await requireActiveBrewery()
+export const dynamic = 'force-dynamic'
 
-  // Get analytics for 90-day period
-  const analyticsResult = await getSupplierAnalytics(brewery.id, 90)
+export default async function AnalyticsPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!analyticsResult.success) {
-    notFound()
+  if (!user) {
+    redirect('/login')
   }
 
-  const analytics = analyticsResult.data || []
-
-  if (analytics.length === 0) {
-    return (
-      <div className="container py-8">
-        <div className="space-y-4">
-          <div>
-            <h1 className="text-3xl font-bold">Supplier Analytics</h1>
-            <p className="text-slate-600 dark:text-slate-400">
-              Analyze supplier performance and trends
-            </p>
-          </div>
-
-          <div className="p-8 border-2 border-dashed rounded-lg text-center">
-            <LucideBarChart3 className="w-12 h-12 mx-auto mb-3 text-slate-400" />
-            <h2 className="text-lg font-medium mb-2">No suppliers yet</h2>
-            <p className="text-slate-600 dark:text-slate-400 mb-4">
-              Create suppliers and place orders to see analytics
-            </p>
-            <Link href="/suppliers/create">
-              <Button>Create Supplier</Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
+  const brewery = await getActiveBrewery()
+  if (!brewery) {
+    redirect('/dashboard') // Cannot view analytics without initializing brewery
   }
 
-  // Calculate summary statistics
-  const avgOverallScore =
-    analytics.reduce((sum, a) => sum + a.overallScore, 0) / analytics.length
-  const avgQuality =
-    analytics.reduce((sum, a) => sum + a.avgQualityRating, 0) / analytics.length
-  const avgDelivery =
-    analytics.reduce((sum, a) => sum + a.onTimeDeliveryPercent, 0) / analytics.length
-  const totalSpent = analytics.reduce((sum, a) => sum + a.totalSpent, 0)
+  // Fetch chart data
+  const inventoryTrends = await getInventoryTrends(90)
+  const batchPerformance = await getBatchPerformance()
 
-  // Sort by overall score descending
-  const sortedAnalytics = [...analytics].sort(
-    (a, b) => b.overallScore - a.overallScore
-  )
+  // High level KPIs
+  const totalWasted = inventoryTrends.reduce((sum, d) => sum + d.waste, 0)
+  const totalUsed = inventoryTrends.reduce((sum, d) => sum + d.usage, 0)
+  const shrinkPct = totalUsed > 0 ? ((totalWasted / totalUsed) * 100).toFixed(1) : 0
+
+  const efficiencies = batchPerformance.filter(b => b.efficiency > 0).map(b => b.efficiency)
+  const avgEfficiency = efficiencies.length > 0 
+    ? (efficiencies.reduce((a, b) => a + b, 0) / efficiencies.length).toFixed(1) 
+    : 0
 
   return (
-    <div className="container py-8 space-y-8">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">Supplier Analytics</h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          Performance insights for {analytics.length} supplier{analytics.length !== 1 ? 's' : ''}
+    <div className="min-h-screen bg-background text-foreground p-6 md:p-8 pt-8 pb-32 md:pb-8 selection:bg-primary/30">
+      <div className="max-w-7xl mx-auto space-y-6">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between animate-in fade-in slide-in-from-left-8 duration-700">
+          <div>
+            <h1 className="text-3xl md:text-3xl font-black tracking-tighter flex items-center gap-2">
+              <LucideTrendingUp className="h-7 w-7 text-primary" />
+              Advanced Analytics
+            </h1>
+            <p className="text-sm text-muted-foreground font-medium mt-1">
+              Data-driven insights for {brewery.name}
+            </p>
+          </div>
+        </div>
+
+        {/* Top KPIs */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <AnalyticsKPICard 
+            title="90-Day Shrinkage" 
+            value={`${shrinkPct}%`} 
+            subtitle={`${totalWasted} units classified as waste`}
+            icon={LucideWallet}
+            trend={parseFloat(shrinkPct as string) > 5 ? 'bad' : 'good'}
+          />
+          <AnalyticsKPICard 
+            title="Avg Mash Efficiency" 
+            value={`${avgEfficiency}%`} 
+            subtitle="Actual OG vs Target OG"
+            icon={LucideActivity}
+            trend={parseFloat(avgEfficiency as string) >= 95 ? 'good' : 'neutral'}
+          />
+          <AnalyticsKPICard 
+            title="Total Usage" 
+            value={totalUsed.toFixed(0)} 
+            subtitle="Units processed (90d)"
+            icon={LucideTrendingUp}
+            trend="neutral"
+          />
+        </div>
+
+        {/* Charts Grid */}
+        <div className="grid lg:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-12 duration-1000">
+          <div className="h-[450px]">
+            <InventoryTrendChart data={inventoryTrends} />
+          </div>
+          <div className="h-[450px]">
+            <BatchPerformanceChart data={batchPerformance} />
+          </div>
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
+function AnalyticsKPICard({ 
+  title, value, subtitle, icon: Icon, trend 
+}: { 
+  title: string, value: string | number, subtitle: string, icon: any, trend: 'good' | 'bad' | 'neutral' 
+}) {
+  return (
+    <div className={cn(
+      "rounded-2xl p-5 border bg-surface flex flex-col gap-3",
+      trend === 'bad' ? "border-red-500/20" : trend === 'good' ? "border-green-500/20" : "border-border"
+    )}>
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{title}</p>
+        <div className={cn(
+          "h-8 w-8 rounded-lg flex items-center justify-center",
+          trend === 'bad' ? "bg-red-500/10 text-red-500" : trend === 'good' ? "bg-green-500/10 text-green-500" : "bg-primary/10 text-primary"
+        )}>
+          <Icon className="h-4 w-4" />
+        </div>
+      </div>
+      <div>
+        <p className="text-4xl font-black tracking-tighter text-foreground mb-1">
+          {value}
         </p>
-      </div>
-
-      {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="p-4 border rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
-          <div className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
-            Overall Score
-          </div>
-          <div className="text-3xl font-bold text-blue-700 dark:text-blue-300">
-            {avgOverallScore.toFixed(2)}
-          </div>
-          <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">/ 5.0</div>
-        </div>
-
-        <div className="p-4 border rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
-          <div className="text-sm font-medium text-green-900 dark:text-green-100 mb-1">
-            Avg Quality
-          </div>
-          <div className="text-3xl font-bold text-green-700 dark:text-green-300">
-            {avgQuality.toFixed(2)}
-          </div>
-          <div className="text-xs text-green-600 dark:text-green-400 mt-1">/ 5.0</div>
-        </div>
-
-        <div className="p-4 border rounded-lg bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950 dark:to-yellow-900">
-          <div className="text-sm font-medium text-yellow-900 dark:text-yellow-100 mb-1">
-            On-Time Delivery
-          </div>
-          <div className="text-3xl font-bold text-yellow-700 dark:text-yellow-300">
-            {avgDelivery.toFixed(0)}%
-          </div>
-          <div className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">Average</div>
-        </div>
-
-        <div className="p-4 border rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
-          <div className="text-sm font-medium text-purple-900 dark:text-purple-100 mb-1">
-            Total Spent
-          </div>
-          <div className="text-3xl font-bold text-purple-700 dark:text-purple-300">
-            ${(totalSpent / 1000).toFixed(0)}K
-          </div>
-          <div className="text-xs text-purple-600 dark:text-purple-400 mt-1">90 days</div>
-        </div>
-      </div>
-
-      {/* Navigation Pills */}
-      <div className="flex gap-2 flex-wrap">
-        <Link href="/analytics/suppliers">
-          <Button size="sm" variant="default">
-            Overview
-          </Button>
-        </Link>
-        <Link href="/analytics/performance-trends">
-          <Button size="sm" variant="outline">
-            Trends
-          </Button>
-        </Link>
-        <Link href="/analytics/quality-issues">
-          <Button size="sm" variant="outline">
-            Quality
-          </Button>
-        </Link>
-        <Link href="/analytics/delivery-performance">
-          <Button size="sm" variant="outline">
-            Delivery
-          </Button>
-        </Link>
-      </div>
-
-      {/* Comparison Table */}
-      <SupplierComparisonTable
-        suppliers={sortedAnalytics}
-        onSelectSupplier={(id) => {
-          // Could add drill-down here
-        }}
-        sortBy="overall"
-      />
-
-      {/* Scorecards Grid */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold">Supplier Scorecards</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sortedAnalytics.map((analytics) => (
-            <Link
-              key={analytics.supplierId}
-              href={`/analytics/suppliers/${analytics.supplierId}`}
-            >
-              <SupplierScorecard
-                supplierId={analytics.supplierId}
-                supplierName={analytics.supplierName}
-                supplierType={analytics.supplierType}
-                analytics={{
-                  avgQualityRating: analytics.avgQualityRating,
-                  avgDeliveryRating: analytics.avgDeliveryRating,
-                  avgReliabilityRating: analytics.avgReliabilityRating,
-                  avgPricingRating: analytics.avgPricingRating,
-                  overallScore: analytics.overallScore,
-                  onTimeDeliveryPercent: analytics.onTimeDeliveryPercent,
-                  avgDeliveryDays: analytics.avgDeliveryDays || 0,
-                  qualityIssuePercent: analytics.qualityIssuePercent || 0,
-                  wouldOrderAgainPercent: analytics.wouldOrderAgainPercent || 0,
-                  totalOrdersReviewed: analytics.totalOrders,
-                  totalSpent: analytics.totalSpent,
-                }}
-              />
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Call to actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6 bg-slate-50 dark:bg-slate-900 rounded-lg">
-        <div>
-          <h3 className="font-medium mb-2">Ready to order?</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
-            Use performance data to make smarter purchasing decisions
-          </p>
-          <Link href="/purchase-orders/create">
-            <Button size="sm" className="gap-2">
-              Create Purchase Order
-              <LucideArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
-        </div>
-        <div>
-          <h3 className="font-medium mb-2">View detailed trends</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
-            See performance trends over time for each supplier
-          </p>
-          <Link href="/analytics/performance-trends">
-            <Button size="sm" variant="outline" className="gap-2">
-              View Trends
-              <LucideArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
-        </div>
+        <p className="text-xs text-muted-foreground font-medium">
+          {subtitle}
+        </p>
       </div>
     </div>
   )

@@ -234,7 +234,7 @@ export function PurchaseOrderForm({
                 <Input
                   name="expected_delivery_date"
                   type="date"
-                  defaultValue={order?.expected_delivery_date || ''}
+                  defaultValue={initialOrder?.expected_delivery_date || ''}
                 />
               </div>
 
@@ -245,7 +245,7 @@ export function PurchaseOrderForm({
                 <Input
                   name="invoice_number"
                   placeholder="e.g., INV-12345"
-                  defaultValue={order?.invoice_number || ''}
+                  defaultValue={initialOrder?.invoice_number || ''}
                 />
               </div>
             </div>

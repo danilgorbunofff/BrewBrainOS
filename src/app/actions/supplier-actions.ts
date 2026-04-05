@@ -74,8 +74,8 @@ export async function createSupplier(
       .from('suppliers')
       .insert([
         {
-          brewery_id: breweryId,
           ...supplierData,
+          brewery_id: breweryId,
           avg_quality_rating: 0,
           avg_delivery_days: 0,
           total_orders: 0,
@@ -288,7 +288,7 @@ export async function getPurchaseOrder(orderId: string): Promise<ActionResult<Pu
 export async function createPurchaseOrder(
   breweryId: string,
   supplierId: string,
-  orderData: Omit<PurchaseOrder, 'id' | 'created_at' | 'updated_at' | 'brewery_id'>
+  orderData: Omit<PurchaseOrder, 'id' | 'created_at' | 'updated_at' | 'brewery_id' | 'supplier_id'>
 ): Promise<ActionResult<PurchaseOrder>> {
   try {
     const supabase = await createClient()
@@ -303,9 +303,9 @@ export async function createPurchaseOrder(
       .from('purchase_orders')
       .insert([
         {
+          ...orderData,
           brewery_id: breweryId,
           supplier_id: supplierId,
-          ...orderData,
           created_by: userData?.user?.id,
         }
       ])
@@ -528,7 +528,7 @@ export async function getSupplierRatings(supplierId: string): Promise<ActionResu
  */
 export async function createSupplierRating(
   breweryId: string,
-  ratingData: Omit<SupplierRating, 'id' | 'created_at' | 'updated_at' | 'brewery_id'>
+  ratingData: Omit<SupplierRating, 'id' | 'created_at' | 'updated_at' | 'brewery_id' | 'rating_date'>
 ): Promise<ActionResult<SupplierRating>> {
   try {
     const supabase = await createClient()
@@ -945,7 +945,7 @@ export async function getSupplierQualityIssues(supplierId: string, breweryId: st
         if (rating.comments) {
           // Simple word extraction - in production would use NLP
           const words = rating.comments.toLowerCase().split(/\s+/)
-          words.forEach((word) => {
+          words.forEach((word: string) => {
             if (word.length > 3) {
               issueList[word] = (issueList[word] || 0) + 1
             }

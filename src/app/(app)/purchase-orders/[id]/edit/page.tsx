@@ -10,12 +10,13 @@ import { notFound } from 'next/navigation'
 export default async function EditOrderPage({
   params
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const resolvedParams = await params
   const { brewery } = await requireActiveBrewery()
 
   // Get purchase order
-  const orderResult = await getPurchaseOrder(params.id)
+  const orderResult = await getPurchaseOrder(resolvedParams.id)
   if (!orderResult.success) {
     notFound()
   }
@@ -39,7 +40,7 @@ export default async function EditOrderPage({
   }
 
   // Get suppliers for selector
-  const suppliersResult = await getSuppliers()
+  const suppliersResult = await getSuppliers(brewery.id)
   if (!suppliersResult.success) {
     notFound()
   }

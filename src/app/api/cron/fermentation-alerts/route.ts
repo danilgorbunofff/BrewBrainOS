@@ -6,16 +6,15 @@ import { sendFermentationAlertNotification } from '@/app/actions/push-actions'
 // Helper for external cron services (e.g. Vercel Cron, EasyCron, Render)
 // Schedule roughly every 4-6 hours to catch Stuck Fermentation anomalies or sudden environment changes
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-)
-
 export const runtime = 'nodejs'
 // Allow for up to 5 mins of execution time
 export const maxDuration = 300
 
 export async function POST(req: Request) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  )
   try {
     // Verify secret token for security
     const authHeader = req.headers.get('authorization')

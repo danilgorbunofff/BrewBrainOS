@@ -126,7 +126,7 @@ export function ShrinkageDashboard({ maxAlerts = 5, showStats = true }: Shrinkag
         <p className="text-blue-900 font-semibold mb-2">How Shrinkage Detection Works</p>
         <ul className="text-blue-800 space-y-1 text-xs">
           <li>• <strong>Baseline Analysis:</strong> The system learns your normal loss patterns from 90 days of history</li>
-          <li>• <strong>Statistical Detection:</strong> Anomalies are identified using Z-score analysis (items deviating >2.5σ from baseline)</li>
+          <li>• <strong>Statistical Detection:</strong> Anomalies are identified using Z-score analysis (items deviating &gt;2.5σ from baseline)</li>
           <li>• <strong>Pattern Recognition:</strong> Gradual leaks, sudden spikes, and high variance are detected separately</li>
           <li>• <strong>Severity Classification:</strong> Losses are categorized as Low (0-5%), Medium (5-15%), High (15-30%), or Critical (30%+)</li>
         </ul>

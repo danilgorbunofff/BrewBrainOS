@@ -120,7 +120,7 @@ function detectTemperatureDeviation(
       severity,
       message: `Temperature is ${latestReading.temperature!.toFixed(1)}°C — ${deviation.toFixed(1)}°C ${direction} target of ${config.target_temp}°C.`,
       threshold_value: DEFAULTS.TEMP_DEVIATION_C,
-      actual_value: latestReading.temperature,
+      actual_value: latestReading.temperature ?? null,
     }
   }
 

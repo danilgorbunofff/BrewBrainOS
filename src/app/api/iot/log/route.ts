@@ -1,15 +1,15 @@
 import { createClient } from '@supabase/supabase-js'
 import { runFermentationAlertCheck } from '@/app/(app)/batches/[id]/actions'
 
-// Use service role so we can bypass RLS since IoT sensors don't have authenticated user sessions
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-)
-
 export const runtime = 'nodejs'
 
 export async function POST(req: Request) {
+  // Use service role so we can bypass RLS since IoT sensors don't have authenticated user sessions
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  )
+
   try {
     const authHeader = req.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {

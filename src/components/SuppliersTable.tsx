@@ -4,12 +4,12 @@ import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { Supplier } from '@/types/database'
 import { getSuppliers, deleteSupplier } from '@/app/actions/supplier-actions'
-import { SearchFilter } from '@/components/SearchFilter'
+import { Input } from '@/components/ui/input'
 import { DeleteConfirmButton } from '@/components/DeleteConfirmButton'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { LucidePlus, LucideEdit, LucideTrash2, LucideExternalLink, LucideGlobe, LucidePhone, LucideMail, LucideMap } from 'lucide-react'
+import { LucidePlus, LucideEdit, LucideTrash2, LucideExternalLink, LucideGlobe, LucidePhone, LucideMail, LucideMap, LucideSearch } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface SuppliersTableProps {
@@ -135,11 +135,15 @@ export function SuppliersTable({
       {/* Toolbar */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex-1">
-          <SearchFilter
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Search by name, contact, email, phone, or city..."
-          />
+          <div className="relative">
+            <LucideSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by name, contact, email, phone, or city..."
+              className="pl-10"
+            />
+          </div>
         </div>
         
         <div className="flex gap-2">
@@ -312,10 +316,15 @@ export function SuppliersTable({
                       </Link>
 
                       <DeleteConfirmButton
-                        onConfirm={() => handleDelete(supplier.id)}
-                        loading={isLoading}
-                        title="Delete supplier?"
-                        description="This action cannot be undone. All associated purchase orders will be preserved."
+                        action={async () => {
+                          const res = await deleteSupplier(supplier.id)
+                          if (res.success) {
+                            setSuppliers(prev => prev.filter(s => s.id !== supplier.id))
+                          }
+                          return res
+                        }}
+                        hiddenInputs={{}}
+                        itemName={supplier.name}
                       />
                     </div>
                   </TableCell>

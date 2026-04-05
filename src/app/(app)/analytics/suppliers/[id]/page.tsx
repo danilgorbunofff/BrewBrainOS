@@ -12,12 +12,13 @@ import { LucideArrowLeft, LucideStar, LucidePackageCheck, LucideTrendingUp } fro
 export default async function SupplierDetailPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const resolvedParams = await params
   const { brewery } = await requireActiveBrewery()
 
   // Get supplier
-  const supplierResult = await getSupplier(params.id)
+  const supplierResult = await getSupplier(resolvedParams.id)
   if (!supplierResult.success || !supplierResult.data) {
     notFound()
   }
@@ -30,11 +31,11 @@ export default async function SupplierDetailPage({
   }
 
   // Get trends
-  const trendsResult = await getSupplierTrends(params.id, 90)
+  const trendsResult = await getSupplierTrends(resolvedParams.id, 90)
   const trends = trendsResult.success ? trendsResult.data || [] : []
 
   // Get quality issues
-  const qualityResult = await getSupplierQualityIssues(params.id, brewery.id, 90)
+  const qualityResult = await getSupplierQualityIssues(resolvedParams.id, brewery.id, 90)
   const qualityData = qualityResult.success ? qualityResult.data : null
 
   // Build analytics object

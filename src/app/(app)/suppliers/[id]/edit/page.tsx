@@ -6,11 +6,12 @@ import { notFound } from 'next/navigation'
 export default async function EditSupplierPage({
   params
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const resolvedParams = await params
   const { brewery } = await requireActiveBrewery()
 
-  const result = await getSupplier(params.id)
+  const result = await getSupplier(resolvedParams.id)
   if (!result.success) {
     notFound()
   }

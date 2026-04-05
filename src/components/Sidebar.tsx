@@ -5,7 +5,8 @@ import { usePathname } from 'next/navigation'
 import {
   LucideLayoutDashboard, LucideWaves, LucideClipboardList,
   LucidePackageSearch, LucideQrCode, LucideSettings,
-  LucideX, LucideSearch, LucideFileBarChart, LucideCreditCard
+  LucideX, LucideSearch, LucideFileBarChart, LucideCreditCard,
+  LucideTrendingUp
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
@@ -17,6 +18,7 @@ import { UpgradeGate } from '@/components/UpgradeGate'
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LucideLayoutDashboard },
+  { label: 'Analytics', href: '/analytics', icon: LucideTrendingUp },
   { label: 'Vessels', href: '/tanks', icon: LucideWaves },
   { label: 'Batches', href: '/batches', icon: LucideClipboardList },
   { label: 'Inventory', href: '/inventory', icon: LucidePackageSearch },

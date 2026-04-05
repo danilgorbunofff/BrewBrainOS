@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant glove (&:is(.glove-mode *));
 
 @theme inline {
   --color-background: var(--background);

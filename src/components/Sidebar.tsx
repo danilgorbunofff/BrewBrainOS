@@ -11,6 +11,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { GloveModeToggle } from '@/components/GloveModeToggle'
 import { MobileFloatingActions } from '@/components/MobileFloatingActions'
 import { BrewerySwitcher } from '@/components/BrewerySwitcher'
 import { VoiceLogger } from '@/components/VoiceLogger'
@@ -171,7 +172,10 @@ export function Sidebar({ userEmail, breweryName, breweries, activeBreweryId }: 
               <p className="text-xs font-bold text-foreground truncate">{userEmail}</p>
               <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Active</p>
             </div>
-            <ThemeToggle className="h-7 w-7 text-muted-foreground" />
+            <div className="flex items-center gap-1">
+              <GloveModeToggle className="h-7 w-7 text-muted-foreground" />
+              <ThemeToggle className="h-7 w-7 text-muted-foreground" />
+            </div>
           </div>
         </div>
       </aside>

@@ -124,7 +124,12 @@ export function VoiceLogger({ tankId, className, disabled, variant = 'default' }
         toast.error(result?.error || 'Extraction Failed.', { id: toastId })
       }
     } catch (error) {
-      toast.error('System Link Failure.', { id: toastId })
+      toast.error('Network fluctuating. Falling back to offline queue.', { id: toastId })
+      await enqueueAction({
+        type: 'voice-log',
+        payload: audioBlob,
+        tankId
+      })
     } finally {
       setIsProcessing(false)
     }

@@ -19,6 +19,7 @@ import { FermentationAlertsPanel } from '@/components/FermentationAlertsPanel'
 import { ManualReadingForm } from '@/components/ManualReadingForm'
 import { YeastViabilityCard } from '@/components/YeastViabilityCard'
 import { BatchReadingsTable } from '@/components/BatchReadingsTable'
+import { BrewingMetricsForm } from '@/components/BrewingMetricsForm'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -162,7 +163,10 @@ export default async function BatchDetailPage({ params }: PageProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <GravityChart readings={readings || []} />
+            <GravityChart 
+              readings={readings || []} 
+              targetProfile={batch.og && batch.fg ? { og: batch.og, fg: batch.fg, expectedDays: 14 } : undefined} 
+            />
           </CardContent>
         </Card>
 
@@ -197,8 +201,11 @@ export default async function BatchDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
 
-          {/* Manual Input (Multi-Sensor) */}
-          <ManualReadingForm batchId={batch.id} />
+          {/* Manual Input (Multi-Sensor) and Metrics */}
+          <div className="space-y-6">
+            <ManualReadingForm batchId={batch.id} />
+            <BrewingMetricsForm batchId={batch.id} />
+          </div>
         </div>
 
         {/* Yeast Viability */}

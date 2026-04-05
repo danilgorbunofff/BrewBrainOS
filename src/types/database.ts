@@ -374,3 +374,49 @@ export interface DailyOperationLog {
   created_at: string
 }
 
+// ─────────────────────────────────────────────
+// PROCESS OPTIMIZATION TYPES (Phase 1.4)
+// ─────────────────────────────────────────────
+
+export type RecipeIngredientType = 'grain' | 'hop' | 'yeast' | 'adjunct' | 'water_treatment'
+
+export interface Recipe {
+  id: string
+  brewery_id: string
+  name: string
+  style?: string | null
+  target_og?: number | null
+  target_fg?: number | null
+  target_ibu?: number | null
+  target_abv?: number | null
+  batch_size_bbls: number
+  notes?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface RecipeIngredient {
+  id: string
+  recipe_id: string
+  inventory_item_id?: string | null
+  ingredient_type: RecipeIngredientType
+  amount: number
+  unit: string
+  timing?: string | null
+  notes?: string | null
+  created_at: string
+}
+
+export interface BatchBrewingLog {
+  id: string
+  batch_id: string
+  brewery_id: string
+  log_type: 'brew_day' | 'condition_check' | 'packaging'
+  mashing_ph?: number | null
+  boil_off_rate_pct?: number | null
+  water_chemistry_notes?: string | null
+  actual_ibu_calculated?: number | null
+  logged_by?: string | null
+  created_at: string
+}
+

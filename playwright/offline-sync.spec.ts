@@ -1,27 +1,16 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
+import {
+  callOfflineSyncFixture,
+  openOfflineSyncFixture,
+  setBrowserOfflineState,
+} from './helpers'
 
-type OfflineSyncFixtureApi = {
-  clearQueue: () => Promise<number>
-  enqueueVoice: () => Promise<number>
-  flushQueue: () => Promise<number>
-  getQueueCount: () => Promise<number>
-}
+async function clearQueueSafely(page: Page) {
+  if (page.isClosed()) {
+    return
+  }
 
-async function waitForFixture(page: import('@playwright/test').Page) {
-  await page.waitForFunction(() => {
-    return Boolean((window as Window & { __offlineSyncFixture?: unknown }).__offlineSyncFixture)
-  })
-}
-
-async function callFixture(page: import('@playwright/test').Page, action: keyof OfflineSyncFixtureApi) {
-  return page.evaluate(async (actionName) => {
-    const api = (window as Window & { __offlineSyncFixture?: OfflineSyncFixtureApi }).__offlineSyncFixture
-    if (!api) {
-      throw new Error('Offline sync fixture API is unavailable')
-    }
-
-    return api[actionName]()
-  }, action)
+  await callOfflineSyncFixture(page, 'clearQueue').catch(() => undefined)
 }
 
 test.describe('offline sync fixture', () => {
@@ -41,23 +30,42 @@ test.describe('offline sync fixture', () => {
     const firstPage = await context.newPage()
     const secondPage = await context.newPage()
 
-    await firstPage.goto('/benchmarks/offline-sync')
-    await secondPage.goto('/benchmarks/offline-sync')
-  await waitForFixture(firstPage)
-  await waitForFixture(secondPage)
+    try {
+      await Promise.all([
+        openOfflineSyncFixture(firstPage),
+        openOfflineSyncFixture(secondPage),
+      ])
 
-    expect(await callFixture(firstPage, 'clearQueue')).toBe(0)
-    expect(await callFixture(firstPage, 'enqueueVoice')).toBe(1)
+      expect(await callOfflineSyncFixture(firstPage, 'clearQueue')).toBe(0)
 
-    await Promise.all([
-      callFixture(firstPage, 'flushQueue'),
-      callFixture(secondPage, 'flushQueue'),
-    ])
+      await Promise.all([
+        setBrowserOfflineState(firstPage, true),
+        setBrowserOfflineState(secondPage, true),
+      ])
 
-    await expect.poll(() => callFixture(firstPage, 'getQueueCount')).toBe(0)
-    expect(syncRequests).toBe(1)
+      await Promise.all([
+        expect(firstPage.getByTestId('offline-sync-online-state')).toHaveText('offline'),
+        expect(secondPage.getByTestId('offline-sync-online-state')).toHaveText('offline'),
+      ])
 
-    await context.close()
+      expect(await callOfflineSyncFixture(firstPage, 'enqueueVoice')).toBe(1)
+
+      await Promise.all([
+        setBrowserOfflineState(firstPage, false),
+        setBrowserOfflineState(secondPage, false),
+      ])
+
+      await Promise.all([
+        expect(firstPage.getByTestId('offline-sync-online-state')).toHaveText('online'),
+        expect(secondPage.getByTestId('offline-sync-online-state')).toHaveText('online'),
+      ])
+
+      await expect.poll(() => callOfflineSyncFixture(firstPage, 'getQueueCount'), { timeout: 30000 }).toBe(0)
+      expect(syncRequests).toBe(1)
+    } finally {
+      await clearQueueSafely(firstPage)
+      await context.close()
+    }
   })
 
   test('flushes a queued voice log once the browser comes back online', async ({ browser, baseURL }) => {
@@ -74,19 +82,25 @@ test.describe('offline sync fixture', () => {
     })
 
     const page = await context.newPage()
-    await page.goto('/benchmarks/offline-sync')
-  await waitForFixture(page)
 
-  expect(await callFixture(page, 'clearQueue')).toBe(0)
-  await context.setOffline(true)
-  expect(await callFixture(page, 'enqueueVoice')).toBe(1)
+    try {
+      await openOfflineSyncFixture(page)
 
-    await context.setOffline(false)
+      expect(await callOfflineSyncFixture(page, 'clearQueue')).toBe(0)
+      await setBrowserOfflineState(page, true)
+      await expect(page.getByTestId('offline-sync-online-state')).toHaveText('offline')
 
-    await expect(page.getByTestId('offline-sync-online-state')).toHaveText('online')
-  await expect.poll(() => callFixture(page, 'getQueueCount')).toBe(0)
-    expect(syncRequests).toBe(1)
+      expect(await callOfflineSyncFixture(page, 'enqueueVoice')).toBe(1)
+      await expect(page.getByTestId('offline-sync-queue-count')).toHaveText('1')
 
-    await context.close()
+      await setBrowserOfflineState(page, false)
+
+      await expect(page.getByTestId('offline-sync-online-state')).toHaveText('online')
+      await expect.poll(() => callOfflineSyncFixture(page, 'getQueueCount'), { timeout: 30000 }).toBe(0)
+      expect(syncRequests).toBe(1)
+    } finally {
+      await clearQueueSafely(page)
+      await context.close()
+    }
   })
 })

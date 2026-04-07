@@ -58,7 +58,7 @@ function calculateZScore(value: number, mean: number, std_dev: number): number {
  * Detect unusual single loss events
  * Identifies large drops that don't match the pattern
  */
-function detectUnusualSingleLoss(
+export function detectUnusualSingleLoss(
   history: InventoryHistory[],
   current_stock: number,
   expected_stock: number,

@@ -243,13 +243,18 @@ export function BluetoothScale({ onWeightCaptured, className, compact = false }:
       setState('connected')
       toast.success(`Connected to ${device.name || 'BLE Scale'}`)
     } catch (err: unknown) {
-      if (err?.name === 'NotFoundError' || err?.message?.includes('cancelled')) {
+      const errorName = typeof err === 'object' && err !== null && 'name' in err && typeof err.name === 'string'
+        ? err.name
+        : undefined
+      const errorMessage = err instanceof Error ? err.message : String(err || '')
+
+      if (errorName === 'NotFoundError' || errorMessage.includes('cancelled')) {
         // User cancelled the picker
         setState('disconnected')
         return
       }
       console.error('BLE connection error:', err)
-      setError(err?.message || 'Connection failed')
+      setError(errorMessage || 'Connection failed')
       setState('error')
       toast.error('Scale connection failed')
     }

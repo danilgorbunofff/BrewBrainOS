@@ -6,6 +6,7 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { stripe, getOrCreateStripeCustomer } from '@/lib/stripe'
+import { createStripeIdempotencyKey } from '@/lib/stripeIdempotency'
 import { getStripePriceId, getWhiteGlovePriceId } from '@/lib/tier-config'
 import type { TierSlug } from '@/lib/tier-config'
 import { getActiveBrewery } from '@/lib/active-brewery'
@@ -53,6 +54,7 @@ export async function POST(request: NextRequest) {
     }
 
     const origin = request.headers.get('origin') || 'http://localhost:3000'
+    const requestIdempotencyKey = request.headers.get('x-idempotency-key')
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -71,6 +73,13 @@ export async function POST(request: NextRequest) {
           tier,
         },
       },
+    }, {
+      idempotencyKey: requestIdempotencyKey || createStripeIdempotencyKey(
+        'checkout-session',
+        brewery.id,
+        tier,
+        includeWhiteGlove ? 'white-glove' : 'standard'
+      ),
     })
 
     return Response.json({ url: session.url })

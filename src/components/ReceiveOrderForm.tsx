@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { PurchaseOrder, PurchaseOrderItem, Supplier } from '@/types/database'
+import { ActionResult, PurchaseOrder, PurchaseOrderItem, Supplier } from '@/types/database'
 import { 
   updatePurchaseOrder, 
   updatePurchaseOrderItem,
@@ -75,7 +75,7 @@ export function ReceiveOrderForm({
 
   // Handle form submission
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (formData: FormData): Promise<ActionResult> => {
     try {
       // Update order to delivered
       const orderUpdate = await updatePurchaseOrder(order.id, {
@@ -137,7 +137,7 @@ export function ReceiveOrderForm({
       router.push(`/purchase-orders/${order.id}`)
       return { success: true, data: null }
     } catch (error) {
-      return { success: false, error: String(error) }
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to receive order' }
     }
   }
 

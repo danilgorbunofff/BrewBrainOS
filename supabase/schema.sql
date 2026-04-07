@@ -8,18 +8,20 @@ CREATE TABLE IF NOT EXISTS breweries (
   name       TEXT NOT NULL,
   license_number TEXT,
   owner_id   UUID REFERENCES auth.users(id),
+  subscription_tier TEXT DEFAULT 'free',
+  iot_webhook_token UUID DEFAULT gen_random_uuid(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
 
 -- TANKS
 -- NOTE: column is `capacity` (NOT `capacity_bbl`) to match app code
--- NOTE: `status` column added to track fermenting/empty/cip states
+-- NOTE: `status` defaults to `ready` to match the app's active vessel state names
 CREATE TABLE IF NOT EXISTS tanks (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   brewery_id       UUID REFERENCES breweries(id) ON DELETE CASCADE,
   name             TEXT NOT NULL,
   capacity         DECIMAL,              -- Volume in BBL (or chosen unit)
-  status           TEXT DEFAULT 'empty', -- 'empty' | 'fermenting' | 'conditioning' | 'cip'
+  status           TEXT DEFAULT 'ready',
   current_batch_id UUID,                 -- FK to batches, set manually
   created_at       TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
@@ -34,24 +36,49 @@ CREATE TABLE IF NOT EXISTS batches (
   status      TEXT DEFAULT 'fermenting', -- 'fermenting' | 'conditioning' | 'packaging' | 'complete' | 'dumped'
   og          DECIMAL,
   fg          DECIMAL,
+  target_temp DECIMAL,
   created_at  TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
 
 -- Add FK constraint for tanks.current_batch_id after both tables exist
-ALTER TABLE tanks
-  ADD CONSTRAINT fk_tanks_current_batch
-  FOREIGN KEY (current_batch_id) REFERENCES batches(id)
-  ON DELETE SET NULL;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'fk_tanks_current_batch'
+      AND conrelid = 'tanks'::regclass
+  ) THEN
+    ALTER TABLE tanks
+      ADD CONSTRAINT fk_tanks_current_batch
+      FOREIGN KEY (current_batch_id) REFERENCES batches(id)
+      ON DELETE SET NULL
+      NOT VALID;
+  END IF;
+END $$;
+
+ALTER TABLE tanks VALIDATE CONSTRAINT fk_tanks_current_batch;
 
 -- INVENTORY
 CREATE TABLE IF NOT EXISTS inventory (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   brewery_id    UUID REFERENCES breweries(id) ON DELETE CASCADE,
-  item_type     TEXT CHECK (item_type IN ('Hops', 'Grain', 'Yeast', 'Adjunct')),
+  item_type     TEXT CHECK (item_type IN ('Hops', 'Grain', 'Yeast', 'Adjunct', 'Packaging')),
   name          TEXT NOT NULL,
   current_stock DECIMAL NOT NULL DEFAULT 0,
   unit          TEXT DEFAULT 'kg',
   reorder_point DECIMAL DEFAULT 0,
+  supplier_id UUID,
+  supplier_name TEXT,
+  supplier_contact TEXT,
+  purchase_price DECIMAL,
+  last_order_date DATE,
+  reorder_from_supplier_id UUID,
+  lead_time_days INTEGER DEFAULT 7,
+  min_order_quantity DECIMAL(10, 2),
+  avg_weekly_usage DECIMAL(10, 2),
+  last_stock_alert_date TIMESTAMP WITH TIME ZONE,
+  suppress_reorder_alerts BOOLEAN DEFAULT FALSE,
   lot_number    TEXT,                    -- Unique identifier for material batch
   expiration_date DATE,                  -- When the material expires
   manufacturer  TEXT,                    -- Supplier/manufacturer name
@@ -153,8 +180,23 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   updated_at             TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
 
+CREATE TABLE IF NOT EXISTS webhook_events (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  stripe_event_id TEXT NOT NULL UNIQUE,
+  status          TEXT NOT NULL DEFAULT 'processing' CHECK (status IN ('processing', 'processed', 'failed')),
+  attempts        INTEGER NOT NULL DEFAULT 0,
+  payload         JSONB,
+  created_at      TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()),
+  processed_at    TIMESTAMP WITH TIME ZONE
+);
+
+CREATE INDEX IF NOT EXISTS idx_webhook_events_status ON webhook_events(status);
+
 -- Add subscription_tier column to breweries for quick lookups
 ALTER TABLE breweries ADD COLUMN IF NOT EXISTS subscription_tier TEXT DEFAULT 'free';
+ALTER TABLE breweries ADD COLUMN IF NOT EXISTS iot_webhook_token UUID DEFAULT gen_random_uuid();
+
+CREATE INDEX IF NOT EXISTS idx_breweries_iot_webhook_token ON breweries(iot_webhook_token);
 
 -- ─────────────────────────────────────────────
 -- ROW LEVEL SECURITY (RLS)
@@ -359,6 +401,109 @@ CREATE POLICY "Users can view own feedback" ON feedback
   FOR SELECT USING (auth.uid() = user_id);
 
 -- ─────────────────────────────────────────────
+-- REORDER AUTOMATION
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS reorder_alerts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brewery_id UUID NOT NULL REFERENCES breweries(id) ON DELETE CASCADE,
+  inventory_item_id UUID NOT NULL REFERENCES inventory(id) ON DELETE CASCADE,
+  alert_type TEXT NOT NULL CHECK (alert_type IN ('reorder_point_hit', 'critical_low', 'stockout_imminent')),
+  severity TEXT NOT NULL CHECK (severity IN ('info', 'warning', 'critical')),
+  status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'acknowledged', 'resolved')),
+  current_quantity DECIMAL(10, 2) NOT NULL,
+  reorder_point DECIMAL(10, 2) NOT NULL,
+  units_to_reorder DECIMAL(10, 2),
+  estimated_stockout_days INTEGER,
+  last_order_date TIMESTAMP WITH TIME ZONE,
+  acknowledged_at TIMESTAMP WITH TIME ZONE,
+  resolved_at TIMESTAMP WITH TIME ZONE,
+  acknowledged_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  resolved_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  resolution_notes TEXT,
+  created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+CREATE TABLE IF NOT EXISTS reorder_point_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  inventory_item_id UUID NOT NULL REFERENCES inventory(id) ON DELETE CASCADE,
+  brewery_id UUID NOT NULL REFERENCES breweries(id) ON DELETE CASCADE,
+  old_reorder_point DECIMAL(10, 2),
+  new_reorder_point DECIMAL(10, 2) NOT NULL,
+  changed_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  reason TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+CREATE INDEX IF NOT EXISTS idx_reorder_alerts_brewery ON reorder_alerts(brewery_id);
+CREATE INDEX IF NOT EXISTS idx_reorder_alerts_status ON reorder_alerts(brewery_id, status, severity);
+CREATE INDEX IF NOT EXISTS idx_reorder_alerts_inventory_item ON reorder_alerts(inventory_item_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_reorder_alerts_open_unique
+  ON reorder_alerts(brewery_id, inventory_item_id, alert_type)
+  WHERE status IN ('open', 'acknowledged');
+CREATE INDEX IF NOT EXISTS idx_reorder_point_history_inventory_item ON reorder_point_history(inventory_item_id);
+CREATE INDEX IF NOT EXISTS idx_reorder_point_history_brewery ON reorder_point_history(brewery_id);
+CREATE INDEX IF NOT EXISTS idx_inventory_suppress_reorder_alerts ON inventory(brewery_id, suppress_reorder_alerts);
+
+ALTER TABLE reorder_alerts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reorder_point_history ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owner manages reorder alerts" ON reorder_alerts
+  FOR ALL USING (
+    brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid())
+  );
+
+CREATE POLICY "Owner manages reorder point history" ON reorder_point_history
+  FOR ALL USING (
+    brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid())
+  );
+
+CREATE OR REPLACE FUNCTION update_reorder_alerts_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = timezone('utc', now());
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS reorder_alerts_updated_at_trigger ON reorder_alerts;
+CREATE TRIGGER reorder_alerts_updated_at_trigger
+BEFORE UPDATE ON reorder_alerts
+FOR EACH ROW
+EXECUTE FUNCTION update_reorder_alerts_updated_at();
+
+CREATE OR REPLACE FUNCTION log_reorder_point_change()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.reorder_point IS DISTINCT FROM OLD.reorder_point THEN
+    INSERT INTO reorder_point_history (
+      inventory_item_id,
+      brewery_id,
+      old_reorder_point,
+      new_reorder_point,
+      changed_by,
+      reason
+    ) VALUES (
+      NEW.id,
+      NEW.brewery_id,
+      OLD.reorder_point,
+      NEW.reorder_point,
+      auth.uid(),
+      'Updated via inventory settings'
+    );
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS inventory_reorder_point_change_trigger ON inventory;
+CREATE TRIGGER inventory_reorder_point_change_trigger
+AFTER UPDATE ON inventory
+FOR EACH ROW
+EXECUTE FUNCTION log_reorder_point_change();
+
+-- ─────────────────────────────────────────────
 -- SUPPLIER & PURCHASING
 -- ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS suppliers (
@@ -440,6 +585,58 @@ CREATE TABLE IF NOT EXISTS supplier_ratings (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
 
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'fk_inventory_supplier'
+      AND conrelid = 'inventory'::regclass
+  ) THEN
+    ALTER TABLE inventory
+      ADD CONSTRAINT fk_inventory_supplier
+      FOREIGN KEY (supplier_id)
+      REFERENCES suppliers(id)
+      ON DELETE SET NULL
+      NOT VALID;
+  END IF;
+END $$;
+
+ALTER TABLE inventory VALIDATE CONSTRAINT fk_inventory_supplier;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'fk_inventory_reorder_supplier'
+      AND conrelid = 'inventory'::regclass
+  ) THEN
+    ALTER TABLE inventory
+      ADD CONSTRAINT fk_inventory_reorder_supplier
+      FOREIGN KEY (reorder_from_supplier_id)
+      REFERENCES suppliers(id)
+      ON DELETE SET NULL
+      NOT VALID;
+  END IF;
+END $$;
+
+ALTER TABLE inventory VALIDATE CONSTRAINT fk_inventory_reorder_supplier;
+
+CREATE INDEX IF NOT EXISTS idx_suppliers_brewery ON suppliers(brewery_id);
+CREATE INDEX IF NOT EXISTS idx_suppliers_active ON suppliers(brewery_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_brewery ON purchase_orders(brewery_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_supplier ON purchase_orders(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_status ON purchase_orders(brewery_id, status);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_date ON purchase_orders(order_date);
+CREATE INDEX IF NOT EXISTS idx_purchase_order_items_po ON purchase_order_items(purchase_order_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_order_items_inventory ON purchase_order_items(inventory_id);
+CREATE INDEX IF NOT EXISTS idx_supplier_ratings_brewery ON supplier_ratings(brewery_id);
+CREATE INDEX IF NOT EXISTS idx_supplier_ratings_supplier ON supplier_ratings(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_supplier_ratings_date ON supplier_ratings(rating_date);
+CREATE INDEX IF NOT EXISTS idx_inventory_supplier ON inventory(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_inventory_reorder_supplier ON inventory(reorder_from_supplier_id);
+
 ALTER TABLE suppliers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE purchase_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE purchase_order_items ENABLE ROW LEVEL SECURITY;
@@ -510,6 +707,16 @@ CREATE TABLE IF NOT EXISTS yeast_logs (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
 
+CREATE INDEX IF NOT EXISTS idx_fermentation_alerts_batch ON fermentation_alerts(batch_id);
+CREATE INDEX IF NOT EXISTS idx_fermentation_alerts_brewery ON fermentation_alerts(brewery_id);
+CREATE INDEX IF NOT EXISTS idx_fermentation_alerts_status ON fermentation_alerts(status);
+CREATE INDEX IF NOT EXISTS idx_fermentation_alerts_severity ON fermentation_alerts(severity);
+CREATE INDEX IF NOT EXISTS idx_alert_preferences_user ON alert_preferences(user_id);
+CREATE INDEX IF NOT EXISTS idx_alert_preferences_brewery ON alert_preferences(brewery_id);
+CREATE INDEX IF NOT EXISTS idx_yeast_logs_batch ON yeast_logs(batch_id);
+CREATE INDEX IF NOT EXISTS idx_yeast_logs_brewery ON yeast_logs(brewery_id);
+CREATE INDEX IF NOT EXISTS idx_yeast_logs_created ON yeast_logs(created_at);
+
 ALTER TABLE fermentation_alerts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE alert_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE yeast_logs ENABLE ROW LEVEL SECURITY;
@@ -526,7 +733,7 @@ CREATE POLICY "Owner manages yeast_logs" ON yeast_logs
 -- ─────────────────────────────────────────────
 -- COMPLIANCE AUTOMATION
 -- ─────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS daily_operation_logs (
+CREATE TABLE IF NOT EXISTS daily_operations_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   brewery_id UUID REFERENCES breweries(id) ON DELETE CASCADE NOT NULL,
   log_date DATE NOT NULL,
@@ -545,9 +752,12 @@ CREATE TABLE IF NOT EXISTS daily_operation_logs (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
 
-ALTER TABLE daily_operation_logs ENABLE ROW LEVEL SECURITY;
+CREATE INDEX IF NOT EXISTS idx_daily_operations_logs_brewery ON daily_operations_logs(brewery_id);
+CREATE INDEX IF NOT EXISTS idx_daily_operations_logs_log_date ON daily_operations_logs(log_date);
 
-CREATE POLICY "Owner manages daily_operation_logs" ON daily_operation_logs
+ALTER TABLE daily_operations_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owner manages daily_operations_logs" ON daily_operations_logs
   FOR ALL USING (brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid()));
 
 -- ─────────────────────────────────────────────
@@ -594,6 +804,34 @@ CREATE TABLE IF NOT EXISTS batch_brewing_logs (
   provenance_user_agent TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
+
+ALTER TABLE batches ADD COLUMN IF NOT EXISTS recipe_id UUID;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'fk_batches_recipe'
+      AND conrelid = 'batches'::regclass
+  ) THEN
+    ALTER TABLE batches
+      ADD CONSTRAINT fk_batches_recipe
+      FOREIGN KEY (recipe_id)
+      REFERENCES recipes(id)
+      ON DELETE SET NULL
+      NOT VALID;
+  END IF;
+END $$;
+
+ALTER TABLE batches VALIDATE CONSTRAINT fk_batches_recipe;
+
+CREATE INDEX IF NOT EXISTS idx_recipes_brewery ON recipes(brewery_id);
+CREATE INDEX IF NOT EXISTS idx_recipe_ingredients_recipe ON recipe_ingredients(recipe_id);
+CREATE INDEX IF NOT EXISTS idx_recipe_ingredients_inventory ON recipe_ingredients(inventory_item_id);
+CREATE INDEX IF NOT EXISTS idx_batch_brewing_logs_batch ON batch_brewing_logs(batch_id);
+CREATE INDEX IF NOT EXISTS idx_batch_brewing_logs_brewery ON batch_brewing_logs(brewery_id);
+CREATE INDEX IF NOT EXISTS idx_batches_recipe ON batches(recipe_id);
 
 ALTER TABLE recipes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE recipe_ingredients ENABLE ROW LEVEL SECURITY;

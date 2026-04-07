@@ -1,0 +1,70 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "validate production build",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "validate production build with env",
+			"type": "shell",
+			"command": "env",
+			"args": [
+				"NODE_ENV=production",
+				"NEXT_PUBLIC_SUPABASE_URL=https://ci-placeholder.supabase.co",
+				"NEXT_PUBLIC_SUPABASE_ANON_KEY=ci-placeholder-anon-key",
+				"ENABLE_BENCHMARK_ROUTES=1",
+				"SENTRY_DSN=",
+				"NEXT_PUBLIC_SENTRY_DSN=",
+				"npm",
+				"run",
+				"build"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "validate production build with env",
+			"type": "shell",
+			"command": "env",
+			"args": [
+				"NODE_ENV=production",
+				"NEXT_PUBLIC_SUPABASE_URL=https://ci-placeholder.supabase.co",
+				"NEXT_PUBLIC_SUPABASE_ANON_KEY=ci-placeholder-anon-key",
+				"ENABLE_BENCHMARK_ROUTES=1",
+				"SENTRY_DSN=",
+				"NEXT_PUBLIC_SENTRY_DSN=",
+				"npm",
+				"run",
+				"build"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "validate production build with env",
+			"type": "shell",
+			"command": "env",
+			"args": [
+				"NODE_ENV=production",
+				"NEXT_PUBLIC_SUPABASE_URL=https://ci-placeholder.supabase.co",
+				"NEXT_PUBLIC_SUPABASE_ANON_KEY=ci-placeholder-anon-key",
+				"ENABLE_BENCHMARK_ROUTES=1",
+				"SENTRY_DSN=",
+				"NEXT_PUBLIC_SENTRY_DSN=",
+				"npm",
+				"run",
+				"build"
+			],
+			"isBackground": false,
+			"group": "build"
+		}
+	]
+}

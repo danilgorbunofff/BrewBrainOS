@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { PurchaseOrder, Supplier, PurchaseOrderItem } from '@/types/database'
+import { ActionResult, PurchaseOrder, Supplier, PurchaseOrderItem } from '@/types/database'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { createPurchaseOrder, updatePurchaseOrder, getSuppliers } from '@/app/actions/supplier-actions'
 import { SupplierSelector } from '@/components/SupplierSelector'
@@ -71,7 +71,7 @@ export function PurchaseOrderForm({
   }, [isEditing, initialOrder, initialItems, suppliersList])
 
   // Handle form submission
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (formData: FormData): Promise<ActionResult> => {
     try {
       setErrors({})
 
@@ -128,7 +128,7 @@ export function PurchaseOrderForm({
       router.push('/purchase-orders')
       return result
     } catch (error) {
-      return { success: false, error: String(error) }
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to save purchase order' }
     }
   }
 

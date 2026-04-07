@@ -9,6 +9,15 @@ export const metadata = {
   title: 'Recipe Directory | BrewBrain OS',
 }
 
+function parseOptionalNumber(value: FormDataEntryValue | null) {
+  if (typeof value !== 'string' || value.trim() === '') {
+    return null
+  }
+
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 export default async function RecipesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -73,8 +82,21 @@ export default async function RecipesPage() {
               <h2 className="text-lg font-black tracking-tight mb-4 flex items-center gap-2">
                 <LucidePlus className="h-4 w-4 text-primary" /> Create Recipe
               </h2>
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              <form action={createRecipe as any} className="space-y-4">
+              <form
+                action={async (formData) => {
+                  'use server'
+                  await createRecipe({
+                    name: String(formData.get('name') || '').trim(),
+                    style: String(formData.get('style') || '').trim(),
+                    batch_size_bbls: Number(formData.get('batch_size_bbls') || 0),
+                    target_og: parseOptionalNumber(formData.get('target_og')),
+                    target_fg: parseOptionalNumber(formData.get('target_fg')),
+                    target_ibu: parseOptionalNumber(formData.get('target_ibu')),
+                    target_abv: parseOptionalNumber(formData.get('target_abv')),
+                  })
+                }}
+                className="space-y-4"
+              >
                 <label className="block">
                   <span className="text-[10px] font-black uppercase text-muted-foreground">Recipe Name</span>
                   <input type="text" name="name" required className="mt-1 w-full bg-black/40 border border-border rounded-lg text-sm px-3 py-2 text-foreground focus:ring-1 focus:ring-primary outline-none" />
@@ -87,6 +109,10 @@ export default async function RecipesPage() {
                   <label className="block">
                     <span className="text-[10px] font-black uppercase text-muted-foreground">Target OG</span>
                     <input type="number" step="0.001" name="target_og" className="mt-1 w-full bg-black/40 border border-border rounded-lg text-sm px-3 py-2 text-foreground focus:ring-1 focus:ring-primary outline-none" />
+                  </label>
+                  <label className="block">
+                    <span className="text-[10px] font-black uppercase text-muted-foreground">Target FG</span>
+                    <input type="number" step="0.001" name="target_fg" className="mt-1 w-full bg-black/40 border border-border rounded-lg text-sm px-3 py-2 text-foreground focus:ring-1 focus:ring-primary outline-none" />
                   </label>
                   <label className="block">
                     <span className="text-[10px] font-black uppercase text-muted-foreground">Target ABV %</span>

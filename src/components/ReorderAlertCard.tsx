@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 interface InventoryItem {
   id: string
   name: string
-  unit_type: string
+  unit: string
   supplier_id?: string
 }
 
@@ -135,14 +135,14 @@ export default function ReorderAlertCard({ alert, onStatusChange }: ReorderAlert
             <p className="text-xs text-gray-600 font-medium">Current Stock</p>
             <p className="text-lg font-bold mt-1">
               {alert.current_quantity}
-              <span className="text-xs text-gray-500 ml-1">{alert.inventory_item.unit_type}</span>
+              <span className="text-xs text-gray-500 ml-1">{alert.inventory_item.unit}</span>
             </p>
           </div>
           <div className="rounded-md bg-black/5 dark:bg-white/5 p-3">
             <p className="text-xs text-gray-600 font-medium">Reorder Point</p>
             <p className="text-lg font-bold mt-1">
               {alert.reorder_point}
-              <span className="text-xs text-gray-500 ml-1">{alert.inventory_item.unit_type}</span>
+              <span className="text-xs text-gray-500 ml-1">{alert.inventory_item.unit}</span>
             </p>
           </div>
           <div className="rounded-md bg-white/50 p-3">
@@ -156,7 +156,7 @@ export default function ReorderAlertCard({ alert, onStatusChange }: ReorderAlert
           <div className="rounded-lg border-2 border-dashed border-current/10 bg-black/5 dark:bg-white/5 p-3">
             <p className="text-xs font-medium text-gray-600 mb-1">Suggested Order</p>
             <p className="text-base font-semibold">
-              {alert.units_to_reorder} {alert.inventory_item.unit_type}
+              {alert.units_to_reorder} {alert.inventory_item.unit}
             </p>
           </div>
         )}

@@ -1,0 +1,75 @@
+
+> brewbrain@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.2.1 (webpack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ (serwist) Bundling the service worker script with the URL '/sw.js' and the scope '/'...
+✓ Compiled successfully in 5.5s
+  Running TypeScript ...
+  Finished TypeScript in 6.0s ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/34) ...
+  Generating static pages using 7 workers (8/34) 
+  Generating static pages using 7 workers (16/34) 
+  Generating static pages using 7 workers (25/34) 
+✓ Generating static pages using 7 workers (34/34) in 191ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /analytics
+├ ƒ /analytics/performance-trends
+├ ƒ /analytics/suppliers/[id]
+├ ƒ /api/cron/fermentation-alerts
+├ ƒ /api/iot/log
+├ ƒ /api/logs
+├ ƒ /api/monitoring/performance
+├ ƒ /api/stripe/checkout
+├ ƒ /api/stripe/portal
+├ ƒ /api/stripe/webhook
+├ ƒ /api/sync-manual-reading
+├ ƒ /api/sync-voice
+├ ƒ /batches
+├ ƒ /batches/[id]
+├ ○ /benchmarks/offline-sync
+├ ○ /benchmarks/virtualization
+├ ƒ /billing
+├ ƒ /compliance
+├ ƒ /dashboard
+├ ƒ /dev/virtualization
+├ ○ /icon.png
+├ ƒ /inventory
+├ ƒ /inventory/[id]
+├ ƒ /login
+├ ƒ /offline
+├ ƒ /purchase-orders
+├ ƒ /purchase-orders/[id]
+├ ƒ /purchase-orders/[id]/edit
+├ ƒ /purchase-orders/[id]/receive
+├ ƒ /purchase-orders/create
+├ ƒ /recipes
+├ ƒ /recipes/[id]
+├ ƒ /reports
+├ ƒ /scan
+├ ƒ /settings
+├ ƒ /settings/import
+├ ƒ /shrinkage
+├ ƒ /suppliers
+├ ƒ /suppliers/[id]
+├ ƒ /suppliers/[id]/edit
+├ ƒ /suppliers/create
+├ ƒ /tank/[id]
+├ ƒ /tanks
+└ ƒ /tanks/print
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

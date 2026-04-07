@@ -48,6 +48,25 @@ async function writeToDisk(payload: LogPayload) {
   }
 }
 
+async function captureErrorWithSentry(payload: LogPayload) {
+  if (typeof window !== 'undefined' || payload.level !== 'error') {
+    return
+  }
+
+  const { captureServerException } = await import('@/lib/sentry.server')
+  const error = payload.context instanceof Error
+    ? payload.context
+    : new Error(payload.message)
+
+  captureServerException(error, {
+    handler: 'logger.error',
+    extras: {
+      context: payload.context,
+      timestamp: payload.timestamp,
+    },
+  })
+}
+
 export const logger = {
   log: async (level: LogLevel, message: string, context?: unknown) => {
     const payload: LogPayload = {
@@ -66,6 +85,7 @@ export const logger = {
       await sendToApi(payload)
     } else {
       // SERVER SIDE
+      await captureErrorWithSentry(payload)
       await writeToDisk(payload)
     }
   },

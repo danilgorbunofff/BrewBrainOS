@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { DeleteConfirmProvider } from "@/components/DeleteConfirmProvider";
 import { GloveModeProvider, GloveModeScript } from "@/components/GloveModeProvider";
+import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { WebVitalsReporter } from "@/components/WebVitalsReporter";
 
 const fontHeading = Outfit({
@@ -41,6 +42,7 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
     >
       <body className="min-h-full flex flex-col">
+        <ServiceWorkerRegistration />
         <GloveModeScript />
         <GloveModeProvider>
           <ThemeProvider>

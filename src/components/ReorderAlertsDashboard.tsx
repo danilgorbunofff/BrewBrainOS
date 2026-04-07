@@ -26,7 +26,7 @@ interface ReorderAlert {
   inventory_item: {
     id: string
     name: string
-    unit_type: string
+    unit: string
     supplier_id?: string
   }
 }

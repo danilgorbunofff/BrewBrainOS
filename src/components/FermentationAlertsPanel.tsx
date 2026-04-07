@@ -1,5 +1,7 @@
 'use client'
 
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { FermentationAlert } from '@/types/database'
 import { acknowledgeAlert } from '@/app/(app)/batches/[id]/actions'
 import { cn } from '@/lib/utils'
@@ -16,6 +18,7 @@ import {
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 interface FermentationAlertsPanelProps {
   alerts: FermentationAlert[]
@@ -35,8 +38,36 @@ const ALERT_TYPE_META: Record<
 }
 
 export function FermentationAlertsPanel({ alerts, batchId }: FermentationAlertsPanelProps) {
+  const [pendingAlertId, setPendingAlertId] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+  const router = useRouter()
   const active = alerts.filter((a) => a.status === 'active')
   const acknowledged = alerts.filter((a) => a.status === 'acknowledged')
+
+  const handleAcknowledge = (alertId: string) => {
+    setPendingAlertId(alertId)
+
+    startTransition(async () => {
+      try {
+        const formData = new FormData()
+        formData.set('alertId', alertId)
+        formData.set('batchId', batchId)
+
+        const result = await acknowledgeAlert(formData)
+        if (!result.success) {
+          toast.error(result.error)
+          return
+        }
+
+        router.refresh()
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to acknowledge alert'
+        toast.error(message)
+      } finally {
+        setPendingAlertId(null)
+      }
+    })
+  }
 
   return (
     <Card className="glass border-border overflow-hidden">
@@ -120,19 +151,16 @@ export function FermentationAlertsPanel({ alerts, batchId }: FermentationAlertsP
                     )}
                   </div>
 
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  <form action={acknowledgeAlert as any} className="shrink-0">
-                    <input type="hidden" name="alertId" value={alert.id} />
-                    <input type="hidden" name="batchId" value={batchId} />
-                    <Button
-                      type="submit"
-                      variant="outline"
-                      size="sm"
-                      className="text-xs font-bold border-border hover:bg-secondary"
-                    >
-                      Acknowledge
-                    </Button>
-                  </form>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isPending && pendingAlertId === alert.id}
+                    onClick={() => handleAcknowledge(alert.id)}
+                    className="shrink-0 text-xs font-bold border-border hover:bg-secondary"
+                  >
+                    {isPending && pendingAlertId === alert.id ? 'Acknowledging…' : 'Acknowledge'}
+                  </Button>
                 </div>
               )
             })}

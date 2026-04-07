@@ -106,12 +106,12 @@ export async function seedScenario(breweryId: string, scenario: 'fermentation' |
     // Add some mock logs
     const now = new Date()
     const logs = [
-      { batch_id: batch.id, gravity: '1.065', temp_c: 19.5, logged_at: new Date(now.getTime() - 86400000).toISOString() },
-      { batch_id: batch.id, gravity: '1.045', temp_c: 20.1, logged_at: new Date(now.getTime() - 43200000).toISOString() },
-      { batch_id: batch.id, gravity: '1.032', temp_c: 19.8, logged_at: now.toISOString() },
+      { batch_id: batch.id, gravity: '1.065', temperature: 19.5, created_at: new Date(now.getTime() - 86400000).toISOString() },
+      { batch_id: batch.id, gravity: '1.045', temperature: 20.1, created_at: new Date(now.getTime() - 43200000).toISOString() },
+      { batch_id: batch.id, gravity: '1.032', temperature: 19.8, created_at: now.toISOString() },
     ]
 
-    await supabase.from('fermentation_logs').insert(logs)
+    await supabase.from('batch_readings').insert(logs)
     
     revalidatePath('/batches')
     revalidatePath('/dashboard')
@@ -148,7 +148,7 @@ export async function nuclearReset(breweryId: string) {
 
   if (batches && batches.length > 0) {
     const batchIds = batches.map(b => b.id)
-    await supabase.from('fermentation_logs').delete().in('batch_id', batchIds)
+    await supabase.from('batch_readings').delete().in('batch_id', batchIds)
   }
 
   // 2. Delete main entities

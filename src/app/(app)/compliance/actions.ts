@@ -6,6 +6,19 @@ import { ActionResult } from '@/types/database'
 import { getActiveBrewery } from '@/lib/active-brewery'
 import { headers } from 'next/headers'
 
+interface TTBContinuityValidation {
+  continuityValid: boolean
+  beginningInventory: number
+  produced: number
+  removals: number
+  returns: number
+  breakage: number
+  shortages: number
+  endingInventoryPredicted: number
+  cbmaEligible: boolean
+  cbmaBarrelsUsed: number
+}
+
 export async function logDailyOperation(data: {
   logDate: string
   operationType: string
@@ -83,7 +96,7 @@ export async function updateShrinkageTTBRemarks(
   return { success: true, data: updated }
 }
 
-export async function validateTTBContinuity(month: number, year: number): Promise<ActionResult> {
+export async function validateTTBContinuity(month: number, year: number): Promise<ActionResult<TTBContinuityValidation>> {
   const supabase = await createClient()
   const brewery = await getActiveBrewery()
   if (!brewery) return { success: false, error: 'No active brewery found.' }

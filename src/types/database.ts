@@ -217,7 +217,7 @@ export interface PurchaseOrder {
   expected_delivery_date?: string | null  // ISO date format (YYYY-MM-DD)
   actual_delivery_date?: string | null  // ISO date format (YYYY-MM-DD)
   status: PurchaseOrderStatus
-  items_summary?: Record<string, any> | null  // JSONB array of items
+  items_summary?: unknown[] | Record<string, unknown> | null  // JSONB payload for items
   total_cost?: number | null
   invoice_number?: string | null
   payment_status: PaymentStatus
@@ -353,7 +353,7 @@ export interface BatchListItem {
 }
 
 /** Generic result object for all server actions */
-export type ActionResult<T = any> = 
+export type ActionResult<T = unknown> = 
   | { success: true; data: T; error?: never }
   | { success: false; data?: never; error: string }
 

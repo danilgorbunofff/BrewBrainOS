@@ -10,10 +10,10 @@ export async function createRecipe(data: {
   name: string
   style: string
   batch_size_bbls: number
-  target_og: number
-  target_fg: number
-  target_ibu: number
-  target_abv: number
+  target_og?: number | null
+  target_fg?: number | null
+  target_ibu?: number | null
+  target_abv?: number | null
 }): Promise<ActionResult> {
   const supabase = await createClient()
   const brewery = await getActiveBrewery()

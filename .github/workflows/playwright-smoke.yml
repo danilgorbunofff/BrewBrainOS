@@ -1,0 +1,89 @@
+name: Playwright Smoke
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  playwright-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: true
+      NODE_ENV: production
+      ENABLE_BENCHMARK_ROUTES: '1'
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'ci-placeholder-service-role-key' }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY || 'sk_test_ci_placeholder' }}
+      STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET || 'whsec_ci_placeholder' }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+      SENTRY_ENV: smoke
+      SENTRY_TRACES_SAMPLE_RATE: '0.1'
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      E2E_TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL }}
+      E2E_TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
+      PLAYWRIGHT_SERVER_COMMAND: npm run start -- -p 3005
+      PLAYWRIGHT_SERVER_URL: http://127.0.0.1:3005/login
+      PLAYWRIGHT_BASE_URL: http://127.0.0.1:3005
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Validate smoke test secrets
+        id: smoke-secrets
+        run: |
+          missing=0
+          for var in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY E2E_TEST_USER_EMAIL E2E_TEST_USER_PASSWORD; do
+            if [[ -z "${!var}" ]]; then
+              echo "::warning::Missing required secret: $var"
+              missing=1
+            fi
+          done
+
+          if [[ "$missing" -eq 1 ]]; then
+            echo "run_smoke=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_smoke=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip smoke job when secrets are unavailable
+        if: steps.smoke-secrets.outputs.run_smoke != 'true'
+        run: echo "Skipping Playwright smoke run because one or more required secrets are missing."
+
+      - name: Install dependencies
+        if: steps.smoke-secrets.outputs.run_smoke == 'true'
+        run: npm ci
+
+      - name: Build production app
+        if: steps.smoke-secrets.outputs.run_smoke == 'true'
+        run: npm run build
+
+      - name: Install Playwright browser
+        if: steps.smoke-secrets.outputs.run_smoke == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run smoke and offline queue suites
+        if: steps.smoke-secrets.outputs.run_smoke == 'true'
+        run: npx playwright test playwright/ci/smoke.spec.ts playwright/offline-queue.e2e.spec.ts --project=chromium --reporter=github,html
+
+      - name: Upload Playwright artifacts on failure
+        if: failure() && steps.smoke-secrets.outputs.run_smoke == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-smoke-artifacts
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore

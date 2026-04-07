@@ -45,6 +45,8 @@ export function OfflineSyncFixturePage() {
   }, [queueCount])
 
   useEffect(() => {
+    ;(window as Window & { __offlineSyncDisableBackgroundSync?: boolean }).__offlineSyncDisableBackgroundSync = true
+
     const api = {
       clearQueue,
       enqueueVoice,
@@ -55,11 +57,12 @@ export function OfflineSyncFixturePage() {
     ;(window as Window & { __offlineSyncFixture?: typeof api }).__offlineSyncFixture = api
 
     return () => {
+      delete (window as Window & { __offlineSyncDisableBackgroundSync?: boolean }).__offlineSyncDisableBackgroundSync
       delete (window as Window & { __offlineSyncFixture?: typeof api }).__offlineSyncFixture
     }
   }, [queueCount])
 
-  const run = async (task: () => Promise<void>) => {
+  const run = async (task: () => Promise<unknown>) => {
     setBusy(true)
     setLastError(null)
     try {

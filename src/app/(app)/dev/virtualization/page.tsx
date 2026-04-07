@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { VirtualizationFixturePage } from '@/components/VirtualizationFixturePage'
+import { VirtualizationFixturePage as VirtualizationFixture } from '@/components/VirtualizationFixturePage'
 import { isBenchmarkRouteEnabled } from '@/lib/feature-flags'
 
 export default function VirtualizationFixturePage() {
@@ -7,5 +7,5 @@ export default function VirtualizationFixturePage() {
     notFound()
   }
 
-  return <VirtualizationFixturePage />
+  return <VirtualizationFixture />
 }

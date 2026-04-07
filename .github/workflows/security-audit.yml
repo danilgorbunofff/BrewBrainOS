@@ -1,0 +1,127 @@
+name: Security - NPM Audit & Secrets Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_secrets_scan:
+        description: Run secrets scan
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  npm-audit:
+    name: NPM Audit (moderate+)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit (moderate and above)
+        id: run_audit
+        shell: bash
+        run: |
+          npm audit --audit-level=moderate --json > audit.json || true
+
+          if [ ! -s audit.json ]; then
+            echo "No audit output (empty file)."
+            echo "vulnerabilities_at_or_above_moderate=0" >> "$GITHUB_OUTPUT"
+            echo "parse_failed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          node <<'NODE'
+          const fs = require('node:fs')
+
+          try {
+            const report = JSON.parse(fs.readFileSync('audit.json', 'utf8'))
+            let vulnerabilities = 0
+
+            if (report.metadata && report.metadata.vulnerabilities) {
+              for (const severity of ['moderate', 'high', 'critical']) {
+                vulnerabilities += report.metadata.vulnerabilities[severity] || 0
+              }
+            } else if (report.advisories) {
+              vulnerabilities = Object.keys(report.advisories).length
+            } else if (report.vulnerabilities && typeof report.vulnerabilities === 'object') {
+              vulnerabilities = Object.values(report.vulnerabilities).filter((item) => {
+                if (!item || typeof item !== 'object') {
+                  return false
+                }
+
+                return ['moderate', 'high', 'critical'].includes(item.severity)
+              }).length
+            }
+
+            console.log(`vulnerabilities_at_or_above_moderate=${vulnerabilities}`)
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `vulnerabilities_at_or_above_moderate=${vulnerabilities}\n`)
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'parse_failed=false\n')
+          } catch (error) {
+            console.error('Failed to parse audit.json', error)
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'vulnerabilities_at_or_above_moderate=0\n')
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'parse_failed=true\n')
+          }
+          NODE
+
+      - name: Upload audit report
+        if: always() && hashFiles('audit.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: audit.json
+
+      - name: Fail on moderate or higher vulnerabilities
+        if: steps.run_audit.outputs.parse_failed == 'true' || steps.run_audit.outputs.vulnerabilities_at_or_above_moderate != '0'
+        run: |
+          echo "Found vulnerabilities at or above moderate severity or the audit report could not be parsed."
+          exit 1
+
+  secrets-scan:
+    name: Secrets scan (gitleaks)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.run_secrets_scan)
+
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        id: gitleaks_scan
+        continue-on-error: true
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --report-format json --report-path gitleaks-report.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload gitleaks report
+        if: always() && hashFiles('gitleaks-report.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: gitleaks-report.json
+
+      - name: Fail on secrets findings
+        if: steps.gitleaks_scan.outcome == 'failure'
+        run: |
+          echo "Potential secrets were detected by gitleaks. Review the uploaded report artifact."
+          exit 1

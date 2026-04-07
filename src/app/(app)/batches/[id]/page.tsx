@@ -182,8 +182,13 @@ export default async function BatchDetailPage({ params }: PageProps) {
             </CardHeader>
             <CardContent className="space-y-2">
               {BATCH_STATUSES.map((s) => (
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                <form key={s.value} action={updateBatchStatus as any}>
+                <form
+                  key={s.value}
+                  action={async (formData) => {
+                    'use server'
+                    await updateBatchStatus(formData)
+                  }}
+                >
                   <input type="hidden" name="batchId" value={batch.id} />
                   <input type="hidden" name="status" value={s.value} />
                   <Button

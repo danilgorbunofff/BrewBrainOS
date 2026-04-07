@@ -1,4 +1,35 @@
+import * as Sentry from '@sentry/nextjs'
 import { reportPerformanceMetric } from '@/lib/performance-monitoring'
+
+const DEFAULT_CLIENT_TRACES_SAMPLE_RATE = 0.1
+
+let clientSentryInitialized = false
+
+function getClientTracesSampleRate() {
+  const value = Number(process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE)
+
+  if (Number.isFinite(value) && value >= 0) {
+    return value
+  }
+
+  return DEFAULT_CLIENT_TRACES_SAMPLE_RATE
+}
+
+function initializeClientSentry() {
+  if (clientSentryInitialized || typeof window === 'undefined' || !process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    return
+  }
+
+  Sentry.init({
+    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    enabled: true,
+    environment: process.env.NODE_ENV,
+    sendDefaultPii: false,
+    tracesSampleRate: getClientTracesSampleRate(),
+  })
+
+  clientSentryInitialized = true
+}
 
 function getErrorDetail(error: unknown) {
   if (error instanceof Error) {
@@ -18,8 +49,11 @@ function getErrorDetail(error: unknown) {
 
 try {
   performance.mark('brewbrain:app-init')
+  initializeClientSentry()
 
   window.addEventListener('error', (event) => {
+    Sentry.captureException(event.error || new Error(event.message || 'Unhandled window error'))
+
     reportPerformanceMetric({
       category: 'client-error',
       name: 'window-error',
@@ -35,6 +69,8 @@ try {
   })
 
   window.addEventListener('unhandledrejection', (event) => {
+    Sentry.captureException(event.reason instanceof Error ? event.reason : new Error(getErrorDetail(event.reason).message))
+
     reportPerformanceMetric({
       category: 'client-error',
       name: 'unhandled-rejection',
@@ -92,6 +128,8 @@ try {
     }
   }
 } catch (error) {
+  Sentry.captureException(error)
+
   if (process.env.NODE_ENV === 'development') {
     console.error('[brewbrain:instrumentation-client] failed to initialize', error)
   }

@@ -207,7 +207,7 @@ export async function getReorderAlerts(
       created_at,
       acknowledged_at,
       resolved_at,
-      inventory_item:inventory_item_id(id, name, unit_type, supplier_id)
+      inventory_item:inventory_item_id(id, name, unit, supplier_id)
     `
     )
     .eq('brewery_id', breweryId)

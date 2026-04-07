@@ -5,6 +5,23 @@ import { redirect } from 'next/navigation'
 import { requireActiveBrewery } from '@/lib/require-brewery'
 import { ActionResult, BatchListItem } from '@/types/database'
 
+function isNextRedirectError(error: unknown) {
+  if (typeof error === 'string') {
+    return error.includes('NEXT_REDIRECT')
+  }
+
+  if (error instanceof Error && error.message.includes('NEXT_REDIRECT')) {
+    return true
+  }
+
+  if (typeof error === 'object' && error !== null && 'digest' in error) {
+    const digest = error.digest
+    return typeof digest === 'string' && digest.includes('NEXT_REDIRECT')
+  }
+
+  return false
+}
+
 export async function addBatch(formData: FormData): Promise<ActionResult<BatchListItem>> {
   try {
     const { supabase, brewery } = await requireActiveBrewery()
@@ -77,7 +94,7 @@ export async function deleteBatch(formData: FormData): Promise<ActionResult> {
 
     return { success: true, data: null }
   } catch (e: unknown) {
-    if (e instanceof Error ? e.message : String(e)?.includes('NEXT_REDIRECT') || e.digest?.includes('NEXT_REDIRECT')) throw e
+    if (isNextRedirectError(e)) throw e
     return { success: false, error: e instanceof Error ? e.message : String(e) || 'Operation failed' }
   }
 }

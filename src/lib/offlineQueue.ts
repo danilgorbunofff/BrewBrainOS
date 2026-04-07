@@ -13,10 +13,12 @@ import {
   type ManualReadingPayload,
   type OfflineAction,
 } from '@/lib/offlineQueueShared'
+import { registerServiceWorker } from '@/lib/registerServiceWorker'
 
 const PROCESSING_LOCK_KEY = 'brewbrain_offline_queue_processing_lock'
 const PROCESSING_LOCK_TTL_MS = 45_000
 const PROCESSING_LOCK_REFRESH_MS = 15_000
+const TAB_ID_STORAGE_KEY = 'brewbrain_offline_queue_tab_id'
 const QUEUE_CHANNEL_NAME = 'brewbrain-offline-queue'
 
 type ProcessingLock = {
@@ -28,12 +30,50 @@ type QueueChannelMessage = {
   type: 'queue-updated' | 'queue-available'
 }
 
-const TAB_ID = typeof crypto !== 'undefined' && 'randomUUID' in crypto
-  ? crypto.randomUUID()
-  : `offline-tab-${Math.random().toString(36).slice(2)}`
+type OfflineSyncWindow = Window & {
+  __offlineSyncDisableBackgroundSync?: boolean
+  __offlineSyncOnlineOverride?: boolean
+}
+
+function createTabId() {
+  return typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `offline-tab-${Math.random().toString(36).slice(2)}`
+}
+
+function getOrCreateTabId() {
+  if (typeof window === 'undefined') {
+    return createTabId()
+  }
+
+  try {
+    const existingTabId = window.sessionStorage.getItem(TAB_ID_STORAGE_KEY)
+    if (existingTabId) {
+      return existingTabId
+    }
+
+    const nextTabId = createTabId()
+    window.sessionStorage.setItem(TAB_ID_STORAGE_KEY, nextTabId)
+    return nextTabId
+  } catch {
+    return createTabId()
+  }
+}
+
+const TAB_ID = getOrCreateTabId()
 
 let queueChannel: BroadcastChannel | null | undefined
 let isProcessing = false
+
+function getClientOnlineStatus() {
+  const override = (window as OfflineSyncWindow).__offlineSyncOnlineOverride
+
+  if (typeof override === 'boolean') {
+    return override
+  }
+
+  return navigator.onLine
+}
 
 function getQueueChannel() {
   if (queueChannel !== undefined) {
@@ -125,41 +165,11 @@ function releaseProcessingClaim(hasPendingWork = false) {
   }
 }
 
-export async function enqueueAction(action: EnqueueOfflineAction) {
-  const newAction = await enqueueOfflineAction(action)
-
-  notifyQueueUpdated()
-
-  if ('serviceWorker' in navigator && 'SyncManager' in window) {
-    try {
-      const registration = await navigator.serviceWorker.ready
-      await (registration as ServiceWorkerRegistration & { sync: { register: (tag: string) => Promise<void> } }).sync.register(OFFLINE_QUEUE_SYNC_TAG)
-    } catch (error) {
-      console.warn('Background sync registration failed:', error)
-    }
-  }
-
-  return newAction
-}
-
-export async function clearOfflineQueue() {
-  await clearOfflineQueueStore()
-  notifyQueueUpdated()
-}
-
-export async function processQueue() {
-  if (isProcessing || !navigator.onLine) {
-    return
-  }
-
-  const hasClaim = await acquireProcessingClaim()
-  if (!hasClaim) {
-    return
-  }
-
-  isProcessing = true
-  const claimRefreshInterval = globalThis.setInterval(refreshProcessingClaim, PROCESSING_LOCK_REFRESH_MS)
+async function runQueueProcessing(releaseClaim?: (hasPendingWork: boolean) => void) {
   let hasPendingWork = false
+  const claimRefreshInterval = releaseClaim
+    ? globalThis.setInterval(refreshProcessingClaim, PROCESSING_LOCK_REFRESH_MS)
+    : null
 
   try {
     const queue = await getOfflineQueue()
@@ -170,7 +180,7 @@ export async function processQueue() {
     const toastId = toast.loading(`Syncing ${queue.length} offline item(s)...`)
     const result = await flushOfflineQueue({
       syncAction: syncOfflineActionViaApi,
-      isOnline: () => navigator.onLine,
+      isOnline: getClientOnlineStatus,
       onQueueUpdated: notifyQueueUpdated,
     })
 
@@ -191,9 +201,82 @@ export async function processQueue() {
   } catch (error) {
     console.error('Error processing offline queue:', error)
   } finally {
-    globalThis.clearInterval(claimRefreshInterval)
+    if (claimRefreshInterval !== null) {
+      globalThis.clearInterval(claimRefreshInterval)
+    }
+
+    releaseClaim?.(hasPendingWork)
+  }
+}
+
+async function registerOfflineQueueSync() {
+  if ((window as OfflineSyncWindow).__offlineSyncDisableBackgroundSync) {
+    return
+  }
+
+  if (!('serviceWorker' in navigator) || !('SyncManager' in window)) {
+    return
+  }
+
+  try {
+    const registration = await navigator.serviceWorker.getRegistration()
+      || await registerServiceWorker()
+
+    if (!registration || !("sync" in registration)) {
+      return
+    }
+
+    await (registration as ServiceWorkerRegistration & {
+      sync: { register: (tag: string) => Promise<void> }
+    }).sync.register(OFFLINE_QUEUE_SYNC_TAG)
+  } catch (error) {
+    console.warn('Background sync registration failed:', error)
+  }
+}
+
+export async function enqueueAction(action: EnqueueOfflineAction) {
+  const newAction = await enqueueOfflineAction(action)
+
+  notifyQueueUpdated()
+
+  void registerOfflineQueueSync()
+
+  return newAction
+}
+
+export async function clearOfflineQueue() {
+  await clearOfflineQueueStore()
+  notifyQueueUpdated()
+}
+
+export async function processQueue() {
+  if (isProcessing || !getClientOnlineStatus()) {
+    return
+  }
+
+  isProcessing = true
+
+  try {
+    if ('locks' in navigator && navigator.locks?.request) {
+      await navigator.locks.request(PROCESSING_LOCK_KEY, { ifAvailable: true }, async (lock) => {
+        if (!lock) {
+          return
+        }
+
+        await runQueueProcessing()
+      })
+
+      return
+    }
+
+    const hasClaim = await acquireProcessingClaim()
+    if (!hasClaim) {
+      return
+    }
+
+    await runQueueProcessing(releaseProcessingClaim)
+  } finally {
     isProcessing = false
-    releaseProcessingClaim(hasPendingWork)
   }
 }
 
@@ -209,7 +292,7 @@ export function useOfflineQueue() {
         window.removeEventListener('offline', callback)
       }
     },
-    () => navigator.onLine,
+    getClientOnlineStatus,
     () => true,
   )
 

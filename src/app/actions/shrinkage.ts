@@ -441,7 +441,7 @@ async function checkReorderPoint(
     // Get inventory item details
     const { data: inventory, error: invError } = await supabase
       .from('inventory')
-      .select('name, unit_type, reorder_point, avg_weekly_usage')
+      .select('name, unit, reorder_point, avg_weekly_usage')
       .eq('id', inventory_id)
       .eq('brewery_id', brewery_id)
       .single()
@@ -463,7 +463,7 @@ async function checkReorderPoint(
       currentQuantity: current_quantity,
       reorderPoint: inventory.reorder_point,
       itemName: inventory.name,
-      unitType: inventory.unit_type,
+      unitType: inventory.unit,
       avgWeeklyUsage: inventory.avg_weekly_usage,
     })
   } catch (error) {

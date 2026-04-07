@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Supplier } from '@/types/database'
+import { ActionResult, Supplier } from '@/types/database'
 import { createSupplier, updateSupplier } from '@/app/actions/supplier-actions'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -23,7 +23,7 @@ export function SupplierForm({ breweryId, supplier, onSuccess }: SupplierFormPro
   const isEditing = !!supplier
 
   // Handle form submission
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (formData: FormData): Promise<ActionResult> => {
     try {
       setErrors({})
 
@@ -95,7 +95,7 @@ export function SupplierForm({ breweryId, supplier, onSuccess }: SupplierFormPro
       router.push('/suppliers')
       return result
     } catch (error) {
-      return { success: false, error: String(error) }
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to save supplier' }
     }
   }
 

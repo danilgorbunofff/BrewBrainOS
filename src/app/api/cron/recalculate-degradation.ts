@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { recalculateDegradationMetrics } from '@/lib/degradation'
+import { withSentry } from '@/lib/with-sentry'
 
 // Helper to format date as YYYY-MM-DD
 function getToday() {
@@ -29,68 +30,60 @@ const supabase = createClient(
 )
 
 export const runtime = 'nodejs'
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error)
+}
 export const maxDuration = 300  // 5 minutes max
 
-export async function POST(req: Request) {
-  try {
-    // Verify secret token for security
-    const authHeader = req.headers.get('authorization')
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    console.log('[CRON] Starting degradation recalculation...')
-
-    // Fetch all breweries
-    const { data: breweries, error: breweriesError } = await supabase
-      .from('breweries')
-      .select('id')
-
-    if (breweriesError || !breweries) {
-      throw new Error(`Failed to fetch breweries: ${breweriesError?.message}`)
-    }
-
-    console.log(`[CRON] Processing ${breweries.length} breweries`)
-
-    let totalItemsUpdated = 0
-    let totalLogsCreated = 0
-    const errors: string[] = []
-
-    // Process each brewery
-    for (const brewery of breweries) {
-      try {
-        const breweriesProcessed = await processBrewer(brewery.id)
-        totalItemsUpdated += breweriesProcessed.itemsUpdated
-        totalLogsCreated += breweriesProcessed.logsCreated
-      } catch (error: unknown) {
-        const errorMsg = `Error processing brewery ${brewery.id}: ${error.message}`
-        console.error(errorMsg)
-        errors.push(errorMsg)
-        // Continue processing other breweries even if one fails
-      }
-    }
-
-    const result = {
-      success: true,
-      summary: {
-        totalBreweries: breweries.length,
-        totalItemsUpdated,
-        totalLogsCreated,
-        errors: errors.length,
-      },
-      errors,
-    }
-
-    console.log('[CRON] Degradation recalculation complete:', result)
-    return Response.json(result)
-  } catch (error: unknown) {
-    console.error('[CRON] Fatal error:', error)
-    return Response.json(
-      { error: error instanceof Error ? error.message : String(error) || 'Unknown error' },
-      { status: 500 }
-    )
+export const POST = withSentry(async (req: Request) => {
+  const authHeader = req.headers.get('authorization')
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
-}
+
+  console.log('[CRON] Starting degradation recalculation...')
+
+  const { data: breweries, error: breweriesError } = await supabase
+    .from('breweries')
+    .select('id')
+
+  if (breweriesError || !breweries) {
+    throw new Error(`Failed to fetch breweries: ${breweriesError?.message}`)
+  }
+
+  console.log(`[CRON] Processing ${breweries.length} breweries`)
+
+  let totalItemsUpdated = 0
+  let totalLogsCreated = 0
+  const errors: string[] = []
+
+  for (const brewery of breweries) {
+    try {
+      const breweriesProcessed = await processBrewer(brewery.id)
+      totalItemsUpdated += breweriesProcessed.itemsUpdated
+      totalLogsCreated += breweriesProcessed.logsCreated
+    } catch (error: unknown) {
+      const errorMsg = `Error processing brewery ${brewery.id}: ${getErrorMessage(error)}`
+      console.error(errorMsg)
+      errors.push(errorMsg)
+    }
+  }
+
+  const result = {
+    success: true,
+    summary: {
+      totalBreweries: breweries.length,
+      totalItemsUpdated,
+      totalLogsCreated,
+      errors: errors.length,
+    },
+    errors,
+  }
+
+  console.log('[CRON] Degradation recalculation complete:', result)
+  return Response.json(result)
+}, { name: 'api/cron/recalculate-degradation' })
 
 /**
  * Process a single brewery's degradation metrics
@@ -184,7 +177,7 @@ async function processBrewer(breweryId: string): Promise<{
 
       itemsUpdated++
     } catch (error: unknown) {
-      console.warn(`[CRON] Error processing item ${item.id}: ${error.message}`)
+      console.warn(`[CRON] Error processing item ${item.id}: ${getErrorMessage(error)}`)
       // Continue processing other items even if one fails
     }
   }

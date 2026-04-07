@@ -5,6 +5,7 @@
 
 import Stripe from 'stripe'
 import { createClient } from '@/utils/supabase/server'
+import { createStripeIdempotencyKey } from '@/lib/stripeIdempotency'
 import type { TierSlug } from '@/lib/tier-config'
 
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -41,6 +42,8 @@ export async function getOrCreateStripeCustomer(
   const customer = await stripe.customers.create({
     email: userEmail,
     metadata: { brewery_id: breweryId },
+  }, {
+    idempotencyKey: createStripeIdempotencyKey('customer', breweryId),
   })
 
   // Upsert subscription row with customer ID

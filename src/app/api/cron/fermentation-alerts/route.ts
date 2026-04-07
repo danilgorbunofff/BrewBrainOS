@@ -13,6 +13,10 @@ export const runtime = 'nodejs'
 // Allow for up to 5 mins of execution time
 export const maxDuration = 300
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error)
+}
+
 export async function POST(req: Request) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -118,8 +122,9 @@ export async function POST(req: Request) {
           }
         }
       } catch (err: unknown) {
-        console.error(`[CRON Fermentation Alerts] Failed batch ${batch.id}: ${err.message}`)
-        errors.push(`batch ${batch.id}: ${err.message}`)
+        const message = getErrorMessage(err)
+        console.error(`[CRON Fermentation Alerts] Failed batch ${batch.id}: ${message}`)
+        errors.push(`batch ${batch.id}: ${message}`)
         totalErrors++
       }
     }

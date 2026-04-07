@@ -1003,8 +1003,7 @@ export async function getSupplierQualityIssues(supplierId: string, breweryId: st
         totalOrdersReviewed: totalOrders,
         issuePercent,
         recentIssueOrders: ordersWithIssues?.slice(0, 5) || [],
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        lowQualityRatings: ratings?.filter((e: unknown) => (r.quality_rating || 0) < 3) || [],
+        lowQualityRatings: ratings?.filter((rating: SupplierRating) => (rating.quality_rating || 0) < 3) || [],
       },
     }
   } catch (error) {

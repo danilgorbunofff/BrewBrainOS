@@ -10,174 +10,383 @@
  */
 
 import { NextRequest } from 'next/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
 import { stripe, priceIdToTier } from '@/lib/stripe'
-import { createClient } from '@/utils/supabase/server'
+import {
+  getCheckoutSessionSubscriptionId,
+  getInvoiceSubscriptionId,
+  getSubscriptionPeriodEnd,
+  getSubscriptionPeriodStart,
+  getStripeCustomerId,
+  StripeWebhookSignatureError,
+  verifyStripeEvent,
+} from '@/lib/stripeWebhook'
+import { withSentry } from '@/lib/with-sentry'
+import { createServiceRoleClient } from '@/utils/supabase/service-role'
 
-export async function POST(request: NextRequest) {
-  const body = await request.text()
-  const sig = request.headers.get('stripe-signature')
+export const runtime = 'nodejs'
 
-  if (!sig) {
-    return new Response('Missing stripe-signature header', { status: 400 })
+type WebhookEventStatus = 'failed' | 'processed' | 'processing'
+
+type WebhookEventRow = {
+  attempts: number | null
+  processed_at: string | null
+  status: WebhookEventStatus | null
+  stripe_event_id: string
+}
+
+const WEBHOOK_EVENTS_TABLE = 'webhook_events'
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error)
+}
+
+function getBillingStatus(status: Stripe.Subscription.Status) {
+  switch (status) {
+    case 'active':
+      return 'active'
+    case 'past_due':
+      return 'past_due'
+    case 'trialing':
+      return 'trialing'
+    default:
+      return 'inactive'
   }
+}
 
-  let event: Stripe.Event
+function toIsoTimestamp(timestamp: number | null | undefined) {
+  return typeof timestamp === 'number'
+    ? new Date(timestamp * 1000).toISOString()
+    : null
+}
 
-  try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET || ''
+async function claimWebhookEvent(
+  supabase: SupabaseClient,
+  eventId: string,
+  payload: unknown
+) {
+  const { data: insertedRow, error: insertError } = await supabase
+    .from(WEBHOOK_EVENTS_TABLE)
+    .upsert(
+      {
+        stripe_event_id: eventId,
+        status: 'processing',
+        attempts: 1,
+        payload,
+      },
+      { onConflict: 'stripe_event_id', ignoreDuplicates: true }
     )
-  } catch (err) {
-    console.error('[Stripe Webhook] Signature verification failed:', err)
-    return new Response('Webhook signature verification failed', { status: 400 })
+    .select('stripe_event_id, status, attempts, processed_at')
+    .maybeSingle<WebhookEventRow>()
+
+  if (insertError) {
+    throw new Error(`Failed to record webhook event: ${insertError.message}`)
   }
 
-  const supabase = await createClient()
+  if (insertedRow) {
+    return 'claimed' as const
+  }
+
+  const { data: existingRow, error: selectError } = await supabase
+    .from(WEBHOOK_EVENTS_TABLE)
+    .select('stripe_event_id, status, attempts, processed_at')
+    .eq('stripe_event_id', eventId)
+    .single<WebhookEventRow>()
+
+  if (selectError || !existingRow) {
+    throw new Error(`Failed to load webhook event state: ${selectError?.message || 'missing row'}`)
+  }
+
+  if (existingRow.status === 'processed' || existingRow.processed_at) {
+    return 'already-processed' as const
+  }
+
+  if (existingRow.status === 'failed') {
+    const { error: retryError } = await supabase
+      .from(WEBHOOK_EVENTS_TABLE)
+      .update({
+        status: 'processing',
+        attempts: (existingRow.attempts ?? 0) + 1,
+        payload,
+        processed_at: null,
+      })
+      .eq('stripe_event_id', eventId)
+
+    if (retryError) {
+      throw new Error(`Failed to retry webhook event: ${retryError.message}`)
+    }
+
+    return 'claimed' as const
+  }
+
+  return 'in-progress' as const
+}
+
+async function markWebhookEventProcessed(supabase: SupabaseClient, eventId: string) {
+  const { error } = await supabase
+    .from(WEBHOOK_EVENTS_TABLE)
+    .update({
+      status: 'processed',
+      processed_at: new Date().toISOString(),
+    })
+    .eq('stripe_event_id', eventId)
+
+  if (error) {
+    throw new Error(`Failed to mark webhook event processed: ${error.message}`)
+  }
+}
+
+async function markWebhookEventFailed(
+  supabase: SupabaseClient,
+  eventId: string,
+  errorMessage: string
+) {
+  const { error } = await supabase
+    .from(WEBHOOK_EVENTS_TABLE)
+    .update({
+      status: 'failed',
+      payload: {
+        error: errorMessage,
+      },
+    })
+    .eq('stripe_event_id', eventId)
+
+  if (error) {
+    console.error('[Stripe Webhook] Failed to mark event failed:', error)
+  }
+}
+
+async function resolveBreweryIdForSubscription(
+  supabase: SupabaseClient,
+  subscription: Stripe.Subscription
+) {
+  const metadataBreweryId = subscription.metadata?.brewery_id
+
+  if (metadataBreweryId) {
+    return metadataBreweryId
+  }
+
+  const { data: bySubscription } = await supabase
+    .from('subscriptions')
+    .select('brewery_id')
+    .eq('stripe_subscription_id', subscription.id)
+    .maybeSingle<{ brewery_id: string }>()
+
+  if (bySubscription?.brewery_id) {
+    return bySubscription.brewery_id
+  }
+
+  const customerId = getStripeCustomerId(subscription.customer)
+
+  if (!customerId) {
+    return null
+  }
+
+  const { data: byCustomer } = await supabase
+    .from('subscriptions')
+    .select('brewery_id')
+    .eq('stripe_customer_id', customerId)
+    .maybeSingle<{ brewery_id: string }>()
+
+  return byCustomer?.brewery_id ?? null
+}
+
+async function handleCheckoutSessionCompleted(
+  supabase: SupabaseClient,
+  session: Stripe.Checkout.Session
+) {
+  const subscriptionId = getCheckoutSessionSubscriptionId(session)
+
+  if (!subscriptionId) {
+    return
+  }
+
+  const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId)
+  const breweryId =
+    session.metadata?.brewery_id ||
+    stripeSubscription.metadata?.brewery_id ||
+    await resolveBreweryIdForSubscription(supabase, stripeSubscription)
+
+  if (!breweryId) {
+    return
+  }
+
+  const priceId = stripeSubscription.items.data[0]?.price?.id ?? ''
+  const tier = session.metadata?.tier || priceIdToTier(priceId)
+  const customerId = getStripeCustomerId(session.customer) || getStripeCustomerId(stripeSubscription.customer)
+
+  await supabase.from('subscriptions').upsert(
+    {
+      brewery_id: breweryId,
+      stripe_customer_id: customerId,
+      stripe_subscription_id: subscriptionId,
+      tier,
+      status: 'active',
+      current_period_start: toIsoTimestamp(getSubscriptionPeriodStart(stripeSubscription)),
+      current_period_end: toIsoTimestamp(getSubscriptionPeriodEnd(stripeSubscription)),
+      white_glove_paid: session.metadata?.white_glove === 'true',
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'brewery_id' }
+  )
+
+  await supabase
+    .from('breweries')
+    .update({ subscription_tier: tier })
+    .eq('id', breweryId)
+}
+
+async function handleSubscriptionUpdated(
+  supabase: SupabaseClient,
+  subscription: Stripe.Subscription
+) {
+  const breweryId = await resolveBreweryIdForSubscription(supabase, subscription)
+
+  if (!breweryId) {
+    return
+  }
+
+  const tier = priceIdToTier(subscription.items.data[0]?.price?.id ?? '')
+
+  await supabase.from('subscriptions').upsert(
+    {
+      brewery_id: breweryId,
+      stripe_customer_id: getStripeCustomerId(subscription.customer),
+      stripe_subscription_id: subscription.id,
+      tier,
+      status: getBillingStatus(subscription.status),
+      current_period_start: toIsoTimestamp(getSubscriptionPeriodStart(subscription)),
+      current_period_end: toIsoTimestamp(getSubscriptionPeriodEnd(subscription)),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'brewery_id' }
+  )
+
+  await supabase
+    .from('breweries')
+    .update({ subscription_tier: tier })
+    .eq('id', breweryId)
+}
+
+async function handleSubscriptionDeleted(
+  supabase: SupabaseClient,
+  subscription: Stripe.Subscription
+) {
+  const breweryId = await resolveBreweryIdForSubscription(supabase, subscription)
+
+  if (!breweryId) {
+    return
+  }
+
+  await supabase.from('subscriptions').upsert(
+    {
+      brewery_id: breweryId,
+      stripe_customer_id: getStripeCustomerId(subscription.customer),
+      stripe_subscription_id: subscription.id,
+      tier: 'free',
+      status: 'canceled',
+      current_period_start: null,
+      current_period_end: toIsoTimestamp(getSubscriptionPeriodEnd(subscription)),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'brewery_id' }
+  )
+
+  await supabase
+    .from('breweries')
+    .update({ subscription_tier: 'free' })
+    .eq('id', breweryId)
+}
+
+async function handleInvoicePaymentFailed(
+  supabase: SupabaseClient,
+  invoice: Stripe.Invoice
+) {
+  const subscriptionId = getInvoiceSubscriptionId(invoice)
+
+  if (!subscriptionId) {
+    return
+  }
+
+  await supabase
+    .from('subscriptions')
+    .update({ status: 'past_due', updated_at: new Date().toISOString() })
+    .eq('stripe_subscription_id', subscriptionId)
+}
+
+async function processStripeEvent(supabase: SupabaseClient, event: Stripe.Event) {
+  switch (event.type) {
+    case 'checkout.session.completed':
+      await handleCheckoutSessionCompleted(
+        supabase,
+        event.data.object as Stripe.Checkout.Session
+      )
+      break
+
+    case 'customer.subscription.updated':
+      await handleSubscriptionUpdated(
+        supabase,
+        event.data.object as Stripe.Subscription
+      )
+      break
+
+    case 'customer.subscription.deleted':
+      await handleSubscriptionDeleted(
+        supabase,
+        event.data.object as Stripe.Subscription
+      )
+      break
+
+    case 'invoice.payment_failed':
+      await handleInvoicePaymentFailed(
+        supabase,
+        event.data.object as Stripe.Invoice
+      )
+      break
+
+    default:
+      break
+  }
+}
+
+export const POST = withSentry(async (request: NextRequest) => {
+  let verifiedEvent: Awaited<ReturnType<typeof verifyStripeEvent>>
 
   try {
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session
-        const breweryId = session.metadata?.brewery_id
-        const tier = session.metadata?.tier || 'free'
-        const whiteGlove = session.metadata?.white_glove === 'true'
-
-        if (!breweryId) break
-
-        // Get the subscription from the session
-        const subscriptionId = session.subscription as string
-
-        if (subscriptionId) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const stripeSub = await stripe.subscriptions.retrieve(subscriptionId) as any
-
-          const periodStart = stripeSub.current_period_start || stripeSub.items?.data?.[0]?.current_period_start
-          const periodEnd = stripeSub.current_period_end || stripeSub.items?.data?.[0]?.current_period_end
-
-          await supabase.from('subscriptions').upsert(
-            {
-              brewery_id: breweryId,
-              stripe_customer_id: session.customer as string,
-              stripe_subscription_id: subscriptionId,
-              tier,
-              status: 'active',
-              current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
-              current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
-              white_glove_paid: whiteGlove,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'brewery_id' }
-          )
-
-          // Sync tier to breweries table for quick lookups
-          await supabase
-            .from('breweries')
-            .update({ subscription_tier: tier })
-            .eq('id', breweryId)
-        }
-        break
-      }
-
-      case 'customer.subscription.updated': {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const subscription = event.data.object as any
-        const breweryId = subscription.metadata?.brewery_id
-
-        if (!breweryId) break
-
-        // Determine the tier from the price
-        const priceId = subscription.items?.data?.[0]?.price?.id || ''
-        const tier = priceIdToTier(priceId)
-
-        const status = subscription.status === 'active'
-          ? 'active'
-          : subscription.status === 'past_due'
-            ? 'past_due'
-            : subscription.status === 'trialing'
-              ? 'trialing'
-              : 'inactive'
-
-        const periodStart = subscription.current_period_start || subscription.items?.data?.[0]?.current_period_start
-        const periodEnd = subscription.current_period_end || subscription.items?.data?.[0]?.current_period_end
-
-        await supabase.from('subscriptions').upsert(
-          {
-            brewery_id: breweryId,
-            stripe_subscription_id: subscription.id,
-            tier,
-            status,
-            current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
-            current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'brewery_id' }
-        )
-
-        await supabase
-          .from('breweries')
-          .update({ subscription_tier: tier })
-          .eq('id', breweryId)
-
-        break
-      }
-
-      case 'customer.subscription.deleted': {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const subscription = event.data.object as any
-        const breweryId = subscription.metadata?.brewery_id
-
-        if (!breweryId) break
-
-        await supabase.from('subscriptions').upsert(
-          {
-            brewery_id: breweryId,
-            stripe_subscription_id: subscription.id,
-            tier: 'free',
-            status: 'canceled',
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'brewery_id' }
-        )
-
-        await supabase
-          .from('breweries')
-          .update({ subscription_tier: 'free' })
-          .eq('id', breweryId)
-
-        break
-      }
-
-      case 'invoice.payment_failed': {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const invoice = event.data.object as any
-        const subscriptionId = (invoice.subscription as string) || invoice.subscription_details?.id
-
-        if (!subscriptionId) break
-
-        // Find brewery by subscription ID
-        const { data: sub } = await supabase
-          .from('subscriptions')
-          .select('brewery_id')
-          .eq('stripe_subscription_id', subscriptionId)
-          .single()
-
-        if (sub) {
-          await supabase
-            .from('subscriptions')
-            .update({ status: 'past_due', updated_at: new Date().toISOString() })
-            .eq('brewery_id', sub.brewery_id)
-        }
-
-        break
-      }
+    verifiedEvent = await verifyStripeEvent(request)
+  } catch (error) {
+    if (error instanceof StripeWebhookSignatureError) {
+      return new Response(error.message, { status: 400 })
     }
-  } catch (err) {
-    console.error('[Stripe Webhook] Processing error:', err)
+
+    throw error
+  }
+
+  const { event, payload } = verifiedEvent
+  const supabase = createServiceRoleClient()
+  const claimStatus = await claimWebhookEvent(supabase, event.id, payload)
+
+  if (claimStatus === 'already-processed') {
+    return Response.json({ duplicate: true, received: true }, { status: 200 })
+  }
+
+  if (claimStatus === 'in-progress') {
+    return new Response('Webhook already processing', { status: 500 })
+  }
+
+  try {
+    await processStripeEvent(supabase, event)
+    await markWebhookEventProcessed(supabase, event.id)
+  } catch (error) {
+    const errorMessage = getErrorMessage(error)
+    await markWebhookEventFailed(supabase, event.id, errorMessage)
+    console.error('[Stripe Webhook] Processing error:', error)
     return new Response('Webhook processing error', { status: 500 })
   }
 
-  return new Response('OK', { status: 200 })
-}
+  return Response.json({ received: true }, { status: 200 })
+}, {
+  name: 'api/stripe/webhook',
+  onError: () => new Response('Webhook processing error', { status: 500 }),
+})

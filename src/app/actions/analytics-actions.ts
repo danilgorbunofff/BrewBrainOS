@@ -7,6 +7,13 @@ import { sanitizeDbError } from '@/lib/utils'
 
 const daysSchema = z.number().int().min(1).max(365)
 
+interface InventoryTrendBucket {
+  date: string
+  usage: number
+  waste: number
+  additions: number
+}
+
 /**
  * Advanced Analytics: Inventory Usage Trends
  * Aggregates inventory consumption and waste over time.
@@ -49,7 +56,7 @@ export async function getInventoryTrends(days: number = 90) {
   // Aggregate by Date (YYYY-MM-DD or MM/DD format depending on days range)
   const isShortTerm = safeDays <= 30
   
-  const grouped = data.reduce((acc: Record<string, unknown>, row) => {
+  const grouped = data.reduce((acc: Record<string, InventoryTrendBucket>, row) => {
     const d = new Date(row.created_at!)
     // Format to short date like 'Apr 05' or 'Week 14'
     const key = isShortTerm 
@@ -85,8 +92,7 @@ export async function getInventoryTrends(days: number = 90) {
   }, {})
 
   // Convert to array and ensure chronological
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return Object.values(grouped).map((g: any) => ({
+  return Object.values(grouped).map((g) => ({
     ...g,
     usage: Number(g.usage.toFixed(2)),
     waste: Number(g.waste.toFixed(2)),

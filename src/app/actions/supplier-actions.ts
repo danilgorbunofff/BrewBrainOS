@@ -1,6 +1,9 @@
 'use server'
 
+import { z } from 'zod'
 import { createClient } from '@/utils/supabase/server'
+import { supplierSchema, purchaseOrderSchema, supplierRatingSchema } from '@/lib/schemas'
+import { sanitizeDbError } from '@/lib/utils'
 import { 
   Supplier, 
   PurchaseOrder, 
@@ -66,7 +69,7 @@ export async function getSuppliers(breweryId: string): Promise<ActionResult<Supp
     if (error) throw error
     return { success: true, data: data || [] }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -88,7 +91,7 @@ export async function getSupplier(supplierId: string): Promise<ActionResult<Supp
     
     return { success: true, data }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -101,16 +104,19 @@ export async function createSupplier(
 ): Promise<ActionResult<Supplier>> {
   try {
     const supabase = await createClient()
-    
-    // Validate required fields
-    if (!supplierData.name) throw new Error('Supplier name is required')
-    if (!supplierData.supplier_type) throw new Error('Supplier type is required')
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    const parsed = supplierSchema.safeParse(supplierData)
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0].message }
+    }
     
     const { data, error } = await supabase
       .from('suppliers')
       .insert([
         {
-          ...supplierData,
+          ...parsed.data,
           brewery_id: breweryId,
           avg_quality_rating: 0,
           avg_delivery_days: 0,
@@ -125,7 +131,7 @@ export async function createSupplier(
     
     return { success: true, data }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -154,7 +160,7 @@ export async function updateSupplier(
     
     return { success: true, data }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -174,7 +180,7 @@ export async function deleteSupplier(supplierId: string): Promise<ActionResult<v
     
     return { success: true, data: undefined }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -268,7 +274,7 @@ export async function getSupplierPerformance(supplierId: string): Promise<Action
     
     return { success: true, data: metrics }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -292,7 +298,7 @@ export async function getPurchaseOrders(breweryId: string): Promise<ActionResult
     if (error) throw error
     return { success: true, data: data || [] }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -314,7 +320,7 @@ export async function getPurchaseOrder(orderId: string): Promise<ActionResult<Pu
     
     return { success: true, data }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -328,21 +334,22 @@ export async function createPurchaseOrder(
 ): Promise<ActionResult<PurchaseOrder>> {
   try {
     const supabase = await createClient()
-    
-    // Get current user
-    const { data: userData } = await supabase.auth.getUser()
-    
-    // Validate required fields
-    if (!orderData.order_number) throw new Error('Order number is required')
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    const parsed = purchaseOrderSchema.safeParse({ ...orderData, supplier_id: supplierId })
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0].message }
+    }
     
     const { data, error } = await supabase
       .from('purchase_orders')
       .insert([
         {
-          ...orderData,
+          ...parsed.data,
           brewery_id: breweryId,
           supplier_id: supplierId,
-          created_by: userData?.user?.id,
+          created_by: user.id,
         }
       ])
       .select()
@@ -353,7 +360,7 @@ export async function createPurchaseOrder(
     
     return { success: true, data }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -382,7 +389,7 @@ export async function updatePurchaseOrder(
     
     return { success: true, data }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -423,7 +430,7 @@ export async function deletePurchaseOrder(orderId: string): Promise<ActionResult
     
     return { success: true, data: undefined }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -446,7 +453,7 @@ export async function getPurchaseOrderItems(orderId: string): Promise<ActionResu
     if (error) throw error
     return { success: true, data: data || [] }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -482,7 +489,7 @@ export async function addPurchaseOrderItem(
     
     return { success: true, data }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -511,7 +518,7 @@ export async function updatePurchaseOrderItem(
     
     return { success: true, data }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -531,7 +538,7 @@ export async function deletePurchaseOrderItem(itemId: string): Promise<ActionRes
     
     return { success: true, data: undefined }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -555,7 +562,7 @@ export async function getSupplierRatings(supplierId: string): Promise<ActionResu
     if (error) throw error
     return { success: true, data: data || [] }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -568,22 +575,15 @@ export async function createSupplierRating(
 ): Promise<ActionResult<SupplierRating>> {
   try {
     const supabase = await createClient()
-    
-    // Get current user
-    const { data: userData } = await supabase.auth.getUser()
-    
-    // Validate ratings
-    if (ratingData.quality_rating < 1 || ratingData.quality_rating > 5) {
-      throw new Error('Quality rating must be between 1 and 5')
-    }
-    if (ratingData.delivery_rating < 1 || ratingData.delivery_rating > 5) {
-      throw new Error('Delivery rating must be between 1 and 5')
-    }
-    if (ratingData.reliability_rating < 1 || ratingData.reliability_rating > 5) {
-      throw new Error('Reliability rating must be between 1 and 5')
-    }
-    if (ratingData.pricing_rating < 1 || ratingData.pricing_rating > 5) {
-      throw new Error('Pricing rating must be between 1 and 5')
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    const parsed = supplierRatingSchema.safeParse({
+      ...ratingData,
+      rating_date: new Date().toISOString(),
+    })
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0].message }
     }
     
     const { data, error } = await supabase
@@ -591,9 +591,8 @@ export async function createSupplierRating(
       .insert([
         {
           brewery_id: breweryId,
-          ...ratingData,
-          rated_by: userData?.user?.id,
-          rating_date: new Date().toISOString(),
+          ...parsed.data,
+          rated_by: user.id,
         }
       ])
       .select()
@@ -604,7 +603,7 @@ export async function createSupplierRating(
     
     return { success: true, data }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -633,7 +632,7 @@ export async function updateSupplierRating(
     
     return { success: true, data }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -653,7 +652,7 @@ export async function deleteSupplierRating(ratingId: string): Promise<ActionResu
     
     return { success: true, data: undefined }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -738,7 +737,7 @@ export async function recalculateSupplierMetrics(supplierId: string): Promise<Ac
 
     return { success: true, data: undefined }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -870,7 +869,7 @@ export async function getSupplierAnalytics(breweryId: string, daysBack: number =
 
     return { success: true, data: analytics }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -936,7 +935,7 @@ export async function getSupplierTrends(supplierId: string, daysBack: number = 9
 
     return { success: true, data: trends }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }
 
@@ -1009,6 +1008,6 @@ export async function getSupplierQualityIssues(supplierId: string, breweryId: st
       },
     }
   } catch (error) {
-    return { success: false, error: String(error) }
+    return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
   }
 }

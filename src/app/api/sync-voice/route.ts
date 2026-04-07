@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { processVoiceLog } from '@/app/actions/voice'
+import { toSyncFailureResponse, toSyncSuccessResponse } from '@/app/api/sync-response'
 
 export async function POST(req: NextRequest) {
   try {
@@ -7,11 +8,14 @@ export async function POST(req: NextRequest) {
     const result = await processVoiceLog(formData)
     
     if (result && result.success) {
-      return NextResponse.json({ success: true })
-    } else {
-      return NextResponse.json({ success: false, error: result?.error }, { status: 400 })
+      return toSyncSuccessResponse()
     }
+
+    return toSyncFailureResponse(result?.error || 'Failed to sync voice log')
   } catch (error: unknown) {
-    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : String(error) }, { status: 500 })
+    return toSyncFailureResponse(
+      error instanceof Error ? error.message : String(error) || 'Failed to sync voice log',
+      503,
+    )
   }
 }

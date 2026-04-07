@@ -1,9 +1,14 @@
 'use server'
 
+import { z } from 'zod'
 import { createClient } from '@/utils/supabase/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
+import { isUniqueViolationFor, sanitizeDbError } from '@/lib/utils'
+
+const ALLOWED_AUDIO_TYPES = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav']
+const MAX_AUDIO_SIZE_BYTES = 10 * 1024 * 1024 // 10 MB
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
@@ -20,7 +25,15 @@ export async function processVoiceLog(formData: FormData) {
     if (!audioFile) {
       return { success: false, error: 'No audio provided.' }
     }
-    
+
+    const baseMime = audioFile.type.split(';')[0]
+    if (!ALLOWED_AUDIO_TYPES.includes(baseMime)) {
+      return { success: false, error: 'Unsupported audio format.' }
+    }
+    if (audioFile.size > MAX_AUDIO_SIZE_BYTES) {
+      return { success: false, error: 'Audio file is too large (max 10 MB).' }
+    }
+
     // We optionally pass a tankId if we triggered this directly from a tank's page.
     const tankId = formData.get('tankId') as string | null
 
@@ -28,7 +41,7 @@ export async function processVoiceLog(formData: FormData) {
     const base64Data = Buffer.from(arrayBuffer).toString('base64')
 
     // Clean mimeType formatting for Gemini (e.g. audio/webm;codecs=opus -> audio/webm)
-    const mimeType = audioFile.type.split(';')[0] || 'audio/webm'
+    const mimeType = baseMime || 'audio/webm'
 
     const model = genAI.getGenerativeModel({ 
       model: 'gemini-1.5-flash',
@@ -97,6 +110,8 @@ export async function processVoiceLog(formData: FormData) {
        }
     }
 
+    const externalId = (formData.get('external_id') as string | null)?.trim() || null
+
     // Insert Reading
     const reqHeaders = await headers()
     const ip = reqHeaders.get('x-forwarded-for') || reqHeaders.get('x-real-ip') || 'unknown'
@@ -104,6 +119,7 @@ export async function processVoiceLog(formData: FormData) {
 
     const { error: insertError } = await supabase.from('batch_readings').insert({
       batch_id: finalBatchId,
+      external_id: externalId,
       logger_id: user.id,
       temperature: extractedData.temperature || null,
       gravity: extractedData.gravity || null,
@@ -113,6 +129,15 @@ export async function processVoiceLog(formData: FormData) {
     })
 
     if (insertError) {
+      if (isUniqueViolationFor(insertError, 'external_id')) {
+        return {
+          success: true,
+          message: 'Log already recorded.',
+          data: extractedData,
+          deduped: true,
+        }
+      }
+
       throw insertError
     }
 
@@ -127,6 +152,6 @@ export async function processVoiceLog(formData: FormData) {
     return { success: true, message: 'Log safely recorded to database.', data: extractedData }
   } catch (error: unknown) {
     console.error('Process Voice Log Error:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Internal Server Error' }
+    return { success: false, error: sanitizeDbError(error, 'processVoiceLog') }
   }
 }

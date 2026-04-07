@@ -7,14 +7,26 @@ import { ActionResult } from '@/types/database'
 
 interface FormWithToastProps {
   children: React.ReactNode
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  action: (formData: FormData) => Promise<ActionResult | any>
+  action: (formData: FormData) => Promise<ActionResult<unknown> | void | null | undefined>
   successMessage?: string
   errorMessage?: string
   resetOnSuccess?: boolean
   onSuccess?: () => void
   onBeforeSubmit?: () => void
+  onError?: (message: string) => void
   formRef?: React.RefObject<HTMLFormElement | null>
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) {
+    return error.message
+  }
+
+  if (typeof error === 'string' && error.trim().length > 0) {
+    return error
+  }
+
+  return fallback
 }
 
 export function FormWithToast({
@@ -25,6 +37,7 @@ export function FormWithToast({
   resetOnSuccess = true,
   onSuccess,
   onBeforeSubmit,
+  onError,
   formRef: externalRef,
 }: FormWithToastProps) {
   const internalRef = useRef<HTMLFormElement>(null)
@@ -48,7 +61,9 @@ export function FormWithToast({
           router.refresh()
           if (onSuccess) onSuccess()
         } else {
-          toast.error(result.error || errorMessage)
+          const message = result.error || errorMessage
+          toast.error(message)
+          onError?.(message)
         }
       } else {
         // Fallback for non-standard actions
@@ -56,7 +71,9 @@ export function FormWithToast({
         router.refresh()
       }
     } catch (err: unknown) {
-      toast.error(err?.message || errorMessage)
+      const message = getErrorMessage(err, errorMessage)
+      toast.error(message)
+      onError?.(message)
     }
   }
 

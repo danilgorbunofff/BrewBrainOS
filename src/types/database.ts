@@ -330,6 +330,7 @@ export interface YeastLog {
 export interface BatchReading {
   id: string
   batch_id: string
+  external_id?: string | null
   gravity?: number | null
   temperature?: number | null
   ph?: number | null              // pH level (typical range 4.0–5.5)
@@ -339,6 +340,15 @@ export interface BatchReading {
   logger_id?: string | null
   provenance_ip?: string | null
   provenance_user_agent?: string | null
+  created_at: string
+}
+
+export interface BatchListItem {
+  id: string
+  recipe_name: string
+  status: string
+  og: number | null
+  fg: number | null
   created_at: string
 }
 

@@ -3,7 +3,9 @@ import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { DeleteConfirmProvider } from "@/components/DeleteConfirmProvider";
 import { GloveModeProvider, GloveModeScript } from "@/components/GloveModeProvider";
+import { WebVitalsReporter } from "@/components/WebVitalsReporter";
 
 const fontHeading = Outfit({
   variable: "--font-heading",
@@ -42,8 +44,11 @@ export default function RootLayout({
         <GloveModeScript />
         <GloveModeProvider>
           <ThemeProvider>
-            {children}
-            <Toaster position="top-center" />
+            <DeleteConfirmProvider>
+              <WebVitalsReporter />
+              {children}
+              <Toaster position="top-center" />
+            </DeleteConfirmProvider>
           </ThemeProvider>
         </GloveModeProvider>
       </body>

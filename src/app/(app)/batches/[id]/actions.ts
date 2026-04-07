@@ -7,6 +7,7 @@ import { ActionResult } from '@/types/database'
 import { detectFermentationAlerts, BatchReadingInput, BatchConfig } from '@/lib/fermentation-alerts'
 import { sendFermentationAlertNotification } from '@/app/actions/push-actions'
 import { headers } from 'next/headers'
+import { isUniqueViolationFor } from '@/lib/utils'
 
 // ─────────────────────────────────────────────
 // EXISTING ACTIONS
@@ -98,6 +99,7 @@ export async function logManualReading(formData: FormData): Promise<ActionResult
     const { data: { user } } = await supabase.auth.getUser()
 
     const batchId = formData.get('batchId') as string
+    const externalId = (formData.get('external_id') as string | null)?.trim() || null
     if (!batchId) return { success: false, error: 'Batch ID is required' }
 
     const parseOptional = (key: string) => {
@@ -114,6 +116,7 @@ export async function logManualReading(formData: FormData): Promise<ActionResult
     const reading = {
       batch_id: batchId,
       brewery_id: brewery.id,
+      external_id: externalId,
       temperature: parseOptional('temperature'),
       gravity: parseOptional('gravity'),
       ph: parseOptional('ph'),
@@ -127,6 +130,10 @@ export async function logManualReading(formData: FormData): Promise<ActionResult
 
     const { error } = await supabase.from('batch_readings').insert(reading)
     if (error) {
+      if (isUniqueViolationFor(error, 'external_id')) {
+        return { success: true, data: null }
+      }
+
       console.error('Failed to log reading:', error)
       return { success: false, error: 'Failed to log reading' }
     }

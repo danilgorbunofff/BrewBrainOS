@@ -1,44 +1,56 @@
 'use server'
 
+import { z } from 'zod'
 import { createClient } from '@/utils/supabase/server'
 import webpush from 'web-push'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { FermentationAlert, FermentationAlertType } from '@/types/database'
+import { sanitizeDbError } from '@/lib/utils'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function saveSubscription(subscription: any) {
+const pushSubscriptionSchema = z.object({
+  endpoint: z.string().url('Invalid push subscription endpoint'),
+  keys: z.object({
+    p256dh: z.string().min(1),
+    auth: z.string().min(1),
+  }),
+})
+
+export async function saveSubscription(subscription: unknown) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { success: false, error: 'Unauthorized' }
 
-    if (!subscription || !subscription.endpoint) {
-      return { success: false, error: 'Invalid subscription' }
+    const parsed = pushSubscriptionSchema.safeParse(subscription)
+    if (!parsed.success) {
+      return { success: false, error: 'Invalid push subscription object' }
     }
+
+    const { endpoint, keys } = parsed.data
 
     await supabase
       .from('push_subscriptions')
       .delete()
-      .eq('endpoint', subscription.endpoint)
+      .eq('endpoint', endpoint)
 
     const { error } = await supabase
       .from('push_subscriptions')
       .insert({
         user_id: user.id,
-        endpoint: subscription.endpoint,
-        p256dh: subscription.keys?.p256dh,
-        auth: subscription.keys?.auth,
+        endpoint,
+        p256dh: keys.p256dh,
+        auth: keys.auth,
       })
 
     if (error) {
       console.error('Failed to save push subscription:', error)
-      return { success: false, error: 'Database error' }
+      return { success: false, error: 'Could not save push subscription.' }
     }
 
     return { success: true }
   } catch (e: unknown) {
     console.error('Save subscription error:', e)
-    return { success: false, error: e instanceof Error ? e.message : String(e) }
+    return { success: false, error: sanitizeDbError(e, 'saveSubscription') }
   }
 }
 
@@ -93,7 +105,7 @@ export async function sendTestNotification() {
     return { success: true }
   } catch (e: unknown) {
     console.error('Send test notification error:', e)
-    return { success: false, error: e instanceof Error ? e.message : String(e) }
+    return { success: false, error: sanitizeDbError(e, 'sendTestNotification') }
   }
 }
 

@@ -5,6 +5,7 @@ import { OfflineSyncBanner } from '@/components/OfflineSyncBanner'
 import { SubscriptionProvider } from '@/components/SubscriptionProvider'
 import { DevTools } from '@/components/DevTools'
 import { FeedbackButton } from '@/components/FeedbackButton'
+import { ClientErrorBoundary } from '@/components/ClientErrorBoundary'
 import { getActiveBrewery, getUserBreweries } from '@/lib/active-brewery'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -55,7 +56,9 @@ export default async function AppLayout({
 
   return (
     <>
-      <OfflineSyncBanner />
+      <ClientErrorBoundary fallback={null}>
+        <OfflineSyncBanner />
+      </ClientErrorBoundary>
       <SubscriptionProvider subscription={subscription}>
         <div className="min-h-screen flex max-w-[100vw] overflow-x-hidden md:mt-0 mt-8">
         <Sidebar

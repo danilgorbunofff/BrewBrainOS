@@ -1,8 +1,8 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useVirtualizer } from '@tanstack/react-virtual'
+import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual'
 import { SearchFilter } from '@/components/SearchFilter'
 import { ExportCSVButton } from '@/components/ExportCSVButton'
 import { DeleteConfirmButton } from '@/components/DeleteConfirmButton'
@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { cn } from '@/lib/utils'
 import { LucideMinus, LucidePlus, LucideAlertCircle, LucideBoxes, LucideChevronDown } from 'lucide-react'
 import { updateStock, deleteInventoryItem } from '@/app/(app)/inventory/actions'
-import { getDegradationHealthStatus } from '@/lib/degradation'
+import { DEFAULT_VIRTUAL_THRESHOLD, mergeVirtualRangeIndexes, shouldVirtualizeRows } from '@/lib/table-virtualization'
 
 interface InventoryItem {
   id: string
@@ -32,7 +32,14 @@ interface InventoryItem {
 }
 
 const categories = ['All', 'Hops', 'Grain', 'Yeast', 'Adjunct', 'Packaging']
-const VIRTUAL_THRESHOLD = 100
+const VIRTUAL_THRESHOLD = DEFAULT_VIRTUAL_THRESHOLD
+const INVENTORY_ROW_ESTIMATE = 96
+const INVENTORY_VIRTUAL_OVERSCAN = 12
+const INVENTORY_VIRTUAL_VIEWPORT_HEIGHT = 520
+
+async function submitStockUpdate(formData: FormData) {
+  await updateStock(formData)
+}
 
 // ─── Helper Functions ─────────────────────────────────────────────────────────
 
@@ -52,12 +59,6 @@ function getDegradationBadge(item: InventoryItem) {
   const ppgLoss = item.ppg_initial && item.ppg_current
     ? ((item.ppg_initial - item.ppg_current) / item.ppg_initial) * 100
     : 0
-
-  const healthStatus = getDegradationHealthStatus(
-    item.hsi_current,
-    item.grain_moisture_current,
-    ppgLoss
-  )
 
   const badges = []
 
@@ -168,14 +169,14 @@ function MobileInventoryCard({ item }: { item: InventoryItem }) {
             )}
           </div>
           <div className="flex items-center gap-1">
-            <form action={updateStock as any}>
+            <form action={submitStockUpdate}>
               <input type="hidden" name="itemId" value={item.id} />
               <input type="hidden" name="stock" value={Math.max(0, item.current_stock - 1)} />
               <Button type="submit" variant="ghost" size="icon" className="size-9 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 border border-border rounded-xl">
                 <LucideMinus className="h-4 w-4" />
               </Button>
             </form>
-            <form action={updateStock as any}>
+            <form action={submitStockUpdate}>
               <input type="hidden" name="itemId" value={item.id} />
               <input type="hidden" name="stock" value={item.current_stock + 1} />
               <Button type="submit" variant="ghost" size="icon" className="size-9 text-muted-foreground hover:text-green-500 hover:bg-green-500/10 border border-border rounded-xl">
@@ -237,12 +238,31 @@ function MobileInventoryCard({ item }: { item: InventoryItem }) {
 
 // ─── Desktop Table Row ────────────────────────────────────────────────────────
 
-function InventoryRow({ item }: { item: InventoryItem }) {
+function InventoryRow({
+  item,
+  onPersistRow,
+  onReleaseRow,
+}: {
+  item: InventoryItem
+  onPersistRow?: (rowId: string) => void
+  onReleaseRow?: (rowId: string) => void
+}) {
   const isLowStock = item.current_stock <= (item.reorder_point || 0)
   const expirationStatus = getExpirationStatus(item.expiration_date)
   
   return (
-    <TableRow className="border-border hover:bg-surface transition-colors group cursor-pointer">
+    <TableRow
+      data-row-id={item.id}
+      onFocusCapture={() => onPersistRow?.(item.id)}
+      onBlurCapture={(event) => {
+        const nextFocused = event.relatedTarget as Node | null
+
+        if (!nextFocused || !event.currentTarget.contains(nextFocused)) {
+          onReleaseRow?.(item.id)
+        }
+      }}
+      className="border-border hover:bg-surface transition-colors group cursor-pointer"
+    >
       <TableCell className="py-6 px-8">
         <div className="space-y-1">
           <Link href={`/inventory/${item.id}`} className="flex items-center gap-3 font-black text-lg tracking-tight text-foreground group-hover:text-primary transition-colors hover:underline">
@@ -287,14 +307,14 @@ function InventoryRow({ item }: { item: InventoryItem }) {
       </TableCell>
       <TableCell className="text-right px-8">
         <div className="flex items-center justify-end gap-2 opacity-30 group-hover:opacity-100 transition-opacity duration-300">
-          <form action={updateStock as any}>
+          <form action={submitStockUpdate}>
             <input type="hidden" name="itemId" value={item.id} />
             <input type="hidden" name="stock" value={Math.max(0, item.current_stock - 1)} />
             <Button type="submit" variant="ghost" size="icon" className="size-10 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/20">
               <LucideMinus className="h-5 w-5" />
             </Button>
           </form>
-          <form action={updateStock as any}>
+          <form action={submitStockUpdate}>
             <input type="hidden" name="itemId" value={item.id} />
             <input type="hidden" name="stock" value={item.current_stock + 1} />
             <Button type="submit" variant="ghost" size="icon" className="size-10 text-muted-foreground hover:text-green-500 hover:bg-green-500/10 border border-transparent hover:border-green-500/20">
@@ -312,17 +332,40 @@ function InventoryRow({ item }: { item: InventoryItem }) {
 
 function VirtualDesktopTable({ items }: { items: InventoryItem[] }) {
   const parentRef = useRef<HTMLDivElement>(null)
-  const ROW_HEIGHT = 81 // px — py-6 = 24px top+bottom + ~33px content
+  const [persistentRowIds, setPersistentRowIds] = useState<string[]>([])
 
+  useEffect(() => {
+    setPersistentRowIds((currentIds) => currentIds.filter((rowId) => items.some((item) => item.id === rowId)))
+  }, [items])
+
+  const persistentIndexes = persistentRowIds
+    .map((rowId) => items.findIndex((item) => item.id === rowId))
+    .filter((index) => index >= 0)
+
+  const persistRow = (rowId: string) => {
+    setPersistentRowIds((currentIds) => (currentIds.includes(rowId) ? currentIds : [...currentIds, rowId]))
+  }
+
+  const releaseRow = (rowId: string) => {
+    setPersistentRowIds((currentIds) => currentIds.filter((currentRowId) => currentRowId !== rowId))
+  }
+
+  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: items.length,
+    getItemKey: index => items[index]?.id ?? index,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => ROW_HEIGHT,
-    overscan: 8,
+    estimateSize: () => INVENTORY_ROW_ESTIMATE,
+    initialRect: { height: INVENTORY_VIRTUAL_VIEWPORT_HEIGHT, width: 0 },
+    measureElement: element => element.getBoundingClientRect().height,
+    overscan: INVENTORY_VIRTUAL_OVERSCAN,
+    rangeExtractor: range => mergeVirtualRangeIndexes(defaultRangeExtractor(range), persistentIndexes),
   })
 
+  const virtualRows = virtualizer.getVirtualItems()
+
   return (
-    <div className="rounded-2xl border border-border bg-surface backdrop-blur-3xl overflow-hidden">
+    <div data-testid="inventory-virtual-table" className="rounded-2xl border border-border bg-surface backdrop-blur-3xl overflow-hidden">
       <Table>
         <TableHeader className="bg-background/50">
           <TableRow className="border-border hover:bg-transparent">
@@ -337,40 +380,38 @@ function VirtualDesktopTable({ items }: { items: InventoryItem[] }) {
       {/* Scrollable virtual body */}
       <div
         ref={parentRef}
+        data-testid="inventory-virtual-scroll"
+        data-benchmark-scroll="inventory"
         className="overflow-auto"
-        style={{ maxHeight: '520px' }}
+        style={{ maxHeight: `${INVENTORY_VIRTUAL_VIEWPORT_HEIGHT}px` }}
       >
-        <Table>
-          <TableBody>
-            <tr style={{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }}>
-              {virtualizer.getVirtualItems().map(vRow => {
-                const item = items[vRow.index]
-                return (
-                  <tr
-                    key={item.id}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: `${vRow.size}px`,
-                      transform: `translateY(${vRow.start}px)`,
-                    }}
-                  >
-                    {/* Render as a single-row table to reuse InventoryRow cells cleanly */}
-                    <td colSpan={5} className="p-0 border-b border-border">
-                      <table className="w-full">
-                        <tbody>
-                          <InventoryRow item={item} />
-                        </tbody>
-                      </table>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tr>
-          </TableBody>
-        </Table>
+        <div style={{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }}>
+          {virtualRows.map(vRow => {
+            const item = items[vRow.index]
+
+            return (
+              <div
+                key={item.id}
+                data-index={vRow.index}
+                data-virtual-row="inventory"
+                data-row-id={item.id}
+                ref={node => {
+                  if (node) {
+                    virtualizer.measureElement(node)
+                  }
+                }}
+                className="absolute left-0 top-0 w-full"
+                style={{ transform: `translateY(${vRow.start}px)` }}
+              >
+                <table className="w-full border-collapse">
+                  <tbody>
+                    <InventoryRow item={item} onPersistRow={persistRow} onReleaseRow={releaseRow} />
+                  </tbody>
+                </table>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
@@ -380,7 +421,7 @@ function VirtualDesktopTable({ items }: { items: InventoryItem[] }) {
 
 function DesktopTable({ items, query }: { items: InventoryItem[]; query: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface backdrop-blur-3xl overflow-hidden">
+    <div data-testid="inventory-standard-table" className="rounded-2xl border border-border bg-surface backdrop-blur-3xl overflow-hidden">
       <Table>
         <TableHeader className="bg-background/50">
           <TableRow className="border-border hover:bg-transparent">
@@ -457,7 +498,7 @@ export function InventoryTable({ items }: { items: InventoryItem[] }) {
                 <TabsContent key={category} value={category} className="mt-0 focus-visible:outline-none">
                   {/* Desktop: virtualize if large, otherwise normal table */}
                   <div className="hidden md:block">
-                    {catFiltered.length > VIRTUAL_THRESHOLD ? (
+                    {shouldVirtualizeRows(catFiltered.length, VIRTUAL_THRESHOLD) ? (
                       <VirtualDesktopTable items={catFiltered} />
                     ) : (
                       <DesktopTable items={catFiltered} query={query} />

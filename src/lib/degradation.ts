@@ -179,8 +179,9 @@ export function getDegradationHealthStatus(
 
   // HSI check
   if (hsi !== null && hsi !== undefined) {
+    if (hsi < 75) issues++
     if (hsi < 50) issues++
-    if (hsi < 30) issues += 2
+    if (hsi < 30) issues++
   }
 
   // Moisture check
@@ -243,8 +244,7 @@ export function recalculateDegradationMetrics(item: {
     grain_moisture_current = calculateGrainMoisture(
       item.grain_moisture_initial,
       item.received_date,
-      item.storage_condition,
-      item.grain_moisture_current ?? undefined  // Pass current if already set (manual override)
+      item.storage_condition
     )
   }
 
@@ -287,7 +287,7 @@ export function generateDegradationAlerts(metrics: {
         level: 'critical',
         message: 'HSI critically low (<30%). Hops severely degraded, IBU yield significantly reduced.',
       })
-    } else if (metrics.hsi_current < 50) {
+    } else if (metrics.hsi_current < 75) {
       alerts.push({
         level: 'warning',
         message: `HSI at ${metrics.hsi_current}%. Expect ~${100 - metrics.hsi_current}% reduction in IBU contribution.`,

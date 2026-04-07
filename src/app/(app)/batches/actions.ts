@@ -3,11 +3,12 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireActiveBrewery } from '@/lib/require-brewery'
-import { ActionResult } from '@/types/database'
+import { ActionResult, BatchListItem } from '@/types/database'
 
-export async function addBatch(formData: FormData): Promise<ActionResult> {
+export async function addBatch(formData: FormData): Promise<ActionResult<BatchListItem>> {
   try {
     const { supabase, brewery } = await requireActiveBrewery()
+    const id = (formData.get('id') as string | null)?.trim() || undefined
 
     const recipeName = formData.get('recipeName') as string
 
@@ -19,6 +20,7 @@ export async function addBatch(formData: FormData): Promise<ActionResult> {
     const og = ogText && ogText.trim() !== '' ? parseFloat(ogText) : null
 
     const insertPayload = {
+      ...(id ? { id } : {}),
       brewery_id: brewery.id,
       recipe_name: recipeName.trim(),
       status: 'fermenting',

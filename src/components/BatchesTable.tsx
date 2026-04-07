@@ -1,8 +1,8 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useVirtualizer } from '@tanstack/react-virtual'
+import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual'
 import { SearchFilter } from '@/components/SearchFilter'
 import { ExportCSVButton } from '@/components/ExportCSVButton'
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
@@ -22,22 +22,25 @@ import {
 import { AddBatchForm } from '@/components/AddBatchForm'
 import { LucideFlaskConical, LucideChevronRight, LucidePlusCircle } from 'lucide-react'
 import { deleteBatch } from '@/app/(app)/batches/actions'
+import { DEFAULT_VIRTUAL_THRESHOLD, mergeVirtualRangeIndexes, shouldVirtualizeRows } from '@/lib/table-virtualization'
+import type { BatchListItem } from '@/types/database'
 
-interface Batch {
-  id: string
-  recipe_name: string
-  status: string
-  og: number | null
-  fg: number | null
-  created_at: string
-}
-
-const VIRTUAL_THRESHOLD = 100
-const ROW_HEIGHT = 89 // py-6 ≈ 24px × 2 + ~41px content
+const VIRTUAL_THRESHOLD = DEFAULT_VIRTUAL_THRESHOLD
+const BATCH_ROW_ESTIMATE = 92
+const BATCH_VIRTUAL_OVERSCAN = 12
+const BATCH_VIRTUAL_VIEWPORT_HEIGHT = 520
 
 // ─── Empty State ──────────────────────────────────────────────────────────────
 
-function EmptyLogbook({ query }: { query: string }) {
+function EmptyLogbook({
+  query,
+  onOptimisticAdd,
+  onOptimisticRollback,
+}: {
+  query: string
+  onOptimisticAdd?: (id: string, recipeName: string, og: number | null) => void
+  onOptimisticRollback?: (id: string) => void
+}) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -71,7 +74,11 @@ function EmptyLogbook({ query }: { query: string }) {
                 </DialogDescription>
               </DialogHeader>
               <div className="py-4 flex justify-center">
-                <AddBatchForm onSuccess={() => setOpen(false)} />
+                <AddBatchForm
+                  onSuccess={() => setOpen(false)}
+                  onOptimisticAdd={onOptimisticAdd}
+                  onOptimisticRollback={onOptimisticRollback}
+                />
               </div>
             </DialogContent>
           </Dialog>
@@ -94,10 +101,29 @@ const getStatusColor = (status: string) => {
 
 // ─── Desktop Row ─────────────────────────────────────────────────────────────
 
-function BatchRow({ batch }: { batch: Batch }) {
+function BatchRow({
+  batch,
+  onPersistRow,
+  onReleaseRow,
+}: {
+  batch: BatchListItem
+  onPersistRow?: (rowId: string) => void
+  onReleaseRow?: (rowId: string) => void
+}) {
   const isPulsing = ['fermenting', 'conditioning', 'packaging'].includes(batch.status.toLowerCase())
   return (
-    <TableRow className="border-border hover:bg-surface transition-colors group cursor-pointer">
+    <TableRow
+      data-row-id={batch.id}
+      onFocusCapture={() => onPersistRow?.(batch.id)}
+      onBlurCapture={(event) => {
+        const nextFocused = event.relatedTarget as Node | null
+
+        if (!nextFocused || !event.currentTarget.contains(nextFocused)) {
+          onReleaseRow?.(batch.id)
+        }
+      }}
+      className="border-border hover:bg-surface transition-colors group cursor-pointer"
+    >
       <TableCell className="py-6 px-6">
         <Link href={`/batches/${batch.id}`} className="flex flex-col">
           <span className="font-black text-lg tracking-tight text-foreground group-hover:text-primary transition-colors">
@@ -133,15 +159,39 @@ function BatchRow({ batch }: { batch: Batch }) {
 
 // ─── Virtual Desktop Table ────────────────────────────────────────────────────
 
-function VirtualDesktopTable({ batches }: { batches: Batch[] }) {
+function VirtualDesktopTable({ batches }: { batches: BatchListItem[] }) {
   const parentRef = useRef<HTMLDivElement>(null)
+  const [persistentRowIds, setPersistentRowIds] = useState<string[]>([])
 
+  useEffect(() => {
+    setPersistentRowIds((currentIds) => currentIds.filter((rowId) => batches.some((batch) => batch.id === rowId)))
+  }, [batches])
+
+  const persistentIndexes = persistentRowIds
+    .map((rowId) => batches.findIndex((batch) => batch.id === rowId))
+    .filter((index) => index >= 0)
+
+  const persistRow = (rowId: string) => {
+    setPersistentRowIds((currentIds) => (currentIds.includes(rowId) ? currentIds : [...currentIds, rowId]))
+  }
+
+  const releaseRow = (rowId: string) => {
+    setPersistentRowIds((currentIds) => currentIds.filter((currentRowId) => currentRowId !== rowId))
+  }
+
+  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: batches.length,
+    getItemKey: index => batches[index]?.id ?? index,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => ROW_HEIGHT,
-    overscan: 8,
+    estimateSize: () => BATCH_ROW_ESTIMATE,
+    initialRect: { height: BATCH_VIRTUAL_VIEWPORT_HEIGHT, width: 0 },
+    measureElement: element => element.getBoundingClientRect().height,
+    overscan: BATCH_VIRTUAL_OVERSCAN,
+    rangeExtractor: range => mergeVirtualRangeIndexes(defaultRangeExtractor(range), persistentIndexes),
   })
+
+  const virtualRows = virtualizer.getVirtualItems()
 
   const headerCells = (
     <TableRow className="border-border hover:bg-transparent">
@@ -155,41 +205,44 @@ function VirtualDesktopTable({ batches }: { batches: Batch[] }) {
   )
 
   return (
-    <div className="glass border-border overflow-hidden rounded-2xl">
+    <div data-testid="batches-virtual-table" className="glass border-border overflow-hidden rounded-2xl">
       <Table>
         <TableHeader className="bg-background/50">{headerCells}</TableHeader>
       </Table>
-      <div ref={parentRef} className="overflow-auto" style={{ maxHeight: '520px' }}>
-        <Table>
-          <TableBody>
-            <tr style={{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }}>
-              {virtualizer.getVirtualItems().map(vRow => {
-                const batch = batches[vRow.index]
-                return (
-                  <tr
-                    key={batch.id}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: `${vRow.size}px`,
-                      transform: `translateY(${vRow.start}px)`,
-                    }}
-                  >
-                    <td colSpan={6} className="p-0 border-b border-border">
-                      <table className="w-full">
-                        <tbody>
-                          <BatchRow batch={batch} />
-                        </tbody>
-                      </table>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tr>
-          </TableBody>
-        </Table>
+      <div
+        ref={parentRef}
+        data-testid="batches-virtual-scroll"
+        data-benchmark-scroll="batches"
+        className="overflow-auto"
+        style={{ maxHeight: `${BATCH_VIRTUAL_VIEWPORT_HEIGHT}px` }}
+      >
+        <div style={{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }}>
+          {virtualRows.map(vRow => {
+            const batch = batches[vRow.index]
+
+            return (
+              <div
+                key={batch.id}
+                data-index={vRow.index}
+                data-virtual-row="batches"
+                data-row-id={batch.id}
+                ref={node => {
+                  if (node) {
+                    virtualizer.measureElement(node)
+                  }
+                }}
+                className="absolute left-0 top-0 w-full"
+                style={{ transform: `translateY(${vRow.start}px)` }}
+              >
+                <table className="w-full border-collapse">
+                  <tbody>
+                    <BatchRow batch={batch} onPersistRow={persistRow} onReleaseRow={releaseRow} />
+                  </tbody>
+                </table>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
@@ -197,9 +250,19 @@ function VirtualDesktopTable({ batches }: { batches: Batch[] }) {
 
 // ─── Standard Desktop Table ───────────────────────────────────────────────────
 
-function DesktopTable({ batches, query }: { batches: Batch[]; query: string }) {
+function DesktopTable({
+  batches,
+  query,
+  onOptimisticAdd,
+  onOptimisticRollback,
+}: {
+  batches: BatchListItem[]
+  query: string
+  onOptimisticAdd?: (id: string, recipeName: string, og: number | null) => void
+  onOptimisticRollback?: (id: string) => void
+}) {
   return (
-    <div className="glass border-border overflow-hidden rounded-2xl hidden md:block">
+    <div data-testid="batches-standard-table" className="glass border-border overflow-hidden rounded-2xl hidden md:block">
       <Table>
         <TableHeader className="bg-background/50">
           <TableRow className="border-border hover:bg-transparent">
@@ -218,7 +281,11 @@ function DesktopTable({ batches, query }: { batches: Batch[]; query: string }) {
           {batches.length === 0 && (
             <TableRow>
               <TableCell colSpan={6} className="text-center py-24">
-                <EmptyLogbook query={query} />
+                <EmptyLogbook
+                  query={query}
+                  onOptimisticAdd={onOptimisticAdd}
+                  onOptimisticRollback={onOptimisticRollback}
+                />
               </TableCell>
             </TableRow>
           )}
@@ -230,9 +297,17 @@ function DesktopTable({ batches, query }: { batches: Batch[]; query: string }) {
 
 // ─── Public Component ─────────────────────────────────────────────────────────
 
-export function BatchesTable({ batches }: { batches: Batch[] }) {
+export function BatchesTable({
+  batches,
+  onOptimisticAdd,
+  onOptimisticRollback,
+}: {
+  batches: BatchListItem[]
+  onOptimisticAdd?: (id: string, recipeName: string, og: number | null) => void
+  onOptimisticRollback?: (id: string) => void
+}) {
   return (
-    <SearchFilter
+    <SearchFilter<BatchListItem>
       items={batches}
       searchKeys={['recipe_name', 'status']}
       placeholder="Search batches by name or status…"
@@ -259,10 +334,15 @@ export function BatchesTable({ batches }: { batches: Batch[] }) {
 
           {/* ── Desktop Table (md+) — virtualise when large ── */}
           <div className="hidden md:block">
-            {filtered.length > VIRTUAL_THRESHOLD ? (
+            {shouldVirtualizeRows(filtered.length, VIRTUAL_THRESHOLD) ? (
               <VirtualDesktopTable batches={filtered} />
             ) : (
-              <DesktopTable batches={filtered} query={query} />
+              <DesktopTable
+                batches={filtered}
+                query={query}
+                onOptimisticAdd={onOptimisticAdd}
+                onOptimisticRollback={onOptimisticRollback}
+              />
             )}
           </div>
 
@@ -270,7 +350,11 @@ export function BatchesTable({ batches }: { batches: Batch[] }) {
           <div className="md:hidden space-y-3 pb-20">
             {filtered.length === 0 ? (
               <div className="glass border-border rounded-2xl py-16 text-center">
-                <EmptyLogbook query={query} />
+                <EmptyLogbook
+                  query={query}
+                  onOptimisticAdd={onOptimisticAdd}
+                  onOptimisticRollback={onOptimisticRollback}
+                />
               </div>
             ) : (
               filtered.map(batch => {

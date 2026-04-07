@@ -3,14 +3,14 @@
 import { Button } from '@/components/ui/button'
 import { LucideDownload } from 'lucide-react'
 
-interface ExportCSVButtonProps {
-  data: Record<string, unknown>[]
+interface ExportCSVButtonProps<T extends object> {
+  data: T[]
   filename: string
-  columns: { key: string; label: string }[]
+  columns: { key: keyof T & string; label: string }[]
   className?: string
 }
 
-export function ExportCSVButton({ data, filename, columns, className }: ExportCSVButtonProps) {
+export function ExportCSVButton<T extends object>({ data, filename, columns, className }: ExportCSVButtonProps<T>) {
   const handleExport = () => {
     if (data.length === 0) return
 

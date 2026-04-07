@@ -3,6 +3,10 @@
 import { createClient } from '@/utils/supabase/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { revalidatePath } from 'next/cache'
+import { sanitizeDbError } from '@/lib/utils'
+
+const ALLOWED_AUDIO_TYPES = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav']
+const MAX_AUDIO_SIZE_BYTES = 10 * 1024 * 1024 // 10 MB
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
@@ -24,9 +28,17 @@ export async function transcribeVoiceLog(formData: FormData) {
       return { success: false, error: 'No audio provided.' }
     }
 
+    const baseMime = audioFile.type.split(';')[0]
+    if (!ALLOWED_AUDIO_TYPES.includes(baseMime)) {
+      return { success: false, error: 'Unsupported audio format.' }
+    }
+    if (audioFile.size > MAX_AUDIO_SIZE_BYTES) {
+      return { success: false, error: 'Audio file is too large (max 10 MB).' }
+    }
+
     const arrayBuffer = await audioFile.arrayBuffer()
     const base64Data = Buffer.from(arrayBuffer).toString('base64')
-    const mimeType = audioFile.type.split(';')[0] || 'audio/webm'
+    const mimeType = baseMime || 'audio/webm'
 
     const model = genAI.getGenerativeModel({ 
       model: 'gemini-1.5-flash',
@@ -75,7 +87,7 @@ export async function transcribeVoiceLog(formData: FormData) {
     return { success: true, data: extractedData }
   } catch (error: unknown) {
     console.error('Transcribe Voice Log Error:', error)
-    return { success: false, error: error instanceof Error ? error.message : String(error) || 'Internal Server Error' }
+    return { success: false, error: sanitizeDbError(error, 'transcribeVoiceLog') }
   }
 }
 
@@ -138,6 +150,6 @@ export async function saveVoiceLog(data: {
     return { success: true, message: 'Log safely recorded to database.' }
   } catch (error: unknown) {
     console.error('Save Voice Log Error:', error)
-    return { success: false, error: error instanceof Error ? error.message : String(error) || 'Internal Server Error' }
+    return { success: false, error: sanitizeDbError(error, 'saveVoiceLog') }
   }
 }

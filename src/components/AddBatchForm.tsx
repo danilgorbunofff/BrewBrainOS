@@ -1,14 +1,76 @@
 'use client'
 
+import { useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { SubmitButton } from '@/components/SubmitButton'
-import { FormWithToast } from '@/components/FormWithToast'
 import { LucidePlus } from 'lucide-react'
 import { addBatch } from '@/app/(app)/batches/actions'
+import { toast } from 'sonner'
 
-export function AddBatchForm({ onSuccess }: { onSuccess?: () => void }) {
+interface AddBatchFormProps {
+  onSuccess?: () => void
+  onOptimisticAdd?: (id: string, recipeName: string, og: number | null) => void
+  onOptimisticRollback?: (id: string) => void
+}
+
+function parseOptionalOg(formData: FormData) {
+  const rawOg = (formData.get('og') as string | null)?.trim()
+  if (!rawOg) {
+    return null
+  }
+
+  const parsed = Number.parseFloat(rawOg)
+  return Number.isNaN(parsed) ? null : parsed
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) {
+    return error.message
+  }
+
+  if (typeof error === 'string' && error.trim().length > 0) {
+    return error
+  }
+
+  return fallback
+}
+
+export function AddBatchForm({ onSuccess, onOptimisticAdd, onOptimisticRollback }: AddBatchFormProps) {
+  const formRef = useRef<HTMLFormElement>(null)
+  const router = useRouter()
+
+  const handleSubmit = async (formData: FormData) => {
+    const recipeName = (formData.get('recipeName') as string | null)?.trim() || ''
+    const optimisticId = crypto.randomUUID()
+    const og = parseOptionalOg(formData)
+
+    formData.set('id', optimisticId)
+
+    if (recipeName) {
+      onOptimisticAdd?.(optimisticId, recipeName, og)
+    }
+
+    try {
+      const result = await addBatch(formData)
+      if (!result.success) {
+        onOptimisticRollback?.(optimisticId)
+        toast.error(result.error || 'Failed to create batch')
+        return
+      }
+
+      toast.success('Batch created successfully')
+      formRef.current?.reset()
+      router.refresh()
+      onSuccess?.()
+    } catch (error) {
+      onOptimisticRollback?.(optimisticId)
+      toast.error(getErrorMessage(error, 'Failed to create batch'))
+    }
+  }
+
   return (
-    <FormWithToast action={addBatch} successMessage="Batch created successfully" onSuccess={onSuccess}>
+    <form ref={formRef} action={handleSubmit}>
       <div className="glass p-2 rounded-2xl flex flex-row items-center gap-2 border-border glow-primary shadow-2xl">
         <Input name="recipeName" placeholder="Recipe Name" required className="bg-transparent border-none focus-visible:ring-0 w-36 font-bold" />
         <div className="h-6 w-px bg-secondary/50 mx-2" />
@@ -17,6 +79,6 @@ export function AddBatchForm({ onSuccess }: { onSuccess?: () => void }) {
           <LucidePlus className="h-5 w-5" />
         </SubmitButton>
       </div>
-    </FormWithToast>
+    </form>
   )
 }

@@ -1,0 +1,676 @@
+﻿
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\analytics\page.tsx
+  99:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\analytics\performance-trends\page.tsx
+  49:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\analytics\suppliers\[id]\page.tsx
+   10:27  warning  'LucideStar' is defined but never used  @typescript-eslint/no-unused-vars
+  104:26  warning  'days' is defined but never used        @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\batches\[id]\actions.ts
+    5:10  warning  'batchSchema' is defined but never used   @typescript-eslint/no-unused-vars
+   19:46  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   37:15  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   76:15  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:15  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  168:15  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  212:30  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  252:15  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  287:15  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\batches\[id]\page.tsx
+    5:10  warning  'Input' is defined but never used              @typescript-eslint/no-unused-vars
+    9:59  warning  'LucideAlertCircle' is defined but never used  @typescript-eslint/no-unused-vars
+   11:29  warning  'updateBatchFG' is defined but never used      @typescript-eslint/no-unused-vars
+  182:66  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\batches\actions.ts
+  38:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  77:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\dashboard\page.tsx
+   9:10  warning  'VoiceLogger' is defined but never used      @typescript-eslint/no-unused-vars
+  10:10  warning  'VoiceLoggerGate' is defined but never used  @typescript-eslint/no-unused-vars
+  13:10  warning  'setupBrewery' is defined but never used     @typescript-eslint/no-unused-vars
+  15:10  warning  'Button' is defined but never used           @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\inventory\[id]\page.tsx
+   7:52  warning  'CardDescription' is defined but never used    @typescript-eslint/no-unused-vars
+  14:3   warning  'LucideTag' is defined but never used          @typescript-eslint/no-unused-vars
+  14:29  warning  'LucideThermometer' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\inventory\actions.ts
+   11:3   warning  'getDegradationHealthStatus' is defined but never used  @typescript-eslint/no-unused-vars
+   37:63  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   92:15  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  117:15  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  156:15  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  167:3   warning  'reason' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  208:15  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  298:15  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  390:15  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  417:15  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  510:15  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  552:15  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\layout.tsx
+  47:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\loading.tsx
+  1:10  warning  'LucideLayoutDashboard' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\purchase-orders\[id]\page.tsx
+  9:39  warning  'LucideDownload' is defined but never used   @typescript-eslint/no-unused-vars
+  9:55  warning  'LucideRefreshCw' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\recipes\[id]\page.tsx
+  4:39  warning  'LucideList' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\recipes\page.tsx
+  76:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\reports\page.tsx
+  6:19  warning  'LucideBarChart3' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\settings\import\page.tsx
+  13:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\shrinkage\page.tsx
+  30:10  warning  'isLoading' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+  35:6   warning  React Hook useEffect has a missing dependency: 'loadAlerts'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  47:14  warning  'e' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\tank\[id]\actions.ts
+  31:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  83:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\tank\[id]\page.tsx
+    2:10  warning  'notFound' is defined but never used                             @typescript-eslint/no-unused-vars
+   59:93  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  192:50  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  206:50  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  263:46  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\tanks\actions.ts
+  36:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\(app)\tanks\print\page.tsx
+  107:57  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  107:60  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\actions\analytics-actions.ts
+   42:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   78:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  124:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\actions\feedback.ts
+  37:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\actions\import-actions.ts
+   7:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  45:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  77:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\actions\push-actions.ts
+   5:29  warning  'FermentationAlertType' is defined but never used  @typescript-eslint/no-unused-vars
+   7:54  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  37:15  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  92:15  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\actions\shrinkage.ts
+   75:15  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+   92:19  warning  'inventoryData' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  157:15  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  210:19  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  211:32  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  261:15  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  293:15  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  313:23  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  336:15  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  365:55  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  379:24  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  390:49  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  402:15  error    Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\actions\supplier-actions.ts
+  663:7    warning  'avgDeliveryRating' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  664:7    warning  'avgReliabilityRating' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  665:7    warning  'avgPricingRating' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  713:108  error    Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+  841:106  error    Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+  860:38   error    Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+  880:58   error    Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+  881:59   error    Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+  882:62   error    Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+  883:58   error    Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+  904:132  error    Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+  964:48   error    Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\actions\voice.ts
+   69:14  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  121:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\actions\voiceModal.ts
+   69:14  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+   75:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  138:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\api\cron\fermentation-alerts\route.ts
+    2:10  warning  'runFermentationAlertCheck' is defined but never used          @typescript-eslint/no-unused-vars
+    3:36  warning  'BatchReadingInput' is defined but never used                  @typescript-eslint/no-unused-vars
+    4:10  warning  'sendFermentationAlertNotification' is defined but never used  @typescript-eslint/no-unused-vars
+   76:40  error    Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+   79:63  error    Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  107:25  warning  'sa' is assigned a value but never used                        @typescript-eslint/no-unused-vars
+  114:21  error    Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  134:17  error    Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\api\cron\recalculate-degradation.ts
+   65:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   86:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  186:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\api\iot\log\route.ts
+    2:10  warning  'runFermentationAlertCheck' is defined but never used                   @typescript-eslint/no-unused-vars
+  101:63  error    Unexpected any. Specify a different type                                @typescript-eslint/no-explicit-any
+  123:23  warning  'sendFermentationAlertNotification' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  124:26  warning  'alert' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+  138:17  error    Unexpected any. Specify a different type                                @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\api\stripe\webhook\route.ts
+   54:84  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   84:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  126:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  151:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\api\sync-voice\route.ts
+  14:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\global-error.tsx
+  21:3  warning  'reset' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\login\page.tsx
+  22:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  36:47  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\page.tsx
+   20:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  129:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  595:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\app\sw.ts
+  131:39  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  135:22  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  144:14  warning  'e' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+  152:52  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  166:33  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  175:1   error    Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  176:39  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\BatchesTable.tsx
+  139:23  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\BatchesTable.tsx:139:23
+  137 |   const parentRef = useRef<HTMLDivElement>(null)
+  138 |
+> 139 |   const virtualizer = useVirtualizer({
+      |                       ^^^^^^^^^^^^^^ TanStack Virtual's `useVirtualizer()` API returns functions that cannot be memoized safely
+  140 |     count: batches.length,
+  141 |     getScrollElement: () => parentRef.current,
+  142 |     estimateSize: () => ROW_HEIGHT,  react-hooks/incompatible-library
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\BluetoothScale.tsx
+   23:7   warning  'WEIGHT_MEASUREMENT_CHAR' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  244:19  error    Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\BluetoothScalePanel.tsx
+  49:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\BrewerySwitcher.tsx
+   7:15  warning  'LucideMapPin' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+  43:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\BrewerySwitcher.tsx:43:7
+  41 |       toast.success(`Switched to ${activeBreweryName}`)
+  42 |       switchedToName.current = null
+> 43 |       setPendingId(null)
+     |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  44 |     }
+  45 |     prevName.current = activeBreweryName
+  46 |   }, [activeBreweryName])  react-hooks/set-state-in-effect
+  87:19  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\CSVUploader.tsx
+  11:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\CookieConsent.tsx
+   5:38  warning  'LucideSettings' is defined but never used  @typescript-eslint/no-unused-vars
+   5:54  warning  'LucideCheck' is defined but never used     @typescript-eslint/no-unused-vars
+  13:3   warning  'DialogTrigger' is defined but never used   @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\DegradationCard.tsx
+  27:34  warning  'updateDegradationMetrics' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\DegradationDetailsModal.tsx
+  12:10  warning  'TrendingDown' is defined but never used                                                                        @typescript-eslint/no-unused-vars
+  12:24  warning  'Calendar' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+  42:6   warning  React Hook useEffect has a missing dependency: 'loadHistory'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\DeleteConfirmButton.tsx
+  12:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\DeleteConfirmDialog.tsx
+  20:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\DevTools.tsx
+    3:46  warning  'useMemo' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   49:10  warning  'isPending' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   49:21  warning  'startTransition' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   77:28  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\DevTools.tsx:77:28
+  75 |
+  76 |   const logAction = (name: string, status: ActionLog['status'], message?: string, id?: string) => {
+> 77 |     const actionId = id || Math.random().toString(36).substr(2, 9)
+     |                            ^^^^^^^^^^^^^ Cannot call impure function
+  78 |     setActions(prev => {
+  79 |       const existing = prev.find(a => a.id === actionId)
+  80 |       if (existing) {  react-hooks/purity
+   94:69  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  111:17  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\ExportCSVButton.tsx
+  7:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\FermentationAlertsPanel.tsx
+  123:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\FormWithToast.tsx
+  10:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  57:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\GloveModeToggle.tsx
+  12:19  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\GloveModeToggle.tsx:12:19
+  10 |   const [mounted, setMounted] = useState(false)
+  11 |
+> 12 |   useEffect(() => setMounted(true), [])
+     |                   ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  13 |
+  14 |   if (!mounted) {
+  15 |     return (  react-hooks/set-state-in-effect
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\IBUCalculator.tsx
+  12:18  warning  'setVolume' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\InitializeBreweryForm.tsx
+  11:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\InventoryAdjustmentDialog.tsx
+   69:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  174:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\InventorySupplierInfo.tsx
+  5:10  warning  'LucideMail' is defined but never used   @typescript-eslint/no-unused-vars
+  5:22  warning  'LucidePhone' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\InventoryTable.tsx
+   56:9   warning  'healthStatus' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  171:42  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  178:42  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  282:40  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  289:40  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  309:23  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\InventoryTable.tsx:309:23
+  307 |   const ROW_HEIGHT = 81 // px ÔÇö py-6 = 24px top+bottom + ~33px content
+  308 |
+> 309 |   const virtualizer = useVirtualizer({
+      |                       ^^^^^^^^^^^^^^ TanStack Virtual's `useVirtualizer()` API returns functions that cannot be memoized safely
+  310 |     count: items.length,
+  311 |     getScrollElement: () => parentRef.current,
+  312 |     estimateSize: () => ROW_HEIGHT,  react-hooks/incompatible-library
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\MobileFloatingActions.tsx
+    9:10  warning  'Button' is defined but never used        @typescript-eslint/no-unused-vars
+   93:16  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+  167:38  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  415:32  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\OfflineSyncBanner.tsx
+  4:19  warning  'ShieldCheck' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\OnboardingChecklist.tsx
+   6:10  warning  'Button' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+  28:28  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\OnboardingChecklist.tsx:28:28
+  26 |   useEffect(() => {
+  27 |     const stored = localStorage.getItem('brewbrain_onboarding_dismissed')
+> 28 |     if (stored === 'true') setDismissed(true)
+     |                            ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  29 |   }, [])
+  30 |
+  31 |   const steps: OnboardingStep[] = [  react-hooks/set-state-in-effect
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\PerformanceTrendChart.tsx
+  3:27  warning  'BarChart' is defined but never used        @typescript-eslint/no-unused-vars
+  3:37  warning  'Bar' is defined but never used             @typescript-eslint/no-unused-vars
+  6:10  warning  'LucideCalendar' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\PurchaseOrderForm.tsx
+    3:20  warning  'useCallback' is defined but never used                          @typescript-eslint/no-unused-vars
+    6:52  warning  'getSuppliers' is defined but never used                         @typescript-eslint/no-unused-vars
+  153:69  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  298:39  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  298:48  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\PurchaseOrdersTable.tsx
+   10:42  warning  'LucideDownload' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   10:58  warning  'LucideClock' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+   10:71  warning  'LucideCheckCircle' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+   17:47  warning  'onOrderDeleted' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   69:30  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\PurchaseOrdersTable.tsx:69:30
+  67 |   // Helper: Calculate days since order
+  68 |   const getDaysAgo = (date: string) => {
+> 69 |     const days = Math.floor((Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24))
+     |                              ^^^^^^^^^^ Cannot call impure function
+  70 |     if (days === 0) return 'Today'
+  71 |     if (days === 1) return 'Yesterday'
+  72 |     return `${days} days ago`  react-hooks/purity
+  122:64  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+  136:65  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\PushNotificationManager.tsx
+  31:7   error  Error: Cannot access variable before it is declared
+
+`registerServiceWorker` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\PushNotificationManager.tsx:31:7
+  29 |     if ('serviceWorker' in navigator && 'PushManager' in window) {
+  30 |       setIsSupported(true)
+> 31 |       registerServiceWorker()
+     |       ^^^^^^^^^^^^^^^^^^^^^ `registerServiceWorker` accessed before it is declared
+  32 |     }
+  33 |   }, [])
+  34 |
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\PushNotificationManager.tsx:35:3
+  33 |   }, [])
+  34 |
+> 35 |   async function registerServiceWorker() {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 36 |     try {
+     | ^^^^^^^^^
+> 37 |       const registration = await navigator.serviceWorker.ready
+     | ^^^^^^^^^
+> 38 |       const sub = await registration.pushManager.getSubscription()
+     | ^^^^^^^^^
+> 39 |       setSubscription(sub)
+     | ^^^^^^^^^
+> 40 |     } catch (error) {
+     | ^^^^^^^^^
+> 41 |       console.error('SW Registration error:', error)
+     | ^^^^^^^^^
+> 42 |     }
+     | ^^^^^^^^^
+> 43 |   }
+     | ^^^^ `registerServiceWorker` is declared here
+  44 |
+  45 |   async function handleSubscribe() {
+  46 |     setLoading(true)  react-hooks/immutability
+  66:17  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  80:17  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\QualityAnalysisPanel.tsx
+   10:22  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   11:22  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  136:23  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  136:49  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  167:23  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  167:41  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\ReceiveOrderForm.tsx
+   55:10   warning  'qualityRating' is assigned a value but never used               @typescript-eslint/no-unused-vars
+   55:25   warning  'setQualityRating' is assigned a value but never used            @typescript-eslint/no-unused-vars
+   75:31   warning  'formData' is defined but never used                             @typescript-eslint/no-unused-vars
+  114:52   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  115:54   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  116:60   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  117:52   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  181:120  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\ReorderAlertCard.tsx
+  7:10  warning  'AlertCircle' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\ReorderAlertsDashboard.tsx
+   44:6   warning  React Hook useEffect has missing dependencies: 'loadAlerts' and 'loadSummary'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   50:26  error    Unexpected any. Specify a different type                                                                                           @typescript-eslint/no-explicit-any
+   86:9   warning  'criticalCount' is assigned a value but never used                                                                                 @typescript-eslint/no-unused-vars
+   87:9   warning  'warningCount' is assigned a value but never used                                                                                  @typescript-eslint/no-unused-vars
+  186:44  error    Unexpected any. Specify a different type                                                                                           @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\SearchFilter.tsx
+  14:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\ShrinkageAlertCard.tsx
+  73:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\ShrinkageDashboard.tsx
+   63:6   warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  148:41  warning  'trend' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\Sidebar.tsx
+  18:10  warning  'UpgradeGate' is defined but never used                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+  69:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\SupplierComparisonTable.tsx
+  5:10  warning  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\SupplierForm.tsx
+  61:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\SupplierScorecard.tsx
+   3:10  warning  'useState' is defined but never used          @typescript-eslint/no-unused-vars
+   3:20  warning  'useEffect' is defined but never used         @typescript-eslint/no-unused-vars
+   6:10  warning  'LucideTrendingUp' is defined but never used  @typescript-eslint/no-unused-vars
+  65:3   warning  'supplierId' is defined but never used        @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\SupplierSelector.tsx
+  33:6  warning  React Hook useEffect has a missing dependency: 'loadSuppliers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\SuppliersTable.tsx
+    6:10  warning  'getSuppliers' is defined but never used           @typescript-eslint/no-unused-vars
+   12:34  warning  'LucideTrash2' is defined but never used           @typescript-eslint/no-unused-vars
+   23:3   warning  'breweryId' is defined but never used              @typescript-eslint/no-unused-vars
+   25:3   warning  'onSupplierAdded' is defined but never used        @typescript-eslint/no-unused-vars
+   26:3   warning  'onSupplierUpdated' is defined but never used      @typescript-eslint/no-unused-vars
+   32:10  warning  'isLoading' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   53:9   warning  'handleDelete' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   66:14  warning  'error' is defined but never used                  @typescript-eslint/no-unused-vars
+  153:62  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  165:64  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\TTBReportTable.tsx
+  22:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:83  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\TankLimitGate.tsx
+  15:19  warning  'tier' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\TanksGrid.tsx
+  11:23  warning  'LucideFlaskConical' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\ThemeProvider.tsx
+  10:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\ThemeSelector.tsx
+  19:19  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\ThemeSelector.tsx:19:19
+  17 |   const [mounted, setMounted] = useState(false)
+  18 |
+> 19 |   useEffect(() => setMounted(true), [])
+     |                   ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  20 |
+  21 |   if (!mounted) return null
+  22 |  react-hooks/set-state-in-effect
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\ThemeToggle.tsx
+  12:19  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\ThemeToggle.tsx:12:19
+  10 |   const [mounted, setMounted] = useState(false)
+  11 |
+> 12 |   useEffect(() => setMounted(true), [])
+     |                   ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  13 |
+  14 |   if (!mounted) {
+  15 |     return (  react-hooks/set-state-in-effect
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\UserNav.tsx
+  13:10  warning  'LogOut' is defined but never used    @typescript-eslint/no-unused-vars
+  13:36  warning  'UserIcon' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\VoiceLogger.tsx
+   29:32  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   79:19  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  126:14  warning  'error' is defined but never used                                @typescript-eslint/no-unused-vars
+  229:15  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  229:38  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\analytics\BatchPerformanceChart.tsx
+   13:3   warning  'ReferenceLine' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+   50:54  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+  106:32  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\analytics\BatchPerformanceChart.tsx:106:32
+  104 |               tickFormatter={(val) => val.toFixed(3)}
+  105 |             />
+> 106 |             <Tooltip content={<CustomTooltip />} cursor={{ fill: isDark ? '#ffffff05' : '#00000005' }} />
+      |                                ^^^^^^^^^^^^^ This component is created during render
+  107 |             <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
+  108 |             
+  109 |             <Bar 
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\components\analytics\BatchPerformanceChart.tsx:50:25
+  48 |   // We can format tooltip.
+  49 |
+> 50 |   const CustomTooltip = ({ active, payload, label }: any) => {
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 51 |     if (active && payload && payload.length) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 52 |       return (
+     ÔÇŽ
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 67 |     return null
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 68 |   }
+     | ^^^^ The component is created during render here
+  69 |
+  70 |   // Y-axis formatting constraint (we don't want 0-1.1, we want domain like [1.000, 1.150])
+  71 |   const minOG = Math.min(  react-hooks/static-components
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\lib\degradation.ts
+   9:48  warning  'DegradationLog' is defined but never used  @typescript-eslint/no-unused-vars
+  21:10  warning  'getToday' is defined but never used        @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\lib\logger.ts
+  17:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  52:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  73:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  74:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  75:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  76:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\lib\offlineQueue.ts
+   43:30  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  123:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\lib\offlineQueue.ts:123:5
+  121 |   useEffect(() => {
+  122 |     // Initial loads
+> 123 |     setIsOnline(navigator.onLine)
+      |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  124 |     getOfflineQueue().then(q => setQueueCount(q.length))
+  125 |
+  126 |     const handleOnline = () => {  react-hooks/set-state-in-effect
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\lib\shrinkage.ts
+   15:11  warning  'HistoryWindow' is defined but never used                 @typescript-eslint/no-unused-vars
+   64:3   warning  'baseline' is defined but never used                      @typescript-eslint/no-unused-vars
+  126:11  warning  'totalLossPercentage' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  349:3   warning  'item_type' is defined but never used                     @typescript-eslint/no-unused-vars
+  350:3   warning  'initial_stock' is defined but never used                 @typescript-eslint/no-unused-vars
+  351:3   warning  'loss_history_months' is defined but never used           @typescript-eslint/no-unused-vars
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\types\database.ts
+  220:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  344:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\danil_gorbunov\BrewOS\BrewBrainOS\src\utils\supabase\middleware.ts
+  18:48  warning  'options' is defined but never used        @typescript-eslint/no-unused-vars
+  35:13  warning  'user' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Ôťľ 288 problems (170 errors, 118 warnings)
+

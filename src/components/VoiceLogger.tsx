@@ -95,12 +95,14 @@ export function VoiceLogger({ tankId, className, disabled, variant = 'default' }
     setIsProcessing(true)
 
     const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' })
+    const externalId = crypto.randomUUID()
 
     if (!navigator.onLine) {
       await enqueueAction({
         type: 'voice-log',
         payload: audioBlob,
-        tankId
+        tankId,
+        externalId,
       })
       toast.success('Offline Link Established. Data Queued.', { duration: 5000 })
       setIsProcessing(false)
@@ -115,6 +117,7 @@ export function VoiceLogger({ tankId, className, disabled, variant = 'default' }
       const formData = new FormData()
       formData.append('audio', audioFile)
       if (tankId) formData.append('tankId', tankId)
+      formData.append('external_id', externalId)
 
       const result = await processVoiceLog(formData)
       
@@ -130,7 +133,8 @@ export function VoiceLogger({ tankId, className, disabled, variant = 'default' }
       await enqueueAction({
         type: 'voice-log',
         payload: audioBlob,
-        tankId
+        tankId,
+        externalId,
       })
     } finally {
       setIsProcessing(false)

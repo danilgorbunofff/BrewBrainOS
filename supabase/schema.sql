@@ -121,6 +121,7 @@ CREATE INDEX IF NOT EXISTS idx_degradation_logs_created ON degradation_logs(crea
 CREATE TABLE IF NOT EXISTS batch_readings (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   batch_id         UUID REFERENCES batches(id) ON DELETE CASCADE,
+  external_id      UUID,
   logger_id        UUID REFERENCES auth.users(id),
   temperature      DECIMAL,
   gravity          DECIMAL,
@@ -132,6 +133,10 @@ CREATE TABLE IF NOT EXISTS batch_readings (
   provenance_user_agent TEXT,
   created_at       TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_batch_readings_external_id
+  ON batch_readings(external_id)
+  WHERE external_id IS NOT NULL;
 
 -- SUBSCRIPTIONS (Stripe billing)
 CREATE TABLE IF NOT EXISTS subscriptions (

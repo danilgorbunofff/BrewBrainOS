@@ -2,6 +2,7 @@
 import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist, NetworkFirst, StaleWhileRevalidate, ExpirationPlugin } from "serwist";
+import { flushOfflineQueue, OFFLINE_QUEUE_SYNC_TAG, syncOfflineActionViaApi } from '@/lib/offlineQueueShared'
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -174,12 +175,12 @@ self.addEventListener('notificationclick', (event: NotificationEvent) => {
 });
 
 self.addEventListener('sync', (event: ExtendableEvent & { tag: string }) => {
-  if (event.tag === 'sync-offline-queue') {
+  if (event.tag === OFFLINE_QUEUE_SYNC_TAG) {
     event.waitUntil(
       (async () => {
         try {
           // Tell active clients to process the queue immediately
-          const clients = await self.clients.matchAll();
+          const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
           let processedByClient = false;
           
           for (const client of clients) {
@@ -188,11 +189,14 @@ self.addEventListener('sync', (event: ExtendableEvent & { tag: string }) => {
           }
 
           if (!processedByClient) {
-            // No active tabs / completely closed. We handle it via native SW fetch
-            // But we don't have idb-keyval directly in this scope unless bundled.
-            // A more complex raw indexedDB script could be written, but notifying clients
-            // covers 90% of suspended/backgrounded PWA cases on mobile.
-            console.log('[SW] No active clients to flush queue. Waiting for next app open.')
+            const result = await flushOfflineQueue({
+              syncAction: syncOfflineActionViaApi,
+              isOnline: () => true,
+            })
+
+            if (result.successCount > 0 || result.retryScheduledCount > 0 || result.permanentFailureCount > 0) {
+              console.log('[SW] Offline queue flush result:', result)
+            }
           }
         } catch (e) {
           console.error('[SW] Sync Error:', e);

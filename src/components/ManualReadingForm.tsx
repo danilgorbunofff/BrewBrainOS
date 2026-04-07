@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { logManualReading } from '@/app/(app)/batches/[id]/actions'
+import { enqueueAction } from '@/lib/offlineQueue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,24 +18,81 @@ export function ManualReadingForm({ batchId }: ManualReadingFormProps) {
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [successMessage, setSuccessMessage] = useState('Reading logged')
   const [errorMessage, setErrorMessage] = useState('')
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setPending(true)
     setStatus('idle')
+    setErrorMessage('')
 
-    const formData = new FormData(e.currentTarget)
-    const result = await logManualReading(formData)
+    const form = e.currentTarget
+    const formData = new FormData(form)
+    const externalId = crypto.randomUUID()
+    formData.set('external_id', externalId)
 
-    setPending(false)
-    if (result.success) {
-      setStatus('success')
-      ;(e.target as HTMLFormElement).reset()
-      setTimeout(() => setStatus('idle'), 3000)
-    } else {
+    try {
+      if (!navigator.onLine) {
+        await enqueueAction({
+          type: 'manual-reading',
+          externalId,
+          payload: {
+            batchId,
+            temperature: (formData.get('temperature') as string | null) || undefined,
+            gravity: (formData.get('gravity') as string | null) || undefined,
+            ph: (formData.get('ph') as string | null) || undefined,
+            dissolved_oxygen: (formData.get('dissolved_oxygen') as string | null) || undefined,
+            pressure: (formData.get('pressure') as string | null) || undefined,
+            notes: (formData.get('notes') as string | null) || undefined,
+          },
+        })
+
+        setSuccessMessage('Reading queued for sync')
+        setStatus('success')
+        form.reset()
+        setTimeout(() => setStatus('idle'), 3000)
+        return
+      }
+
+      const result = await logManualReading(formData)
+
+      if (result.success) {
+        setSuccessMessage('Reading logged')
+        setStatus('success')
+        form.reset()
+        setTimeout(() => setStatus('idle'), 3000)
+        return
+      }
+
       setStatus('error')
       setErrorMessage(result.error || 'Failed to log reading')
+    } catch {
+      try {
+        await enqueueAction({
+          type: 'manual-reading',
+          externalId,
+          payload: {
+            batchId,
+            temperature: (formData.get('temperature') as string | null) || undefined,
+            gravity: (formData.get('gravity') as string | null) || undefined,
+            ph: (formData.get('ph') as string | null) || undefined,
+            dissolved_oxygen: (formData.get('dissolved_oxygen') as string | null) || undefined,
+            pressure: (formData.get('pressure') as string | null) || undefined,
+            notes: (formData.get('notes') as string | null) || undefined,
+          },
+        })
+
+        setSuccessMessage('Connection dropped. Reading queued for sync')
+        setStatus('success')
+        form.reset()
+        setTimeout(() => setStatus('idle'), 3000)
+      } catch {
+        setStatus('error')
+        setErrorMessage('Failed to log reading')
+      }
+    } finally {
+      setPending(false)
     }
   }
 
@@ -171,7 +229,7 @@ export function ManualReadingForm({ batchId }: ManualReadingFormProps) {
 
               {status === 'success' && (
                 <span className="text-xs font-bold text-green-400 animate-in fade-in">
-                  ✓ Reading logged
+                  ✓ {successMessage}
                 </span>
               )}
               {status === 'error' && (

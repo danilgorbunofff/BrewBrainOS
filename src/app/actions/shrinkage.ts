@@ -12,6 +12,8 @@ import { detectShrinkageAnomaly, calculateShrinkageBaseline } from '@/lib/shrink
 import { checkAndCreateReorderAlert } from '@/app/actions/reorder-actions'
 import { InventoryHistory, ShrinkageAlert, ActionResult } from '@/types/database'
 import { headers } from 'next/headers'
+import { inventoryChangeSchema, updateShrinkageAlertSchema } from '@/lib/schemas'
+import { sanitizeDbError } from '@/lib/utils'
 
 /**
  * Record an inventory stock change (stock adjustment, recipe usage, receipt, waste)
@@ -30,29 +32,39 @@ export async function recordInventoryChange(
     const brewery = await getActiveBrewery()
     if (!brewery) return { success: false, error: 'No active brewery' }
 
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    const parsed = inventoryChangeSchema.safeParse({
+      inventory_id,
+      previous_stock,
+      current_stock,
+      change_type,
+      reason,
+      batch_id,
+    })
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0].message }
+    }
+
     const reqHeaders = await headers()
     const ip = reqHeaders.get('x-forwarded-for') || reqHeaders.get('x-real-ip') || 'unknown'
     const userAgent = reqHeaders.get('user-agent') || 'unknown'
 
-    const quantity_change = current_stock - previous_stock
-
-    // Determine who recorded this
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const quantity_change = parsed.data.current_stock - parsed.data.previous_stock
 
     const { data, error } = await supabase
       .from('inventory_history')
       .insert({
-        inventory_id,
+        inventory_id: parsed.data.inventory_id,
         brewery_id: brewery.id,
-        previous_stock,
-        current_stock,
+        previous_stock: parsed.data.previous_stock,
+        current_stock: parsed.data.current_stock,
         quantity_change,
-        change_type,
-        reason,
-        batch_id,
-        recorded_by: user?.id,
+        change_type: parsed.data.change_type,
+        reason: parsed.data.reason,
+        batch_id: parsed.data.batch_id,
+        recorded_by: user.id,
         provenance_ip: ip,
         provenance_user_agent: userAgent
       })
@@ -74,7 +86,7 @@ export async function recordInventoryChange(
     return { success: true, data }
   } catch (e: unknown) {
     console.error('Failed to record inventory change:', e)
-    return { success: false, error: e instanceof Error ? e.message : 'Unknown error' }
+    return { success: false, error: sanitizeDbError(e, 'recordInventoryChange') }
   }
 }
 
@@ -157,7 +169,7 @@ export async function recalculateShrinkageBaseline(inventory_id: string): Promis
     return { success: true, data: baselineMetrics }
   } catch (e: unknown) {
     console.error('Failed to recalculate shrinkage baseline:', e)
-    return { success: false, error: e instanceof Error ? e.message : 'Unknown error' }
+    return { success: false, error: sanitizeDbError(e, 'recalculateShrinkageBaseline') }
   }
 }
 
@@ -261,7 +273,7 @@ export async function detectAndCreateShrinkageAlert(inventory_id: string): Promi
     return { success: true, data: createdAlert }
   } catch (e: unknown) {
     console.error('Failed to detect shrinkage anomaly:', e)
-    return { success: false, error: e instanceof Error ? e.message : 'Unknown error' }
+    return { success: false, error: sanitizeDbError(e, 'detectAndCreateShrinkageAlert') }
   }
 }
 
@@ -293,7 +305,7 @@ export async function getShrinkageAlerts(status?: string): Promise<ActionResult<
     return { success: true, data: data || [] }
   } catch (e: unknown) {
     console.error('Failed to get shrinkage alerts:', e)
-    return { success: false, error: e instanceof Error ? e.message : 'Unknown error' }
+    return { success: false, error: sanitizeDbError(e, 'getShrinkageAlerts') }
   }
 }
 
@@ -311,24 +323,29 @@ export async function updateShrinkageAlertStatus(
     const brewery = await getActiveBrewery()
     if (!brewery) return { success: false, error: 'No active brewery' }
 
+    const parsed = updateShrinkageAlertSchema.safeParse({ alert_id, status, notes, assigned_to })
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0].message }
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {
-      status,
-      notes,
+      status: parsed.data.status,
+      notes: parsed.data.notes,
     }
 
-    if (assigned_to) {
-      updateData.assigned_to = assigned_to
+    if (parsed.data.assigned_to) {
+      updateData.assigned_to = parsed.data.assigned_to
     }
 
-    if (status === 'resolved') {
+    if (parsed.data.status === 'resolved') {
       updateData.resolved_at = new Date().toISOString()
     }
 
     const { error } = await supabase
       .from('shrinkage_alerts')
       .update(updateData)
-      .eq('id', alert_id)
+      .eq('id', parsed.data.alert_id)
       .eq('brewery_id', brewery.id)
 
     if (error) throw error
@@ -337,7 +354,7 @@ export async function updateShrinkageAlertStatus(
     return { success: true, data: null }
   } catch (e: unknown) {
     console.error('Failed to update shrinkage alert:', e)
-    return { success: false, error: e instanceof Error ? e.message : 'Unknown error' }
+    return { success: false, error: sanitizeDbError(e, 'updateShrinkageAlertStatus') }
   }
 }
 
@@ -405,7 +422,7 @@ export async function getShrinkageStats(): Promise<
     console.error('Failed to get shrinkage stats:', e)
     return {
       success: false,
-      error: e instanceof Error ? e.message : 'Unknown error',
+      error: sanitizeDbError(e, 'getShrinkageStats'),
     }
   }
 }

@@ -1,7 +1,14 @@
 'use server'
 
+import { z } from 'zod'
 import { createClient } from '@/utils/supabase/server'
+import { sanitizeDbError } from '@/lib/utils'
 import { ActionResult } from '@/types/database'
+
+const feedbackSchema = z.object({
+  message: z.string().min(1, 'Message is required').max(2000, 'Message is too long'),
+  url: z.string().url('Invalid URL').max(500).optional().or(z.literal('')).optional(),
+})
 
 export async function submitFeedback(formData: FormData): Promise<ActionResult> {
   try {
@@ -9,19 +16,23 @@ export async function submitFeedback(formData: FormData): Promise<ActionResult> 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { success: false, error: 'Unauthorized' }
 
-    const message = formData.get('message') as string
-    const url = formData.get('url') as string
+    const parsed = feedbackSchema.safeParse({
+      message: formData.get('message'),
+      url: formData.get('url') ?? undefined,
+    })
 
-    if (!message || message.trim().length === 0) {
-      return { success: false, error: 'Message is required' }
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0].message }
     }
+
+    const { message, url } = parsed.data
 
     const { error } = await supabase
       .from('feedback')
       .insert({
         user_id: user.id,
         message,
-        url,
+        url: url || null,
       })
 
     if (error) {
@@ -30,11 +41,12 @@ export async function submitFeedback(formData: FormData): Promise<ActionResult> 
         console.warn('Feedback table does not exist. Please run the schema update.')
         return { success: true, data: null } // Pretend it worked for the user
       }
-      return { success: false, error: 'Database error while saving feedback' }
+      console.error('Feedback insert error:', error)
+      return { success: false, error: 'Could not save feedback. Please try again.' }
     }
 
     return { success: true, data: null }
   } catch (e: unknown) {
-    return { success: false, error: e instanceof Error ? e.message : String(e) || 'Server error' }
+    return { success: false, error: sanitizeDbError(e, 'submitFeedback') }
   }
 }

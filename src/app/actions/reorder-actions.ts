@@ -1,8 +1,12 @@
 'use server'
 
+import { z } from 'zod'
 import { createClient } from '@/utils/supabase/server'
 import { sendReorderNotification } from '@/app/actions/push-actions'
 import { classifyReorderAlert, type ReorderAlertInput, type ReorderAlertResult } from '@/lib/reorder'
+import { sanitizeDbError } from '@/lib/utils'
+
+const uuidSchema = z.string().uuid('Invalid ID')
 
 /**
  * Check if reorder point has been breached and create alert if needed
@@ -102,7 +106,7 @@ export async function checkAndCreateReorderAlert(
       alertType: type,
       severity,
       daysUntilStockout,
-      message: `Failed to create alert: ${error.message}`,
+      message: 'Failed to create reorder alert. Please try again.',
     }
   }
 
@@ -130,20 +134,25 @@ export async function checkAndCreateReorderAlert(
  * Mark an alert as acknowledged (user has seen/read it)
  */
 export async function acknowledgeReorderAlert(alertId: string): Promise<void> {
+  const idResult = uuidSchema.safeParse(alertId)
+  if (!idResult.success) throw new Error('Invalid alert ID')
+
   const supabase = await createClient()
   const { data: userData } = await supabase.auth.getUser()
+  if (!userData.user) throw new Error('Unauthorized')
 
   const { error } = await supabase
     .from('reorder_alerts')
     .update({
       status: 'acknowledged',
       acknowledged_at: new Date().toISOString(),
-      acknowledged_by: userData.user?.id,
+      acknowledged_by: userData.user.id,
     })
     .eq('id', alertId)
 
   if (error) {
-    throw new Error(`Failed to acknowledge alert: ${error.message}`)
+    console.error('Failed to acknowledge alert:', error)
+    throw new Error(sanitizeDbError(error, 'acknowledgeReorderAlert'))
   }
 }
 
@@ -151,21 +160,26 @@ export async function acknowledgeReorderAlert(alertId: string): Promise<void> {
  * Mark an alert as resolved (item has been reordered)
  */
 export async function resolveReorderAlert(alertId: string, notes?: string): Promise<void> {
+  const idResult = uuidSchema.safeParse(alertId)
+  if (!idResult.success) throw new Error('Invalid alert ID')
+
   const supabase = await createClient()
   const { data: userData } = await supabase.auth.getUser()
+  if (!userData.user) throw new Error('Unauthorized')
 
   const { error } = await supabase
     .from('reorder_alerts')
     .update({
       status: 'resolved',
       resolved_at: new Date().toISOString(),
-      resolved_by: userData.user?.id,
+      resolved_by: userData.user.id,
       resolution_notes: notes,
     })
     .eq('id', alertId)
 
   if (error) {
-    throw new Error(`Failed to resolve alert: ${error.message}`)
+    console.error('Failed to resolve alert:', error)
+    throw new Error(sanitizeDbError(error, 'resolveReorderAlert'))
   }
 }
 
@@ -262,7 +276,12 @@ export async function updateInventoryReorderSettings(
     suppressAlerts?: boolean
   }
 ): Promise<void> {
+  const idResult = uuidSchema.safeParse(inventoryItemId)
+  if (!idResult.success) throw new Error('Invalid inventory item ID')
+
   const supabase = await createClient()
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData.user) throw new Error('Unauthorized')
 
   const { error } = await supabase
     .from('inventory')
@@ -276,7 +295,8 @@ export async function updateInventoryReorderSettings(
     .eq('id', inventoryItemId)
 
   if (error) {
-    throw new Error(`Failed to update inventory settings: ${error.message}`)
+    console.error('Failed to update inventory settings:', error)
+    throw new Error(sanitizeDbError(error, 'updateInventoryReorderSettings'))
   }
 }
 
@@ -304,7 +324,12 @@ export async function getReorderPointHistory(inventoryItemId: string) {
  * Suppress reorder alerts for an item (seasonal items, archived items, etc.)
  */
 export async function suppressReorderAlerts(inventoryItemId: string): Promise<void> {
+  const idResult = uuidSchema.safeParse(inventoryItemId)
+  if (!idResult.success) throw new Error('Invalid inventory item ID')
+
   const supabase = await createClient()
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData.user) throw new Error('Unauthorized')
 
   const { error } = await supabase
     .from('inventory')
@@ -312,7 +337,8 @@ export async function suppressReorderAlerts(inventoryItemId: string): Promise<vo
     .eq('id', inventoryItemId)
 
   if (error) {
-    throw new Error(`Failed to suppress alerts: ${error.message}`)
+    console.error('Failed to suppress alerts:', error)
+    throw new Error(sanitizeDbError(error, 'suppressReorderAlerts'))
   }
 }
 
@@ -320,7 +346,12 @@ export async function suppressReorderAlerts(inventoryItemId: string): Promise<vo
  * Re-enable reorder alerts for an item
  */
 export async function enableReorderAlerts(inventoryItemId: string): Promise<void> {
+  const idResult = uuidSchema.safeParse(inventoryItemId)
+  if (!idResult.success) throw new Error('Invalid inventory item ID')
+
   const supabase = await createClient()
+  const { data: userData } = await supabase.auth.getUser()
+  if (!userData.user) throw new Error('Unauthorized')
 
   const { error } = await supabase
     .from('inventory')
@@ -328,6 +359,7 @@ export async function enableReorderAlerts(inventoryItemId: string): Promise<void
     .eq('id', inventoryItemId)
 
   if (error) {
-    throw new Error(`Failed to enable alerts: ${error.message}`)
+    console.error('Failed to enable alerts:', error)
+    throw new Error(sanitizeDbError(error, 'enableReorderAlerts'))
   }
 }

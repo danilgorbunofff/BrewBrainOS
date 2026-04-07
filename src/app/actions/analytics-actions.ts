@@ -1,20 +1,30 @@
 'use server'
 
+import { z } from 'zod'
 import { createClient } from '@/utils/supabase/server'
 import { getActiveBrewery } from '@/lib/active-brewery'
+import { sanitizeDbError } from '@/lib/utils'
+
+const daysSchema = z.number().int().min(1).max(365)
 
 /**
  * Advanced Analytics: Inventory Usage Trends
  * Aggregates inventory consumption and waste over time.
  */
 export async function getInventoryTrends(days: number = 90) {
+  const parsedDays = daysSchema.safeParse(days)
+  const safeDays = parsedDays.success ? parsedDays.data : 90
+
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
   const brewery = await getActiveBrewery()
   if (!brewery) throw new Error('No active brewery context')
 
   // Calculate cutoff date
   const cutoff = new Date()
-  cutoff.setDate(cutoff.getDate() - days)
+  cutoff.setDate(cutoff.getDate() - safeDays)
   const cutoffStr = cutoff.toISOString()
 
   // We fetch history grouped by day/week. 
@@ -37,7 +47,7 @@ export async function getInventoryTrends(days: number = 90) {
   }
 
   // Aggregate by Date (YYYY-MM-DD or MM/DD format depending on days range)
-  const isShortTerm = days <= 30
+  const isShortTerm = safeDays <= 30
   
   const grouped = data.reduce((acc: Record<string, unknown>, row) => {
     const d = new Date(row.created_at!)
@@ -90,6 +100,9 @@ export async function getInventoryTrends(days: number = 90) {
  */
 export async function getBatchPerformance() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
   const brewery = await getActiveBrewery()
   if (!brewery) throw new Error('No active brewery context')
 
@@ -118,7 +131,7 @@ export async function getBatchPerformance() {
     .limit(20) // Get the last 20 batches for trend line
 
   if (error) {
-    console.error('Error fetching batch performance:', error)
+    console.error('Error fetching batch performance:', sanitizeDbError(error, 'getBatchPerformance'))
     return []
   }
 

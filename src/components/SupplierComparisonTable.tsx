@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from '@/components/ui/button'
 import { LucideArrowUp, LucideArrowDown, LucideMinus } from 'lucide-react'
 

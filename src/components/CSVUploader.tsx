@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
 interface CSVUploaderProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onDataParsed: (data: any[]) => Promise<void>
   requiredHeaders: string[]
   expectedType: 'tanks' | 'inventory'
@@ -37,8 +38,8 @@ export function CSVUploader({ onDataParsed, requiredHeaders, expectedType }: CSV
 
         try {
           await onDataParsed(data)
-        } catch (e: any) {
-          toast.error(e.message || 'Import failed')
+        } catch (e: unknown) {
+          toast.error(e instanceof Error ? e.message : String(e) || 'Import failed')
         } finally {
           setIsLoading(false)
         }

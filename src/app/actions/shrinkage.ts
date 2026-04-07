@@ -72,9 +72,9 @@ export async function recordInventoryChange(
 
     revalidatePath('/inventory')
     return { success: true, data }
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('Failed to record inventory change:', e)
-    return { success: false, error: e.message }
+    return { success: false, error: e instanceof Error ? e.message : 'Unknown error' }
   }
 }
 
@@ -89,6 +89,7 @@ export async function recalculateShrinkageBaseline(inventory_id: string): Promis
     if (!brewery) return { success: false, error: 'No active brewery' }
 
     // Get inventory details
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: inventoryData, error: invError } = await supabase
       .from('inventory')
       .select('*')
@@ -154,9 +155,9 @@ export async function recalculateShrinkageBaseline(inventory_id: string): Promis
     }
 
     return { success: true, data: baselineMetrics }
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('Failed to recalculate shrinkage baseline:', e)
-    return { success: false, error: e.message }
+    return { success: false, error: e instanceof Error ? e.message : 'Unknown error' }
   }
 }
 
@@ -207,8 +208,8 @@ export async function detectAndCreateShrinkageAlert(inventory_id: string): Promi
     // Calculate expected stock based on received amount and usage
     // For now, we'll use a simple approach: track actual vs. recorded
     const totalUsed = (history || [])
-      .filter((h: any) => h.quantity_change < 0)
-      .reduce((sum: number, h: any) => sum + Math.abs(h.quantity_change), 0)
+      .filter((h: InventoryHistory) => h.quantity_change != null && h.quantity_change < 0)
+      .reduce((sum: number, h: InventoryHistory) => sum + Math.abs(h.quantity_change || 0), 0)
 
     const expectedStock = inventory.current_stock + totalUsed
 
@@ -258,9 +259,9 @@ export async function detectAndCreateShrinkageAlert(inventory_id: string): Promi
 
     revalidatePath('/inventory')
     return { success: true, data: createdAlert }
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('Failed to detect shrinkage anomaly:', e)
-    return { success: false, error: e.message }
+    return { success: false, error: e instanceof Error ? e.message : 'Unknown error' }
   }
 }
 
@@ -290,9 +291,9 @@ export async function getShrinkageAlerts(status?: string): Promise<ActionResult<
     if (error) throw error
 
     return { success: true, data: data || [] }
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('Failed to get shrinkage alerts:', e)
-    return { success: false, error: e.message }
+    return { success: false, error: e instanceof Error ? e.message : 'Unknown error' }
   }
 }
 
@@ -310,6 +311,7 @@ export async function updateShrinkageAlertStatus(
     const brewery = await getActiveBrewery()
     if (!brewery) return { success: false, error: 'No active brewery' }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {
       status,
       notes,
@@ -333,9 +335,9 @@ export async function updateShrinkageAlertStatus(
 
     revalidatePath('/inventory')
     return { success: true, data: null }
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('Failed to update shrinkage alert:', e)
-    return { success: false, error: e.message }
+    return { success: false, error: e instanceof Error ? e.message : 'Unknown error' }
   }
 }
 
@@ -362,7 +364,7 @@ export async function getShrinkageStats(): Promise<
       .eq('brewery_id', brewery.id)
       .eq('status', 'unresolved')
 
-    const critical_alerts = (alerts || []).filter((a: any) => a.severity === 'critical').length
+    const critical_alerts = (alerts || []).filter((a: { severity: string }) => a.severity === 'critical').length
 
     // Get monthly loss sum
     const thisMonth = new Date()
@@ -376,7 +378,7 @@ export async function getShrinkageStats(): Promise<
       .lte('quantity_change', 0)
 
     const this_month_loss = (thisMonthHistory || []).reduce(
-      (sum: number, h: any) => sum + Math.abs(h.quantity_change),
+      (sum: number, h: { quantity_change: number }) => sum + Math.abs(h.quantity_change),
       0
     )
 
@@ -387,7 +389,7 @@ export async function getShrinkageStats(): Promise<
       .eq('brewery_id', brewery.id)
 
     const average_monthly_loss =
-      (baselines || []).reduce((sum: number, b: any) => sum + (b.average_monthly_loss || 0), 0) /
+      (baselines || []).reduce((sum: number, b: { average_monthly_loss: number | null }) => sum + (b.average_monthly_loss || 0), 0) /
         Math.max(1, baselines?.length || 1) || 0
 
     return {
@@ -399,11 +401,11 @@ export async function getShrinkageStats(): Promise<
         average_monthly_loss: Math.round(average_monthly_loss * 100) / 100,
       },
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('Failed to get shrinkage stats:', e)
     return {
       success: false,
-      error: e.message,
+      error: e instanceof Error ? e.message : 'Unknown error',
     }
   }
 }

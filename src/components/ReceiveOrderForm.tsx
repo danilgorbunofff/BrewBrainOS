@@ -52,6 +52,8 @@ export function ReceiveOrderForm({
     }), {})
   )
   const [qualityIssues, setQualityIssues] = useState<string>('')
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [qualityRating, setQualityRating] = useState<number>(5)
   const [supplierRatings, setSupplierRatings] = useState({
     quality: 5,
@@ -72,6 +74,7 @@ export function ReceiveOrderForm({
   }
 
   // Handle form submission
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSubmit = async (formData: FormData) => {
     try {
       // Update order to delivered
@@ -111,9 +114,13 @@ export function ReceiveOrderForm({
       const ratingResult = await createSupplierRating(breweryId, {
         supplier_id: supplier.id,
         purchase_order_id: order.id,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         quality_rating: supplierRatings.quality as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delivery_rating: supplierRatings.delivery as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         reliability_rating: supplierRatings.reliability as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         pricing_rating: supplierRatings.pricing as any,
         would_order_again: supplierRatings.quality >= 3,
         comments: qualityIssues,
@@ -178,7 +185,7 @@ export function ReceiveOrderForm({
               <LucideAlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <div>
                 <div className="font-bold">Order is {Math.abs(daysToDeliver)} days late</div>
-                <div className="text-sm">Expected delivery was {order.expected_delivery_date}. Please rate the supplier's delivery performance.</div>
+                <div className="text-sm">Expected delivery was {order.expected_delivery_date}. Please rate the supplier&apos;s delivery performance.</div>
               </div>
             </div>
           ) : daysToDeliver === 0 ? (

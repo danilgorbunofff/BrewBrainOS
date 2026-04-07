@@ -66,8 +66,8 @@ export function InventoryAdjustmentDialog({
       } else {
         toast.error(result.error || 'Failed to update inventory')
       }
-    } catch (e: any) {
-      toast.error(e.message || 'Failed to update inventory')
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : String(e) || 'Failed to update inventory')
     } finally {
       setIsLoading(false)
     }
@@ -171,6 +171,7 @@ export function InventoryAdjustmentDialog({
             <select
               id="changeType"
               value={changeType}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(e) => setChangeType(e.target.value as any)}
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >

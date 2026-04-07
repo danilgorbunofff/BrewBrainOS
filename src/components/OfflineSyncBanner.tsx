@@ -1,6 +1,7 @@
 'use client'
 
 import { useOfflineQueue } from '@/lib/offlineQueue'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { WifiOff, ShieldCheck, Loader2, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 

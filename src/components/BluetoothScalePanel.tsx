@@ -46,6 +46,7 @@ export function BluetoothScalePanel({ items }: BluetoothScalePanelProps) {
     try {
       await updateStock(formData)
       toast.success(`Updated ${item.name} → ${reading.weight} ${reading.unit}`)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       toast.error('Failed to update stock')
     }

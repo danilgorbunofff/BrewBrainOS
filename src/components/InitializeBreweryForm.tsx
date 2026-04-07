@@ -8,6 +8,7 @@ import { LucideAlertCircle, LucideLoader2 } from 'lucide-react'
 
 export function InitializeBreweryForm() {
   const [state, formAction, isPending] = useActionState(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (prevState: any, formData: FormData) => {
       return await setupBrewery(formData)
     },

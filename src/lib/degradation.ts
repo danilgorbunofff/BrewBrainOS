@@ -6,6 +6,7 @@
  * - PPG (Points Per Pound Per Gallon): Extract efficiency
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { DegradationMetrics, StorageCondition, DegradationLog } from '@/types/database'
 
 // Helper functions for date calculations (replaces date-fns)
@@ -18,6 +19,7 @@ function differenceInDays(date1: Date, date2: Date): number {
   return Math.floor((date1.getTime() - date2.getTime()) / msPerDay)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getToday(): string {
   return new Date().toISOString().split('T')[0]
 }

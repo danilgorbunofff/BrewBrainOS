@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   LucideLayoutDashboard, LucideWaves, LucideClipboardList,
@@ -15,7 +16,6 @@ import { GloveModeToggle } from '@/components/GloveModeToggle'
 import { MobileFloatingActions } from '@/components/MobileFloatingActions'
 import { BrewerySwitcher } from '@/components/BrewerySwitcher'
 import { VoiceLogger } from '@/components/VoiceLogger'
-import { UpgradeGate } from '@/components/UpgradeGate'
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LucideLayoutDashboard },
@@ -66,7 +66,7 @@ export function Sidebar({ userEmail, breweryName, breweries, activeBreweryId }: 
         <div className="flex items-center justify-between px-5 py-6 border-b border-border">
           <Link href="/dashboard" className="flex items-center gap-3 group" onClick={() => setMobileOpen(false)}>
             <div className="h-9 w-9 rounded-xl overflow-hidden flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.3)] group-hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] transition-shadow">
-              <img src="/logo.png" alt="BrewBrain Logo" className="h-full w-full object-cover" />
+              <Image src="/logo.png" alt="BrewBrain Logo" width={40} height={40} className="h-full w-full object-cover" />
             </div>
             <div>
               <span className="text-base font-black tracking-tight text-foreground">BrewBrain</span>

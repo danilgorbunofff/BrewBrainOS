@@ -62,7 +62,7 @@ export async function POST(req: Request) {
         const breweriesProcessed = await processBrewer(brewery.id)
         totalItemsUpdated += breweriesProcessed.itemsUpdated
         totalLogsCreated += breweriesProcessed.logsCreated
-      } catch (error: any) {
+      } catch (error: unknown) {
         const errorMsg = `Error processing brewery ${brewery.id}: ${error.message}`
         console.error(errorMsg)
         errors.push(errorMsg)
@@ -83,10 +83,10 @@ export async function POST(req: Request) {
 
     console.log('[CRON] Degradation recalculation complete:', result)
     return Response.json(result)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[CRON] Fatal error:', error)
     return Response.json(
-      { error: error.message || 'Unknown error' },
+      { error: error instanceof Error ? error.message : String(error) || 'Unknown error' },
       { status: 500 }
     )
   }
@@ -183,7 +183,7 @@ async function processBrewer(breweryId: string): Promise<{
       }
 
       itemsUpdated++
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.warn(`[CRON] Error processing item ${item.id}: ${error.message}`)
       // Continue processing other items even if one fails
     }

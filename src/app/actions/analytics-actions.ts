@@ -39,7 +39,7 @@ export async function getInventoryTrends(days: number = 90) {
   // Aggregate by Date (YYYY-MM-DD or MM/DD format depending on days range)
   const isShortTerm = days <= 30
   
-  const grouped = data.reduce((acc: Record<string, any>, row) => {
+  const grouped = data.reduce((acc: Record<string, unknown>, row) => {
     const d = new Date(row.created_at!)
     // Format to short date like 'Apr 05' or 'Week 14'
     const key = isShortTerm 
@@ -75,6 +75,7 @@ export async function getInventoryTrends(days: number = 90) {
   }, {})
 
   // Convert to array and ensure chronological
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return Object.values(grouped).map((g: any) => ({
     ...g,
     usage: Number(g.usage.toFixed(2)),
@@ -121,6 +122,7 @@ export async function getBatchPerformance() {
     return []
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return data.map((b: any) => {
     const brewLog = b.batch_brewing_logs?.[0] || {}
     const recipe = b.recipes || {}

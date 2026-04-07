@@ -4,18 +4,18 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getActiveBrewery } from '@/lib/active-brewery'
 
-export async function importTanks(data: any[]) {
+export async function importTanks(data: Record<string, unknown>[]) {
   try {
     const supabase = await createClient()
     const brewery = await getActiveBrewery()
     if (!brewery) return { success: false, error: 'No active brewery' }
 
     // Map and sanitize
-    const tanksToInsert = data.map((row: any) => ({
+    const tanksToInsert = data.map((row) => ({
       brewery_id: brewery.id,
-      name: row.name || 'Unnamed Tank',
-      capacity: parseFloat(row.capacity) || 0,
-      status: (row.status || 'empty').toLowerCase(),
+      name: String(row.name || 'Unnamed Tank'),
+      capacity: parseFloat(String(row.capacity)) || 0,
+      status: String(row.status || 'empty').toLowerCase(),
     }))
 
     if (tanksToInsert.length === 0) return { success: false, error: 'No valid rows found' }
@@ -29,12 +29,12 @@ export async function importTanks(data: any[]) {
 
     revalidatePath('/tanks')
     return { success: true, count: tanksToInsert.length }
-  } catch (e: any) {
-    return { success: false, error: e.message }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Unknown error' }
   }
 }
 
-export async function importInventory(data: any[]) {
+export async function importInventory(data: Record<string, unknown>[]) {
   try {
     const supabase = await createClient()
     const brewery = await getActiveBrewery()
@@ -42,7 +42,7 @@ export async function importInventory(data: any[]) {
 
     const validTypes = ['Hops', 'Grain', 'Yeast', 'Adjunct']
 
-    const inventoryToInsert = data.map((row: any) => {
+    const inventoryToInsert = data.map((row) => {
       let itemType = 'Adjunct'
       
       // Basic normalization
@@ -53,13 +53,13 @@ export async function importInventory(data: any[]) {
       return {
         brewery_id: brewery.id,
         item_type: itemType,
-        name: row.name || 'Unnamed Item',
-        current_stock: parseFloat(row.current_stock) || 0,
-        unit: row.unit || 'kg',
-        reorder_point: parseFloat(row.reorder_point) || 0,
-        lot_number: row.lot_number || null,
-        expiration_date: row.expiration_date || null,
-        manufacturer: row.manufacturer || null,
+        name: String(row.name || 'Unnamed Item'),
+        current_stock: parseFloat(String(row.current_stock)) || 0,
+        unit: String(row.unit || 'kg'),
+        reorder_point: parseFloat(String(row.reorder_point)) || 0,
+        lot_number: row.lot_number ? String(row.lot_number) : null,
+        expiration_date: row.expiration_date ? String(row.expiration_date) : null,
+        manufacturer: row.manufacturer ? String(row.manufacturer) : null,
       }
     })
 
@@ -74,7 +74,7 @@ export async function importInventory(data: any[]) {
 
     revalidatePath('/inventory')
     return { success: true, count: inventoryToInsert.length }
-  } catch (e: any) {
-    return { success: false, error: e.message }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Unknown error' }
   }
 }

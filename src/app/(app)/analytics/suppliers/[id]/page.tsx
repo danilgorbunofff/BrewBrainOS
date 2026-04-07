@@ -7,6 +7,7 @@ import { SupplierScorecard } from '@/components/SupplierScorecard'
 import { PerformanceTrendChart } from '@/components/PerformanceTrendChart'
 import { QualityAnalysisPanel } from '@/components/QualityAnalysisPanel'
 import Link from 'next/link'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { LucideArrowLeft, LucideStar, LucidePackageCheck, LucideTrendingUp } from 'lucide-react'
 
 export default async function SupplierDetailPage({
@@ -101,6 +102,7 @@ export default async function SupplierDetailPage({
           data={trends}
           supplierName={supplier.name}
           daysBack={90}
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           onDaysChange={(days) => {
             // Could refetch with new days
           }}

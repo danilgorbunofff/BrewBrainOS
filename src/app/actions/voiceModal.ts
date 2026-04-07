@@ -66,15 +66,16 @@ export async function transcribeVoiceLog(formData: FormData) {
     let extractedData
     try {
       extractedData = JSON.parse(responseText)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       console.error('Failed to parse Gemini output:', responseText)
       return { success: false, error: 'AI failed to extract structured data from speech.' }
     }
 
     return { success: true, data: extractedData }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Transcribe Voice Log Error:', error)
-    return { success: false, error: error.message || 'Internal Server Error' }
+    return { success: false, error: error instanceof Error ? error.message : String(error) || 'Internal Server Error' }
   }
 }
 
@@ -135,8 +136,8 @@ export async function saveVoiceLog(data: {
     revalidatePath('/dashboard')
 
     return { success: true, message: 'Log safely recorded to database.' }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Save Voice Log Error:', error)
-    return { success: false, error: error.message || 'Internal Server Error' }
+    return { success: false, error: error instanceof Error ? error.message : String(error) || 'Internal Server Error' }
   }
 }

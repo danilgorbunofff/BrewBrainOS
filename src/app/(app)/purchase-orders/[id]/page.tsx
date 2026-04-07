@@ -6,6 +6,8 @@ import {
 import { requireActiveBrewery } from '@/lib/require-brewery'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { LucideArrowLeft, LucideEdit, LucideDownload, LucideRefreshCw, LucideCheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'

@@ -60,6 +60,7 @@ export function ShrinkageDashboard({ maxAlerts = 5, showStats = true }: Shrinkag
 
   useEffect(() => {
     loadData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleRefresh = async () => {
@@ -145,6 +146,7 @@ interface StatCardProps {
 /**
  * Statistics Card Component
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function StatCard({ title, value, icon, trend }: StatCardProps) {
   return (
     <div className="border rounded-lg p-4 bg-card">

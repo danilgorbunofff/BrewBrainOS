@@ -14,7 +14,7 @@ interface LogPayload {
   level: LogLevel
   message: string
   timestamp: string
-  context?: any
+  context?: unknown
 }
 
 async function sendToApi(payload: LogPayload) {
@@ -49,7 +49,7 @@ async function writeToDisk(payload: LogPayload) {
 }
 
 export const logger = {
-  log: async (level: LogLevel, message: string, context?: any) => {
+  log: async (level: LogLevel, message: string, context?: unknown) => {
     const payload: LogPayload = {
       level,
       message,
@@ -70,8 +70,8 @@ export const logger = {
     }
   },
 
-  info: (message: string, context?: any) => logger.log('info', message, context),
-  warn: (message: string, context?: any) => logger.log('warn', message, context),
-  error: (message: string, context?: any) => logger.log('error', message, context),
-  debug: (message: string, context?: any) => logger.log('debug', message, context),
+  info: (message: string, context?: unknown) => logger.log('info', message, context),
+  warn: (message: string, context?: unknown) => logger.log('warn', message, context),
+  error: (message: string, context?: unknown) => logger.log('error', message, context),
+  debug: (message: string, context?: unknown) => logger.log('debug', message, context),
 }

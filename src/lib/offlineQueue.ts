@@ -3,7 +3,7 @@
 import { get, set } from 'idb-keyval'
 import { processVoiceLog } from '@/app/actions/voice'
 import { toast } from 'sonner'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 
 export type OfflineAction = {
   id: string
@@ -40,7 +40,7 @@ export async function enqueueAction(action: Omit<OfflineAction, 'id' | 'timestam
   if ('serviceWorker' in navigator && 'SyncManager' in window) {
     try {
       const registration = await navigator.serviceWorker.ready
-      await (registration as any).sync.register('sync-offline-queue')
+      await (registration as ServiceWorkerRegistration & { sync: { register: (tag: string) => Promise<void> } }).sync.register('sync-offline-queue')
     } catch (e) {
       console.warn('Background sync registration failed:', e)
     }
@@ -116,18 +116,25 @@ export async function processQueue() {
 // React Hook for connecting component state to the offline queue
 export function useOfflineQueue() {
   const [queueCount, setQueueCount] = useState(0)
-  const [isOnline, setIsOnline] = useState(true)
+  const isOnline = useSyncExternalStore(
+    (callback) => {
+      window.addEventListener('online', callback)
+      window.addEventListener('offline', callback)
+      return () => {
+        window.removeEventListener('online', callback)
+        window.removeEventListener('offline', callback)
+      }
+    },
+    () => navigator.onLine,
+    () => true // SSR default
+  )
 
   useEffect(() => {
-    // Initial loads
-    setIsOnline(navigator.onLine)
     getOfflineQueue().then(q => setQueueCount(q.length))
 
     const handleOnline = () => {
-      setIsOnline(true)
       processQueue()
     }
-    const handleOffline = () => setIsOnline(false)
     const handleQueueUpdate = () => {
       getOfflineQueue().then(q => setQueueCount(q.length))
     }
@@ -138,7 +145,6 @@ export function useOfflineQueue() {
     }
 
     window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
     window.addEventListener('offline-queue-updated', handleQueueUpdate)
     navigator.serviceWorker?.addEventListener('message', handleSWMessage)
 
@@ -147,7 +153,6 @@ export function useOfflineQueue() {
 
     return () => {
       window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
       window.removeEventListener('offline-queue-updated', handleQueueUpdate)
       navigator.serviceWorker?.removeEventListener('message', handleSWMessage)
     }

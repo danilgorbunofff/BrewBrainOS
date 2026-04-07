@@ -28,8 +28,8 @@ export async function logSanitation(formData: FormData): Promise<ActionResult> {
 
     revalidatePath(`/tank/${tankId}`)
     return { success: true, data: null }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Authentication error' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : String(e) || 'Authentication error' }
   }
 }
 
@@ -55,8 +55,8 @@ export async function assignBatch(formData: FormData): Promise<ActionResult> {
 
     revalidatePath(`/tank/${tankId}`)
     return { success: true, data: null }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Authentication error' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : String(e) || 'Authentication error' }
   }
 }
 
@@ -80,7 +80,7 @@ export async function unassignBatch(formData: FormData): Promise<ActionResult> {
 
     revalidatePath(`/tank/${tankId}`)
     return { success: true, data: null }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Authentication error' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : String(e) || 'Authentication error' }
   }
 }

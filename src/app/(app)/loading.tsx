@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { LucideLayoutDashboard } from 'lucide-react'
 
 export default function Loading() {

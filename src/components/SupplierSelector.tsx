@@ -30,6 +30,7 @@ export function SupplierSelector({
   // Load suppliers on mount
   useEffect(() => {
     loadSuppliers()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [breweryId])
 
   // Load selected supplier

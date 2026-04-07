@@ -1,15 +1,13 @@
 'use client'
 
 import { useGloveMode } from '@/components/GloveModeProvider'
-import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Hand } from 'lucide-react'
+import { useHasMounted } from '@/lib/hooks'
 
 export function GloveModeToggle({ className }: { className?: string }) {
   const { isGloveMode, toggleGloveMode } = useGloveMode()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => setMounted(true), [])
+  const mounted = useHasMounted()
 
   if (!mounted) {
     return (

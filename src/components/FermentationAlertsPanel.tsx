@@ -120,6 +120,7 @@ export function FermentationAlertsPanel({ alerts, batchId }: FermentationAlertsP
                     )}
                   </div>
 
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   <form action={acknowledgeAlert as any} className="shrink-0">
                     <input type="hidden" name="alertId" value={alert.id} />
                     <input type="hidden" name="batchId" value={batchId} />

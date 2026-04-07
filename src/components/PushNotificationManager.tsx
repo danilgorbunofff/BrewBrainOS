@@ -25,13 +25,6 @@ export function PushNotificationManager() {
   const [subscription, setSubscription] = useState<PushSubscription | null>(null)
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-      setIsSupported(true)
-      registerServiceWorker()
-    }
-  }, [])
-
   async function registerServiceWorker() {
     try {
       const registration = await navigator.serviceWorker.ready
@@ -41,6 +34,14 @@ export function PushNotificationManager() {
       console.error('SW Registration error:', error)
     }
   }
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsSupported(true)
+      registerServiceWorker()
+    }
+  }, [])
 
   async function handleSubscribe() {
     setLoading(true)
@@ -63,8 +64,9 @@ export function PushNotificationManager() {
       } else {
         toast.error(result.error || 'Failed to sync subscription')
       }
-    } catch (e: any) {
-      toast.error(e.message || 'Failed to toggle notifications')
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to toggle notifications'
+      toast.error(msg)
     }
     setLoading(false)
   }
@@ -77,8 +79,9 @@ export function PushNotificationManager() {
         setSubscription(null)
         toast.success('Push notifications disabled on this device')
       }
-    } catch (e: any) {
-      toast.error(e.message || 'Failed to unsubscribe')
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to unsubscribe'
+      toast.error(msg)
     }
     setLoading(false)
   }

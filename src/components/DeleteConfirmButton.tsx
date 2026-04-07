@@ -9,6 +9,7 @@ import { ActionResult } from '@/types/database'
 import { useRouter } from 'next/navigation'
 
 interface DeleteConfirmButtonProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: (formData: FormData) => Promise<ActionResult | any>
   hiddenInputs: Record<string, string>
   itemName: string
@@ -59,10 +60,10 @@ export function DeleteConfirmButton({
             toast.error(result.error || `Failed to delete ${itemName}`)
           }
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         // NEXT_REDIRECT is the error Next.js throws internally when redirect() is called in a server action.
         // We should ignore this if we want to handle movement smoothly or if it happens unexpectedly.
-        if (err.message && (err.message.includes('NEXT_REDIRECT') || err.digest?.includes('NEXT_REDIRECT'))) {
+        if (err instanceof Error ? err.message : String(err) && (err instanceof Error ? err.message : String(err).includes('NEXT_REDIRECT') || err.digest?.includes('NEXT_REDIRECT'))) {
           return
         }
         toast.error(err.message || 'An unexpected error occurred')

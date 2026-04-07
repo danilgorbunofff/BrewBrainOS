@@ -337,6 +337,8 @@ export interface BatchReading {
   pressure?: number | null        // Tank pressure in PSI
   notes?: string | null
   logger_id?: string | null
+  provenance_ip?: string | null
+  provenance_user_agent?: string | null
   created_at: string
 }
 
@@ -417,6 +419,8 @@ export interface BatchBrewingLog {
   water_chemistry_notes?: string | null
   actual_ibu_calculated?: number | null
   logged_by?: string | null
+  provenance_ip?: string | null
+  provenance_user_agent?: string | null
   created_at: string
 }
 

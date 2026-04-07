@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { LucideDownload } from 'lucide-react'
 
 interface ExportCSVButtonProps {
-  data: Record<string, any>[]
+  data: Record<string, unknown>[]
   filename: string
   columns: { key: string; label: string }[]
   className?: string

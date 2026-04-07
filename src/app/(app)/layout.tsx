@@ -44,6 +44,7 @@ export default async function AppLayout({
     // Dev override takes precedence
     if (devOverride && process.env.NODE_ENV === 'development') {
       subscription = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         tier: devOverride as any,
         status: 'active',
         white_glove_paid: sub?.white_glove_paid || false,

@@ -9,6 +9,11 @@ import { cn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
+export const metadata = {
+  title: 'Analytics — BrewBrain OS',
+  description: 'Data-driven insights. Inventory trends, mash efficiency, and shrinkage analysis.',
+}
+
 export default async function AnalyticsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -96,7 +101,7 @@ export default async function AnalyticsPage() {
 function AnalyticsKPICard({ 
   title, value, subtitle, icon: Icon, trend 
 }: { 
-  title: string, value: string | number, subtitle: string, icon: any, trend: 'good' | 'bad' | 'neutral' 
+  title: string, value: string | number, subtitle: string, icon: React.ComponentType<{ className?: string }>, trend: 'good' | 'bad' | 'neutral' 
 }) {
   return (
     <div className={cn(

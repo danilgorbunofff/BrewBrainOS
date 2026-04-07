@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
 interface DeleteConfirmDialogProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: (formData: FormData) => Promise<any>
   hiddenInputs: Record<string, string>
   itemName: string
@@ -69,9 +70,9 @@ export function DeleteConfirmDialog({
         } else {
           toast.error(result?.error || `Failed to delete ${itemName}`)
         }
-      } catch (err: any) {
-        if (err.message?.includes('NEXT_REDIRECT') || err.digest?.includes('NEXT_REDIRECT')) return
-        toast.error(err.message || 'Systems failure during deletion protocols')
+      } catch (err: unknown) {
+        if (err instanceof Error ? err.message : String(err)?.includes('NEXT_REDIRECT') || err.digest?.includes('NEXT_REDIRECT')) return
+        toast.error(err instanceof Error ? err.message : String(err) || 'Systems failure during deletion protocols')
       }
     })
   }

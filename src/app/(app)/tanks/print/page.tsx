@@ -104,7 +104,7 @@ export default async function PrintQRLabelsPage() {
             <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 mb-4 md:mb-0">
               <li>Press <strong>Cmd + P</strong> or click the Print dialog button.</li>
               <li>Ensure <strong>Background graphics</strong> is disabled or printed cleanly.</li>
-              <li>For best results, use standard Avery 2"x2" square label sheets.</li>
+              <li>For best results, use standard Avery 2&quot;x2&quot; square label sheets.</li>
               <li>Set margins to <strong>None</strong> for maximum use of space.</li>
             </ul>
           </div>

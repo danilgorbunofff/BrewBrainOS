@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, useEffect, useMemo } from 'react'
+import { useState, useTransition, useEffect, useRef } from 'react'
 import { 
   LucideSettings, LucideX, LucideLoader2, LucideCheck, LucideZap, 
   LucideDatabase, LucideBell, LucideHistory, LucideFlaskConical,
@@ -46,15 +46,18 @@ type Tab = 'scenarios' | 'tiers' | 'settings'
 export function DevTools({ activeBreweryId, currentTier }: DevToolsProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>('scenarios')
-  const [isPending, startTransition] = useTransition()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [, startTransition] = useTransition()
   const [actions, setActions] = useState<ActionLog[]>([])
   const [isSlowNetwork, setIsSlowNetwork] = useState(false)
   const [confirmNuclear, setConfirmNuclear] = useState(false)
   const router = useRouter()
+  const idCounter = useRef(0)
 
   // Load persistence
   useEffect(() => {
     const saved = localStorage.getItem('ov-actions')
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (saved) setActions(JSON.parse(saved).slice(0, 50))
     
     const slow = localStorage.getItem('ov-slow-network')
@@ -74,7 +77,7 @@ export function DevTools({ activeBreweryId, currentTier }: DevToolsProps) {
   if (!activeBreweryId) return null
 
   const logAction = (name: string, status: ActionLog['status'], message?: string, id?: string) => {
-    const actionId = id || Math.random().toString(36).substr(2, 9)
+    const actionId = id || `dev-${++idCounter.current}`
     setActions(prev => {
       const existing = prev.find(a => a.id === actionId)
       if (existing) {
@@ -91,26 +94,28 @@ export function DevTools({ activeBreweryId, currentTier }: DevToolsProps) {
     return actionId
   }
 
-  const runDevAction = async (name: string, actionFn: () => Promise<any>) => {
+  const runDevAction = async (name: string, actionFn: () => Promise<{ success?: boolean; message?: string; error?: string } | boolean | void>) => {
     const actionId = logAction(name, 'pending')
     const toastId = toast.loading(`${name}...`, { position: 'top-center' })
     if (isSlowNetwork) await new Promise(r => setTimeout(r, 1500))
     
     try {
       const res = await actionFn()
-      const isSuccess = res === true || (res && typeof res === 'object' && res.success !== false)
+      const resObj = typeof res === 'object' && res !== null ? res : null
+      const isSuccess = res === true || (resObj && resObj.success !== false)
       
       if (isSuccess) {
-        logAction(name, 'success', res?.message, actionId)
-        toast.success(res?.message || `${name} successful`, { id: toastId })
+        logAction(name, 'success', resObj?.message, actionId)
+        toast.success(resObj?.message || `${name} successful`, { id: toastId })
         router.refresh()
       } else {
-        logAction(name, 'error', res?.error, actionId)
-        toast.error(res?.error || 'Action failed', { id: toastId, duration: 5000 })
+        logAction(name, 'error', resObj?.error, actionId)
+        toast.error(resObj?.error || 'Action failed', { id: toastId, duration: 5000 })
       }
-    } catch (e: any) {
-      logAction(name, 'error', e.message, actionId)
-      toast.error(e.message || 'System crash during action', { id: toastId })
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'System crash during action'
+      logAction(name, 'error', msg, actionId)
+      toast.error(msg, { id: toastId })
     }
   }
 

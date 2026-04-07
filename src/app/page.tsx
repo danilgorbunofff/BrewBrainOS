@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import {
   LucideShieldCheck, LucideWaves, LucideMic, LucideQrCode,
@@ -17,7 +18,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(234,88,12,0.4)] flex items-center justify-center">
-              <img src="/logo.png" alt="BrewBrain Logo" className="h-full w-full object-cover" />
+              <Image src="/logo.png" alt="BrewBrain Logo" width={36} height={36} className="h-full w-full object-cover" />
             </div>
             <span className="text-xl font-black tracking-tight">BrewBrain <span className="text-orange-500">OS</span></span>
           </div>
@@ -126,7 +127,7 @@ export default function LandingPage() {
                 <div className="hidden md:flex flex-col w-[200px] bg-[#060606] border-r border-border p-4 shrink-0">
                   <div className="flex items-center gap-2 mb-6">
                     <div className="h-7 w-7 rounded-lg overflow-hidden shadow-[0_0_12px_rgba(234,88,12,0.3)] flex items-center justify-center">
-                      <img src="/logo.png" alt="BrewBrain Logo" className="h-full w-full object-cover" />
+                      <Image src="/logo.png" alt="BrewBrain Logo" width={28} height={28} className="h-full w-full object-cover" />
                     </div>
                     <span className="text-sm font-black text-foreground">BrewBrain <span className="text-orange-500 text-[10px]">OS</span></span>
                   </div>
@@ -592,7 +593,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-3">
             <div className="h-7 w-7 rounded-lg overflow-hidden flex items-center justify-center">
-              <img src="/logo.png" alt="BrewBrain Logo" className="h-full w-full object-cover" />
+              <Image src="/logo.png" alt="BrewBrain Logo" width={28} height={28} className="h-full w-full object-cover" />
             </div>
             <span className="text-sm font-bold text-muted-foreground">BrewBrain OS</span>
           </div>

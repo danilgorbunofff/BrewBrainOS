@@ -1,10 +1,10 @@
 'use client'
 
 import { useTheme } from 'next-themes'
-import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LucidePalette, LucideSun, LucideMoon, LucideMonitor } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useHasMounted } from '@/lib/hooks'
 
 const themes = [
   { value: 'dark', label: 'Dark Mode', description: 'Default brewery dark theme', icon: LucideMoon },
@@ -14,9 +14,7 @@ const themes = [
 
 export function ThemeSelector() {
   const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => setMounted(true), [])
+  const mounted = useHasMounted()
 
   if (!mounted) return null
 

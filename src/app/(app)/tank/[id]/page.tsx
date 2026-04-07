@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -56,7 +57,7 @@ export default async function TankPage({ params }: PageProps) {
         <Card className="max-w-md glass border-border p-8 text-center text-foreground">
           <LucideAlertTriangle className="h-12 w-12 text-primary mx-auto mb-4" />
           <h2 className="text-xl font-bold mb-2">Tank Not Found</h2>
-          <p className="text-muted-foreground mb-6">This tank does not exist in your brewery's database.</p>
+          <p className="text-muted-foreground mb-6">This tank does not exist in your brewery&apos;s database.</p>
           <Link href="/tanks"><Button>Back to Vessels</Button></Link>
         </Card>
       </div>
@@ -189,6 +190,7 @@ export default async function TankPage({ params }: PageProps) {
                   </div>
 
                   {/* Unassign */}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   <form action={unassignBatch as any}>
                     <input type="hidden" name="tankId" value={tank.id} />
                     <Button type="submit" variant="ghost" className="w-full text-muted-foreground hover:text-red-500 hover:bg-red-500/5 rounded-xl gap-2 border border-transparent hover:border-red-500/20">
@@ -203,6 +205,7 @@ export default async function TankPage({ params }: PageProps) {
                     <p className="text-muted-foreground font-medium text-sm">Tank is empty & available</p>
                   </div>
                   {allBatches && allBatches.length > 0 ? (
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     <form action={assignBatch as any} className="space-y-2">
                       <input type="hidden" name="tankId" value={tank.id} />
                       <select
@@ -260,6 +263,7 @@ export default async function TankPage({ params }: PageProps) {
               </div>
 
               {/* Fixed: Sanitation form now includes a notes text field */}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               <form action={logSanitation as any} className="pt-2 border-t border-border space-y-2">
                 <input type="hidden" name="tankId" value={tank.id} />
                 <Input

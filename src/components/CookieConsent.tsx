@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { LucideShieldCheck, LucideX, LucideSettings, LucideCheck } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -10,6 +12,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog"

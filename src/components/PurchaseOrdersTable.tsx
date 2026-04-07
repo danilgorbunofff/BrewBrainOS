@@ -1,23 +1,27 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { PurchaseOrder, Supplier } from '@/types/database'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
-import { LucidePlus, LucideExternalLink, LucideDownload, LucideClock, LucideCheckCircle, LucideSearch } from 'lucide-react'
+import { LucidePlus, LucideExternalLink, LucideSearch } from 'lucide-react'
 
 interface PurchaseOrdersTableProps {
   orders: (PurchaseOrder & { supplier?: Supplier })[]
-  onOrderDeleted?: (orderId: string) => void
 }
 
-export function PurchaseOrdersTable({ orders, onOrderDeleted }: PurchaseOrdersTableProps) {
+type StatusFilter = 'All' | 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'canceled'
+type PaymentFilter = 'All' | 'unpaid' | 'partial' | 'paid'
+
+export function PurchaseOrdersTable({ orders }: PurchaseOrdersTableProps) {
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterStatus, setFilterStatus] = useState<'All' | 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'canceled'>('All')
-  const [filterPayment, setFilterPayment] = useState<'All' | 'unpaid' | 'partial' | 'paid'>('All')
+  const [filterStatus, setFilterStatus] = useState<StatusFilter>('All')
+  const [filterPayment, setFilterPayment] = useState<PaymentFilter>('All')
+  // eslint-disable-next-line react-hooks/purity
+  const now = useMemo(() => Date.now(), [])
 
   // Filter orders
   const filteredOrders = orders.filter(order => {
@@ -66,7 +70,7 @@ export function PurchaseOrdersTable({ orders, onOrderDeleted }: PurchaseOrdersTa
 
   // Helper: Calculate days since order
   const getDaysAgo = (date: string) => {
-    const days = Math.floor((Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24))
+    const days = Math.floor((now - new Date(date).getTime()) / (1000 * 60 * 60 * 24))
     if (days === 0) return 'Today'
     if (days === 1) return 'Yesterday'
     return `${days} days ago`
@@ -119,7 +123,7 @@ export function PurchaseOrdersTable({ orders, onOrderDeleted }: PurchaseOrdersTa
           {/* Status filter */}
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as any)}
+            onChange={(e) => setFilterStatus(e.target.value as StatusFilter)}
             className="px-3 py-2 border rounded-md bg-white dark:bg-slate-900 dark:border-slate-700 text-sm"
           >
             <option>All</option>
@@ -133,7 +137,7 @@ export function PurchaseOrdersTable({ orders, onOrderDeleted }: PurchaseOrdersTa
           {/* Payment filter */}
           <select
             value={filterPayment}
-            onChange={(e) => setFilterPayment(e.target.value as any)}
+            onChange={(e) => setFilterPayment(e.target.value as PaymentFilter)}
             className="px-3 py-2 border rounded-md bg-white dark:bg-slate-900 dark:border-slate-700 text-sm"
           >
             <option>All</option>

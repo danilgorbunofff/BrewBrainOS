@@ -2,6 +2,8 @@
 
 import { InventoryItem } from '@/types/database'
 import { Button } from '@/components/ui/button'
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { LucideMail, LucidePhone, LucideExternalLink } from 'lucide-react'
 import Link from 'next/link'
 

@@ -19,6 +19,7 @@ interface MonthlyRow {
 }
 
 interface TTBReportTableProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   batches: any[]
   avgTankCapacity: number
   breweryName: string
@@ -29,6 +30,7 @@ export function TTBReportTable({ batches, avgTankCapacity, breweryName, licenseN
   const [expanded, setExpanded] = useState(true)
 
   // Group batches dynamically on the client so that New Date() respects the local browser timezone
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monthlyData: Record<string, MonthlyRow & { monthKey: string, batchesList: any[] }> = {}
   
   for (const batch of batches) {

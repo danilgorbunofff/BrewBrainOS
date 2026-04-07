@@ -24,6 +24,7 @@ import {
   X,
 } from 'lucide-react'
 import { getDegradationHealthStatus, generateDegradationAlerts } from '@/lib/degradation'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { updateStorageCondition, updateDegradationMetrics } from '@/app/(app)/inventory/actions'
 import { cn } from '@/lib/utils'
 

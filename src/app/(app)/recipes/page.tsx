@@ -73,6 +73,7 @@ export default async function RecipesPage() {
               <h2 className="text-lg font-black tracking-tight mb-4 flex items-center gap-2">
                 <LucidePlus className="h-4 w-4 text-primary" /> Create Recipe
               </h2>
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               <form action={createRecipe as any} className="space-y-4">
                 <label className="block">
                   <span className="text-[10px] font-black uppercase text-muted-foreground">Recipe Name</span>

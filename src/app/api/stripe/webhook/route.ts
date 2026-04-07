@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
         const subscriptionId = session.subscription as string
 
         if (subscriptionId) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const stripeSub = await stripe.subscriptions.retrieve(subscriptionId) as any
 
           const periodStart = stripeSub.current_period_start || stripeSub.items?.data?.[0]?.current_period_start
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'customer.subscription.updated': {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const subscription = event.data.object as any
         const breweryId = subscription.metadata?.brewery_id
 
@@ -123,6 +125,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'customer.subscription.deleted': {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const subscription = event.data.object as any
         const breweryId = subscription.metadata?.brewery_id
 
@@ -148,6 +151,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'invoice.payment_failed': {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const invoice = event.data.object as any
         const subscriptionId = (invoice.subscription as string) || invoice.subscription_details?.id
 

@@ -32,6 +32,9 @@ export async function POST(req: Request) {
     const payload = await req.json()
     const { tank_id, batch_id, temperature, gravity, ph, dissolved_oxygen, pressure, notes } = payload
 
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
+    const userAgent = req.headers.get('user-agent') || 'iot-device'
+
     if (!tank_id && !batch_id) {
        return Response.json({ error: 'Bad Request: Must provide either tank_id or batch_id' }, { status: 400 })
     }
@@ -65,7 +68,9 @@ export async function POST(req: Request) {
         dissolved_oxygen: dissolved_oxygen ?? null,
         pressure: pressure ?? null,
         notes: notes || 'Automated IoT Sensor Reading',
-        logger_id: null // Automated
+        logger_id: null, // Automated
+        provenance_ip: ip,
+        provenance_user_agent: userAgent
       })
 
     if (insertError) {
@@ -135,8 +140,8 @@ export async function POST(req: Request) {
 
     return Response.json({ success: true, message: 'Reading logged successfully', batch_id: targetBatchId })
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('IoT Webhook Error:', err)
-    return Response.json({ error: err.message }, { status: 500 })
+    return Response.json({ error: err instanceof Error ? err.message : 'Internal Server Error' }, { status: 500 })
   }
 }

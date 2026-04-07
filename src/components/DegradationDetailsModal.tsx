@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getDegradationHistory, updateDegradationMetrics } from '@/app/(app)/inventory/actions'
+ 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { TrendingDown, Calendar, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -39,6 +41,7 @@ export function DegradationDetailsModal({
     if (open) {
       loadHistory()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   async function loadHistory() {

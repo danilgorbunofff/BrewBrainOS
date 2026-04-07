@@ -119,13 +119,18 @@ CREATE INDEX IF NOT EXISTS idx_degradation_logs_created ON degradation_logs(crea
 -- BATCH READINGS (voice-logged sensor data)
 -- NOTE: column is `created_at` (was `logged_at` in old schema) to match app code
 CREATE TABLE IF NOT EXISTS batch_readings (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  batch_id    UUID REFERENCES batches(id) ON DELETE CASCADE,
-  logger_id   UUID REFERENCES auth.users(id),
-  temperature DECIMAL,
-  gravity     DECIMAL,
-  notes       TEXT,
-  created_at  TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  batch_id         UUID REFERENCES batches(id) ON DELETE CASCADE,
+  logger_id        UUID REFERENCES auth.users(id),
+  temperature      DECIMAL,
+  gravity          DECIMAL,
+  ph               DECIMAL,
+  dissolved_oxygen DECIMAL,
+  pressure         DECIMAL,
+  notes            TEXT,
+  provenance_ip    TEXT,
+  provenance_user_agent TEXT,
+  created_at       TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
 
 -- SUBSCRIPTIONS (Stripe billing)
@@ -246,6 +251,8 @@ CREATE TABLE IF NOT EXISTS inventory_history (
   reason TEXT,
   batch_id UUID REFERENCES batches(id) ON DELETE SET NULL,
   recorded_by UUID REFERENCES auth.users(id),
+  provenance_ip TEXT,
+  provenance_user_agent TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
 
@@ -270,6 +277,8 @@ CREATE TABLE IF NOT EXISTS shrinkage_alerts (
   )),
   assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   notes TEXT,
+  ttb_reportable BOOLEAN DEFAULT false,
+  ttb_remarks TEXT,
   resolved_at TIMESTAMP WITH TIME ZONE,
   detected_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
@@ -343,3 +352,257 @@ CREATE POLICY "Users can insert feedback" ON feedback
 
 CREATE POLICY "Users can view own feedback" ON feedback
   FOR SELECT USING (auth.uid() = user_id);
+
+-- ─────────────────────────────────────────────
+-- SUPPLIER & PURCHASING
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS suppliers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brewery_id UUID REFERENCES breweries(id) ON DELETE CASCADE NOT NULL,
+  name TEXT NOT NULL,
+  contact_person TEXT,
+  email TEXT,
+  phone TEXT,
+  address TEXT,
+  city TEXT,
+  state TEXT,
+  zip_code TEXT,
+  country TEXT NOT NULL,
+  website TEXT,
+  supplier_type TEXT CHECK (supplier_type IN ('Distributor', 'Direct', 'Cooperative')) NOT NULL,
+  years_partnered DECIMAL,
+  specialty TEXT,
+  notes TEXT,
+  is_active BOOLEAN DEFAULT true,
+  avg_quality_rating DECIMAL DEFAULT 0,
+  avg_delivery_days DECIMAL DEFAULT 0,
+  total_orders INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+CREATE TABLE IF NOT EXISTS purchase_orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brewery_id UUID REFERENCES breweries(id) ON DELETE CASCADE NOT NULL,
+  supplier_id UUID REFERENCES suppliers(id) ON DELETE CASCADE NOT NULL,
+  order_number TEXT NOT NULL,
+  order_date DATE NOT NULL,
+  expected_delivery_date DATE,
+  actual_delivery_date DATE,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'shipped', 'delivered', 'canceled')),
+  items_summary JSONB,
+  total_cost DECIMAL,
+  invoice_number TEXT,
+  payment_status TEXT DEFAULT 'unpaid' CHECK (payment_status IN ('unpaid', 'partial', 'paid')),
+  quality_rating DECIMAL,
+  quality_notes TEXT,
+  any_issues BOOLEAN DEFAULT false,
+  issue_description TEXT,
+  created_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+CREATE TABLE IF NOT EXISTS purchase_order_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  purchase_order_id UUID REFERENCES purchase_orders(id) ON DELETE CASCADE NOT NULL,
+  inventory_id UUID REFERENCES inventory(id) ON DELETE SET NULL,
+  item_name TEXT NOT NULL,
+  quantity_ordered DECIMAL NOT NULL,
+  quantity_received DECIMAL DEFAULT 0,
+  unit TEXT NOT NULL,
+  unit_price DECIMAL NOT NULL,
+  lot_number TEXT,
+  expiration_date DATE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+CREATE TABLE IF NOT EXISTS supplier_ratings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brewery_id UUID REFERENCES breweries(id) ON DELETE CASCADE NOT NULL,
+  supplier_id UUID REFERENCES suppliers(id) ON DELETE CASCADE NOT NULL,
+  purchase_order_id UUID REFERENCES purchase_orders(id) ON DELETE SET NULL,
+  quality_rating INTEGER CHECK (quality_rating >= 1 AND quality_rating <= 5) NOT NULL,
+  delivery_rating INTEGER CHECK (delivery_rating >= 1 AND delivery_rating <= 5) NOT NULL,
+  reliability_rating INTEGER CHECK (reliability_rating >= 1 AND reliability_rating <= 5) NOT NULL,
+  pricing_rating INTEGER CHECK (pricing_rating >= 1 AND pricing_rating <= 5) NOT NULL,
+  comments TEXT,
+  would_order_again BOOLEAN NOT NULL,
+  rating_date TIMESTAMP WITH TIME ZONE NOT NULL,
+  rated_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+ALTER TABLE suppliers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE purchase_orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE purchase_order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE supplier_ratings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owner manages suppliers" ON suppliers
+  FOR ALL USING (brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid()));
+
+CREATE POLICY "Owner manages purchase_orders" ON purchase_orders
+  FOR ALL USING (brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid()));
+
+CREATE POLICY "Owner manages purchase_order_items" ON purchase_order_items
+  FOR ALL USING (purchase_order_id IN (
+    SELECT po.id FROM purchase_orders po WHERE po.brewery_id IN (
+      SELECT id FROM breweries WHERE owner_id = auth.uid()
+    )
+  ));
+
+CREATE POLICY "Owner manages supplier_ratings" ON supplier_ratings
+  FOR ALL USING (brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid()));
+
+-- ─────────────────────────────────────────────
+-- FERMENTATION & MONITORING
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS fermentation_alerts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  batch_id UUID REFERENCES batches(id) ON DELETE CASCADE NOT NULL,
+  brewery_id UUID REFERENCES breweries(id) ON DELETE CASCADE NOT NULL,
+  alert_type TEXT CHECK (alert_type IN (
+    'stuck_fermentation', 'temperature_deviation', 'ph_out_of_range', 'do_spike', 'over_pressure', 'glycol_failure'
+  )) NOT NULL,
+  severity TEXT CHECK (severity IN ('warning', 'critical')) NOT NULL,
+  message TEXT NOT NULL,
+  threshold_value DECIMAL,
+  actual_value DECIMAL,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'acknowledged', 'resolved')),
+  acknowledged_by UUID REFERENCES auth.users(id),
+  acknowledged_at TIMESTAMP WITH TIME ZONE,
+  resolved_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+CREATE TABLE IF NOT EXISTS alert_preferences (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  brewery_id UUID REFERENCES breweries(id) ON DELETE CASCADE NOT NULL,
+  stuck_fermentation BOOLEAN DEFAULT true,
+  temperature_deviation BOOLEAN DEFAULT true,
+  ph_out_of_range BOOLEAN DEFAULT true,
+  do_spike BOOLEAN DEFAULT true,
+  over_pressure BOOLEAN DEFAULT true,
+  glycol_failure BOOLEAN DEFAULT true,
+  push_enabled BOOLEAN DEFAULT true,
+  in_app_enabled BOOLEAN DEFAULT true,
+  severity_filter TEXT DEFAULT 'all' CHECK (severity_filter IN ('all', 'critical_only')),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+CREATE TABLE IF NOT EXISTS yeast_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  batch_id UUID REFERENCES batches(id) ON DELETE CASCADE NOT NULL,
+  brewery_id UUID REFERENCES breweries(id) ON DELETE CASCADE NOT NULL,
+  cell_density DECIMAL,
+  viability_pct DECIMAL,
+  pitch_rate DECIMAL,
+  notes TEXT,
+  logged_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+ALTER TABLE fermentation_alerts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE alert_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE yeast_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owner manages fermentation_alerts" ON fermentation_alerts
+  FOR ALL USING (brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid()));
+
+CREATE POLICY "Users manage own alert_preferences" ON alert_preferences
+  FOR ALL USING (user_id = auth.uid());
+
+CREATE POLICY "Owner manages yeast_logs" ON yeast_logs
+  FOR ALL USING (brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid()));
+
+-- ─────────────────────────────────────────────
+-- COMPLIANCE AUTOMATION
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS daily_operation_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brewery_id UUID REFERENCES breweries(id) ON DELETE CASCADE NOT NULL,
+  log_date DATE NOT NULL,
+  operation_type TEXT CHECK (operation_type IN (
+    'removal_taxpaid', 'removal_tax_free', 'return_to_brewery', 'breakage_destruction', 'other'
+  )) NOT NULL,
+  quantity DECIMAL NOT NULL,
+  unit TEXT NOT NULL,
+  batch_id UUID REFERENCES batches(id) ON DELETE SET NULL,
+  inventory_id UUID REFERENCES inventory(id) ON DELETE SET NULL,
+  ttb_reportable BOOLEAN DEFAULT true,
+  remarks TEXT,
+  logged_by UUID REFERENCES auth.users(id),
+  provenance_ip TEXT,
+  provenance_user_agent TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+ALTER TABLE daily_operation_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owner manages daily_operation_logs" ON daily_operation_logs
+  FOR ALL USING (brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid()));
+
+-- ─────────────────────────────────────────────
+-- RECIPE MANAGEMENT
+-- ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS recipes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brewery_id UUID REFERENCES breweries(id) ON DELETE CASCADE NOT NULL,
+  name TEXT NOT NULL,
+  style TEXT,
+  target_og DECIMAL,
+  target_fg DECIMAL,
+  target_ibu DECIMAL,
+  target_abv DECIMAL,
+  batch_size_bbls DECIMAL NOT NULL,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+CREATE TABLE IF NOT EXISTS recipe_ingredients (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  recipe_id UUID REFERENCES recipes(id) ON DELETE CASCADE NOT NULL,
+  inventory_item_id UUID REFERENCES inventory(id) ON DELETE SET NULL,
+  ingredient_type TEXT CHECK (ingredient_type IN ('grain', 'hop', 'yeast', 'adjunct', 'water_treatment')) NOT NULL,
+  amount DECIMAL NOT NULL,
+  unit TEXT NOT NULL,
+  timing TEXT,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+CREATE TABLE IF NOT EXISTS batch_brewing_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  batch_id UUID REFERENCES batches(id) ON DELETE CASCADE NOT NULL,
+  brewery_id UUID REFERENCES breweries(id) ON DELETE CASCADE NOT NULL,
+  log_type TEXT CHECK (log_type IN ('brew_day', 'condition_check', 'packaging')) NOT NULL,
+  mashing_ph DECIMAL,
+  boil_off_rate_pct DECIMAL,
+  water_chemistry_notes TEXT,
+  actual_ibu_calculated DECIMAL,
+  logged_by UUID REFERENCES auth.users(id),
+  provenance_ip TEXT,
+  provenance_user_agent TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+);
+
+ALTER TABLE recipes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE recipe_ingredients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE batch_brewing_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Owner manages recipes" ON recipes
+  FOR ALL USING (brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid()));
+
+CREATE POLICY "Owner manages recipe_ingredients" ON recipe_ingredients
+  FOR ALL USING (recipe_id IN (
+    SELECT r.id FROM recipes r WHERE r.brewery_id IN (
+      SELECT id FROM breweries WHERE owner_id = auth.uid()
+    )
+  ));
+
+CREATE POLICY "Owner manages batch_brewing_logs" ON batch_brewing_logs
+  FOR ALL USING (brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid()));

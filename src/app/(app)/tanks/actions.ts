@@ -33,8 +33,8 @@ export async function addTank(formData: FormData): Promise<ActionResult> {
 
     revalidatePath('/tanks')
     return { success: true, data: null }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Authentication error' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : String(e) || 'Authentication error' }
   }
 }
 
@@ -69,7 +69,7 @@ export async function deleteTank(formData: FormData): Promise<ActionResult> {
 
     revalidatePath('/tanks')
     return { success: true, data: null }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Operation failed' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : String(e) || 'Operation failed' }
   }
 }

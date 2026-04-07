@@ -9,6 +9,11 @@ import { LucidePackageSearch, LucideAlertCircle } from 'lucide-react'
 import { getActiveBrewery } from '@/lib/active-brewery'
 import { RealtimeRefresh } from '@/components/RealtimeRefresh'
 
+export const metadata = {
+  title: 'Inventory — BrewBrain OS',
+  description: 'Resource allocation and stock management for your brewery.',
+}
+
 export default async function InventoryPage() {
   const supabase = await createClient()
 

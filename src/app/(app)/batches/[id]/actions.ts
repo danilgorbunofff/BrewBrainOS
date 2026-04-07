@@ -6,6 +6,7 @@ import { batchSchema } from '@/lib/schemas'
 import { ActionResult } from '@/types/database'
 import { detectFermentationAlerts, BatchReadingInput, BatchConfig } from '@/lib/fermentation-alerts'
 import { sendFermentationAlertNotification } from '@/app/actions/push-actions'
+import { headers } from 'next/headers'
 
 // ─────────────────────────────────────────────
 // EXISTING ACTIONS
@@ -16,7 +17,7 @@ export async function updateBatchStatus(formData: FormData): Promise<ActionResul
     const { supabase, brewery } = await requireActiveBrewery()
 
     const batchId = formData.get('batchId') as string
-    const status = formData.get('status') as any
+    const status = formData.get('status') as string
 
     if (!batchId) return { success: false, error: 'Batch ID is required' }
 
@@ -34,8 +35,8 @@ export async function updateBatchStatus(formData: FormData): Promise<ActionResul
     revalidatePath(`/batches/${batchId}`)
     revalidatePath('/batches')
     return { success: true, data: null }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Authentication error' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Authentication error' }
   }
 }
 
@@ -60,21 +61,27 @@ export async function updateBatchFG(formData: FormData): Promise<ActionResult> {
       return { success: false, error: 'Failed to update final gravity' }
     }
 
+    const reqHeaders = await headers()
+    const ip = reqHeaders.get('x-forwarded-for') || reqHeaders.get('x-real-ip') || 'unknown'
+    const userAgent = reqHeaders.get('user-agent') || 'unknown'
+
     // Also create a reading so it shows on the dashboard chart
     const { data: { user } } = await supabase.auth.getUser()
     await supabase.from('batch_readings').insert({
       batch_id: batchId,
       gravity: fg,
       logger_id: user?.id,
-      notes: 'Manual gravity log'
+      notes: 'Manual gravity log',
+      provenance_ip: ip,
+      provenance_user_agent: userAgent
     })
 
     revalidatePath(`/batches/${batchId}`)
     revalidatePath('/batches')
     revalidatePath('/dashboard')
     return { success: true, data: null }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Authentication error' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Authentication error' }
   }
 }
 
@@ -100,6 +107,10 @@ export async function logManualReading(formData: FormData): Promise<ActionResult
       return isNaN(n) ? null : n
     }
 
+    const reqHeaders = await headers()
+    const ip = reqHeaders.get('x-forwarded-for') || reqHeaders.get('x-real-ip') || 'unknown'
+    const userAgent = reqHeaders.get('user-agent') || 'unknown'
+
     const reading = {
       batch_id: batchId,
       brewery_id: brewery.id,
@@ -110,6 +121,8 @@ export async function logManualReading(formData: FormData): Promise<ActionResult
       pressure: parseOptional('pressure'),
       notes: (formData.get('notes') as string) || null,
       logger_id: user?.id ?? null,
+      provenance_ip: ip,
+      provenance_user_agent: userAgent,
     }
 
     const { error } = await supabase.from('batch_readings').insert(reading)
@@ -124,8 +137,8 @@ export async function logManualReading(formData: FormData): Promise<ActionResult
     revalidatePath(`/batches/${batchId}`)
     revalidatePath('/dashboard')
     return { success: true, data: null }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Authentication error' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Authentication error' }
   }
 }
 
@@ -165,8 +178,8 @@ export async function logYeastViability(formData: FormData): Promise<ActionResul
 
     revalidatePath(`/batches/${batchId}`)
     return { success: true, data: null }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Authentication error' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Authentication error' }
   }
 }
 
@@ -209,7 +222,7 @@ export async function runFermentationAlertCheck(batchId: string): Promise<Action
 
     // Run detection engine
     const config: BatchConfig = {
-      target_temp: (batch as any)?.target_temp ?? null,
+      target_temp: (batch as { target_temp?: number | null })?.target_temp ?? null,
     }
     const detected = detectFermentationAlerts(readings as BatchReadingInput[], config)
 
@@ -249,8 +262,8 @@ export async function runFermentationAlertCheck(batchId: string): Promise<Action
 
     revalidatePath(`/batches/${batchId}`)
     return { success: true, data: { alerts_created: newAlerts.length } }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Authentication error' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Authentication error' }
   }
 }
 
@@ -284,7 +297,7 @@ export async function acknowledgeAlert(formData: FormData): Promise<ActionResult
 
     if (batchId) revalidatePath(`/batches/${batchId}`)
     return { success: true, data: null }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Authentication error' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Authentication error' }
   }
 }

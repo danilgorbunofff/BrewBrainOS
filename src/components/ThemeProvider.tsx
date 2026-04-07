@@ -7,6 +7,7 @@ import * as React from 'react'
 // next-themes uses a script tag for FOUC prevention, which React 19 warns about.
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   const originalError = console.error
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   console.error = (...args: any[]) => {
     if (typeof args[0] === 'string' && args[0].includes('Encountered a script tag')) {
       return

@@ -58,6 +58,7 @@ export function SupplierForm({ breweryId, supplier, onSuccess }: SupplierFormPro
 
       const supplierData = {
         name: name.trim(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         supplier_type: supplierType as any,
         contact_person: contactPerson?.trim() || null,
         email: email?.trim() || null,

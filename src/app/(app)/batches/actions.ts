@@ -35,9 +35,9 @@ export async function addBatch(formData: FormData): Promise<ActionResult> {
 
     revalidatePath('/batches')
     return { success: true, data: newBatch }
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('Batch creation failed:', e)
-    return { success: false, error: e.message || 'Authentication error' }
+    return { success: false, error: e instanceof Error ? e.message : String(e) || 'Authentication error' }
   }
 }
 
@@ -74,8 +74,8 @@ export async function deleteBatch(formData: FormData): Promise<ActionResult> {
     }
 
     return { success: true, data: null }
-  } catch (e: any) {
-    if (e.message?.includes('NEXT_REDIRECT') || e.digest?.includes('NEXT_REDIRECT')) throw e
-    return { success: false, error: e.message || 'Operation failed' }
+  } catch (e: unknown) {
+    if (e instanceof Error ? e.message : String(e)?.includes('NEXT_REDIRECT') || e.digest?.includes('NEXT_REDIRECT')) throw e
+    return { success: false, error: e instanceof Error ? e.message : String(e) || 'Operation failed' }
   }
 }

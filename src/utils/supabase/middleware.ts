@@ -15,6 +15,7 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
@@ -32,6 +33,7 @@ export async function updateSession(request: NextRequest) {
   // issues with users being logged out.
 
   const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     data: { user },
   } = await supabase.auth.getUser()
 

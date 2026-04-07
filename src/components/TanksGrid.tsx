@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { DeleteConfirmButton } from '@/components/DeleteConfirmButton'
 import { AddTankForm } from '@/components/AddTankForm'
 import { deleteTank } from '@/app/(app)/tanks/actions'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { LucideWaves, LucideFlaskConical, LucidePlus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 

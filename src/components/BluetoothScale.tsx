@@ -20,6 +20,7 @@ import { toast } from 'sonner'
  * For scales that don't follow the standard, we also try common custom UUIDs.
  */
 const WEIGHT_SCALE_SERVICE = 0x181d
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const WEIGHT_MEASUREMENT_CHAR = 0x2a9d
 
 // Common vendor services (fallbacks for non-standard scales)
@@ -241,7 +242,7 @@ export function BluetoothScale({ onWeightCaptured, className, compact = false }:
 
       setState('connected')
       toast.success(`Connected to ${device.name || 'BLE Scale'}`)
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err?.name === 'NotFoundError' || err?.message?.includes('cancelled')) {
         // User cancelled the picker
         setState('disconnected')

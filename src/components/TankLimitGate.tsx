@@ -12,6 +12,7 @@ interface TankLimitBadgeProps {
  * Shows tank usage (X/Y) and gates the Add Tank form if at limit.
  */
 export function TankLimitBadge({ currentCount }: TankLimitBadgeProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { limits, tier } = useSubscription()
   const maxTanks = limits.maxTanks
   const isUnlimited = maxTanks === -1

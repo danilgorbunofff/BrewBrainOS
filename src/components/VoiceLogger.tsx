@@ -26,6 +26,7 @@ export function VoiceLogger({ tankId, className, disabled, variant = 'default' }
 
   const isSidebar = variant === 'sidebar'
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const speakFeedback = (data: any) => {
     if ('speechSynthesis' in window) {
       let text = 'Log saved.'
@@ -76,7 +77,7 @@ export function VoiceLogger({ tankId, className, disabled, variant = 'default' }
       setIsRecording(true)
       
       toast.info('Neural Link Established: Recording...', { duration: 2000 })
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Mic error:', err)
       toast.error('Voice Interface Error: Check Permissions')
     }
@@ -123,6 +124,7 @@ export function VoiceLogger({ tankId, className, disabled, variant = 'default' }
       } else {
         toast.error(result?.error || 'Extraction Failed.', { id: toastId })
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error('Network fluctuating. Falling back to offline queue.', { id: toastId })
       await enqueueAction({
@@ -226,7 +228,7 @@ export function VoiceLogger({ tankId, className, disabled, variant = 'default' }
           </p>
           {!isRecording && !isProcessing && (
             <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest bg-secondary px-4 py-1 rounded-full border border-border mx-auto w-fit">
-              "Gravity 1.012, Temp 68"
+              &quot;Gravity 1.012, Temp 68&quot;
             </p>
           )}
         </div>

@@ -1,8 +1,14 @@
 import { login, signup, forgotPassword } from './actions'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+
+export const metadata = {
+  title: 'Sign In — BrewBrain OS',
+  description: 'Securely sign in to your BrewBrain OS brewery management dashboard.',
+}
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const p = await searchParams
@@ -19,7 +25,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
         <div className="text-center group">
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-background overflow-hidden mb-6 shadow-[0_0_30px_rgba(245,158,11,0.4)] group-hover:shadow-[0_0_50px_rgba(245,158,11,0.6)] transition-all duration-500 transform group-hover:scale-110">
-            <img src="/logo.png" alt="BrewBrain Logo" className="h-full w-full object-cover" />
+            <Image src="/logo.png" alt="BrewBrain Logo" width={64} height={64} className="h-full w-full object-cover" />
           </div>
           <h1 className="text-5xl font-black tracking-tighter text-foreground mb-2">
             BrewBrain <span className="text-primary italic">OS</span>
@@ -33,7 +39,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl">Access Dashboard</CardTitle>
             <CardDescription>
-              Securely sign in to your brewery's command center.
+              Securely sign in to your brewery&apos;s command center.
             </CardDescription>
           </CardHeader>
           <form action={login}>

@@ -128,11 +128,11 @@ const serwist = new Serwist({
 
 serwist.addEventListeners();
 
-self.addEventListener('push', (event: any) => {
+self.addEventListener('push', (event: PushEvent) => {
   if (event.data) {
     try {
       const data = event.data.json();
-      const options: any = {
+      const options: NotificationOptions = {
         body: data.body,
         icon: data.icon || '/icon-192x192.png',
         badge: data.badge || '/icon-192x192.png',
@@ -141,6 +141,7 @@ self.addEventListener('push', (event: any) => {
         ...data,
       };
       event.waitUntil(self.registration.showNotification(data.title || 'BrewBrain', options));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       event.waitUntil(
         self.registration.showNotification('BrewBrain', { body: event.data.text() })
@@ -149,7 +150,7 @@ self.addEventListener('push', (event: any) => {
   }
 });
 
-self.addEventListener('notificationclick', (event: any) => {
+self.addEventListener('notificationclick', (event: NotificationEvent) => {
   event.notification.close();
   const urlToOpen = new URL(event.notification.data?.url || '/', self.location.origin).href;
 
@@ -163,7 +164,7 @@ self.addEventListener('notificationclick', (event: any) => {
       }
     }
     if (matchingClient) {
-      return (matchingClient as any).focus();
+      return matchingClient.focus();
     } else {
       return self.clients.openWindow(urlToOpen);
     }
@@ -172,8 +173,7 @@ self.addEventListener('notificationclick', (event: any) => {
   event.waitUntil(promiseChain);
 });
 
-// @ts-ignore - SyncEvent is not always typed properly
-self.addEventListener('sync', (event: any) => {
+self.addEventListener('sync', (event: ExtendableEvent & { tag: string }) => {
   if (event.tag === 'sync-offline-queue') {
     event.waitUntil(
       (async () => {

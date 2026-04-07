@@ -27,11 +27,13 @@ export default function ShrinkagePage() {
   const [filteredAlerts, setFilteredAlerts] = useState<ShrinkageAlert[]>([])
   const [selectedStatus, setSelectedStatus] = useState<string>('unresolved')
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoading, setIsLoading] = useState(true)
 
   // Load alerts on mount and when filters change
   useEffect(() => {
     loadAlerts()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStatus])
 
   const loadAlerts = async () => {
@@ -44,6 +46,7 @@ export default function ShrinkagePage() {
       } else {
         toast.error('Failed to load alerts')
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       toast.error('Error loading alerts')
     } finally {

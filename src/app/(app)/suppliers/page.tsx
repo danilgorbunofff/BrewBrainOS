@@ -5,6 +5,11 @@ import { Button } from '@/components/ui/button'
 import { LucidePlus } from 'lucide-react'
 import Link from 'next/link'
 
+export const metadata = {
+  title: 'Suppliers — BrewBrain OS',
+  description: 'Manage ingredient suppliers and track their performance.',
+}
+
 export default async function SuppliersPage() {
   const { brewery } = await requireActiveBrewery()
 

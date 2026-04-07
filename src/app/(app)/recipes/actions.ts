@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { ActionResult } from '@/types/database'
 import { getActiveBrewery } from '@/lib/active-brewery'
+import { headers } from 'next/headers'
 
 export async function createRecipe(data: {
   name: string
@@ -65,12 +66,18 @@ export async function logBrewingMetrics(
   const brewery = await getActiveBrewery()
   if (!brewery) return { success: false, error: 'No active brewery found.' }
 
+  const reqHeaders = await headers()
+  const ip = reqHeaders.get('x-forwarded-for') || reqHeaders.get('x-real-ip') || 'unknown'
+  const userAgent = reqHeaders.get('user-agent') || 'unknown'
+
   const { data: log, error } = await supabase
     .from('batch_brewing_logs')
     .insert({
       batch_id: batchId,
       brewery_id: brewery.id,
       log_type: 'brew_day',
+      provenance_ip: ip,
+      provenance_user_agent: userAgent,
       ...data
     })
     .select()

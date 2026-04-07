@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { LucideCheck, LucideX, LucideRocket } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 interface OnboardingStep {
@@ -21,12 +20,10 @@ interface OnboardingChecklistProps {
 }
 
 export function OnboardingChecklist({ hasBrewery, hasTanks, hasBatches, hasInventory }: OnboardingChecklistProps) {
-  const [dismissed, setDismissed] = useState(false)
-
-  useEffect(() => {
-    const stored = localStorage.getItem('brewbrain_onboarding_dismissed')
-    if (stored === 'true') setDismissed(true)
-  }, [])
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('brewbrain_onboarding_dismissed') === 'true'
+  })
 
   const steps: OnboardingStep[] = [
     { id: 'brewery', label: 'Create your brewery', href: '/dashboard', completed: hasBrewery },

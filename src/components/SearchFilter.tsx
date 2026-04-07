@@ -11,7 +11,7 @@ interface SearchFilterProps<T> {
   placeholder?: string
 }
 
-export function SearchFilter<T extends Record<string, any>>({
+export function SearchFilter<T>({
   items,
   searchKeys,
   children,

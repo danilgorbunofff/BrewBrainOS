@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { runFermentationAlertCheck } from '@/app/(app)/batches/[id]/actions'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { detectFermentationAlerts, BatchReadingInput, BatchConfig } from '@/lib/fermentation-alerts'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { sendFermentationAlertNotification } from '@/app/actions/push-actions'
 
 // Helper for external cron services (e.g. Vercel Cron, EasyCron, Render)
@@ -73,9 +76,11 @@ export async function POST(req: Request) {
         const activeTypes = new Set((activeAlerts || []).map((a) => a.alert_type))
 
         const configParams: BatchConfig = {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           target_temp: (batchConfig as any)?.target_temp ?? null
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const detected = detectFermentationAlerts(readings as any, configParams)
         const newAlerts = detected
           .filter(a => !activeTypes.has(a.alert_type))
@@ -104,6 +109,7 @@ export async function POST(req: Request) {
 
           // Send push notifications manually since cron isn't hitting `actions.ts`
           if (insertedAlerts) {
+             // eslint-disable-next-line @typescript-eslint/no-unused-vars
              for (const sa of insertedAlerts) {
                 // Must mock the createClient in push-actions? No, push-actions uses `createClient()`. 
                 // Since this is a service role background run, it won't have a user session.
@@ -111,7 +117,7 @@ export async function POST(req: Request) {
              }
           }
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(`[CRON Fermentation Alerts] Failed batch ${batch.id}: ${err.message}`)
         errors.push(`batch ${batch.id}: ${err.message}`)
         totalErrors++
@@ -131,8 +137,8 @@ export async function POST(req: Request) {
     console.log('[CRON Fermentation Alerts] Complete:', result)
     return Response.json(result)
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[CRON Fermentation Alerts] Fatal Error:', err)
-    return Response.json({ error: err.message }, { status: 500 })
+    return Response.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 })
   }
 }

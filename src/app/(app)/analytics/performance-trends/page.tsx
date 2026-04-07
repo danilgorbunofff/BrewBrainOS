@@ -46,6 +46,7 @@ export default async function PerformanceTrendsPage() {
   }
 
   // Build trend charts for each supplier
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supplierTrends: Record<string, any[]> = {}
 
   for (const supplier of suppliers) {

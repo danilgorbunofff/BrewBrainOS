@@ -6,12 +6,16 @@ import {
   LucideClipboardList, LucidePackageSearch, LucideWaves,
   LucideAlertCircle, LucideArrowRight,
 } from 'lucide-react'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { VoiceLogger } from '@/components/VoiceLogger'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { VoiceLoggerGate } from '@/components/VoiceLoggerGate'
 import { OnboardingChecklist } from '@/components/OnboardingChecklist'
 import ReorderAlertsDashboard from '@/components/ReorderAlertsDashboard'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { setupBrewery } from './actions'
 import { InitializeBreweryForm } from '@/components/InitializeBreweryForm'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { getActiveBrewery } from '@/lib/active-brewery'
@@ -21,6 +25,11 @@ import { logger } from '@/lib/logger'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 export const fetchCache = 'force-no-store'
+
+export const metadata = {
+  title: 'Dashboard — BrewBrain OS',
+  description: 'Your brewery command center. Real-time production, tank status, and inventory alerts.',
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient()

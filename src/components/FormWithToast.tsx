@@ -7,6 +7,7 @@ import { ActionResult } from '@/types/database'
 
 interface FormWithToastProps {
   children: React.ReactNode
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: (formData: FormData) => Promise<ActionResult | any>
   successMessage?: string
   errorMessage?: string
@@ -54,7 +55,7 @@ export function FormWithToast({
         toast.success(successMessage)
         router.refresh()
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(err?.message || errorMessage)
     }
   }

@@ -8,6 +8,7 @@ import { sendInventoryAlert } from '@/app/actions/push-actions'
 import {
   recalculateDegradationMetrics,
   generateDegradationAlerts,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getDegradationHealthStatus,
 } from '@/lib/degradation'
 
@@ -34,6 +35,7 @@ export async function addInventoryItem(formData: FormData): Promise<ActionResult
       
       // Degradation metrics
       received_date: (formData.get('receivedDate') as string) || new Date().toISOString().split('T')[0],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       storage_condition: (formData.get('storageCondition') as any) || 'cool_dry',
       hsi_initial: itemType === 'hop' ? (formData.get('hsiInitial') ? Number(formData.get('hsiInitial')) : null) : null,
       hsi_current: itemType === 'hop' ? (formData.get('hsiInitial') ? Number(formData.get('hsiInitial')) : null) : null,
@@ -89,8 +91,8 @@ export async function addInventoryItem(formData: FormData): Promise<ActionResult
 
     revalidatePath('/inventory')
     return { success: true, data: null }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Authentication error' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Authentication error' }
   }
 }
 
@@ -114,8 +116,8 @@ export async function deleteInventoryItem(formData: FormData): Promise<ActionRes
 
     revalidatePath('/inventory')
     return { success: true, data: null }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Operation failed' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Operation failed' }
   }
 }
 
@@ -153,8 +155,8 @@ export async function updateStock(formData: FormData): Promise<ActionResult> {
 
     revalidatePath('/inventory')
     return { success: true, data: null }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Operation failed' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Operation failed' }
   }
 }
 
@@ -164,6 +166,7 @@ export async function updateStock(formData: FormData): Promise<ActionResult> {
 export async function adjustInventoryStock(
   itemId: string,
   adjustment: number,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   reason: string = 'Manual adjustment'
 ): Promise<ActionResult> {
   try {
@@ -205,8 +208,8 @@ export async function adjustInventoryStock(
 
     revalidatePath('/inventory')
     return { success: true, data: null }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Operation failed' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Operation failed' }
   }
 }
 
@@ -295,8 +298,8 @@ export async function updateDegradationMetrics(
 
     revalidatePath('/inventory')
     return { success: true, data: { ...item, ...updates } }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Operation failed' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Operation failed' }
   }
 }
 
@@ -387,8 +390,8 @@ export async function updateStorageCondition(
         ppg_current: updatedMetrics.ppg_current,
       },
     }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Operation failed' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Operation failed' }
   }
 }
 
@@ -414,8 +417,8 @@ export async function getDegradationHistory(itemId: string): Promise<ActionResul
     }
 
     return { success: true, data: logs || [] }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Operation failed' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Operation failed' }
   }
 }
 
@@ -507,8 +510,8 @@ export async function recalculateAllDegradationMetrics(): Promise<ActionResult<v
 
     revalidatePath('/inventory')
     return { success: true, data: undefined }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Operation failed' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Operation failed' }
   }
 }
 
@@ -549,7 +552,7 @@ export async function updateInventorySupplier(
 
     revalidatePath('/inventory')
     return { success: true, data }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Operation failed' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : 'Operation failed' }
   }
 }

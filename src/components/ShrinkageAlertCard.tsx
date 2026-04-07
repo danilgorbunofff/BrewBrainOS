@@ -70,6 +70,7 @@ export function ShrinkageAlertCard({ alert, onStatusChange }: ShrinkageAlertCard
       } else {
         toast.error(result.error || 'Failed to update alert')
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       toast.error('Failed to update alert')
     } finally {

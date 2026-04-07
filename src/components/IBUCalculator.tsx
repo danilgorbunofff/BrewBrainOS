@@ -9,6 +9,7 @@ export function IBUCalculator({ defaultVolume }: { defaultVolume: number }) {
   const [boilTime, setBoilTime] = useState<string>('60')
   const [aa, setAa] = useState<string>('')
   const [hsi, setHsi] = useState<string>('15')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [volume, setVolume] = useState<string>(defaultVolume.toString() || '10')
 
   const parsedWeight = parseFloat(weight) || 0

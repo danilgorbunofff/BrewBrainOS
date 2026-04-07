@@ -7,7 +7,9 @@ interface QualityIssuesData {
   issueOrderCount: number
   totalOrdersReviewed: number
   issuePercent: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   recentIssueOrders: any[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   lowQualityRatings: any[]
 }
 
@@ -133,7 +135,7 @@ export function QualityAnalysisPanel({
                   </div>
                   {order.issue_description && (
                     <div className="mt-1 text-xs text-slate-600 dark:text-slate-400 italic">
-                      "{order.issue_description}"
+                      &quot;{order.issue_description}&quot;
                     </div>
                   )}
                 </div>
@@ -164,7 +166,7 @@ export function QualityAnalysisPanel({
                   </div>
                   {rating.comments && (
                     <div className="mt-1 text-xs text-yellow-800 dark:text-yellow-200 italic">
-                      "{rating.comments}"
+                      &quot;{rating.comments}&quot;
                     </div>
                   )}
                 </div>

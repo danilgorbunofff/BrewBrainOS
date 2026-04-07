@@ -10,7 +10,6 @@ import {
   XAxis,
   YAxis,
   Legend,
-  ReferenceLine
 } from 'recharts'
 import { useTheme } from 'next-themes'
 
@@ -22,6 +21,31 @@ interface BatchPerformanceData {
   efficiency: number
   boilOff: number | null
   status: string
+}
+
+interface TooltipPayloadEntry {
+  value: number | null
+  payload: BatchPerformanceData
+}
+
+function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string }) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-popover text-popover-foreground border border-border p-3 rounded-lg shadow-xl text-xs space-y-1">
+        <p className="font-bold mb-2">{label}</p>
+        <p className="text-primary font-bold">
+          Actual OG: {payload[0].value ? payload[0].value.toFixed(3) : 'N/A'}
+        </p>
+        <p className="text-muted-foreground font-bold">
+          Target OG: {payload[1].value ? payload[1].value.toFixed(3) : 'N/A'}
+        </p>
+        <p className="text-foreground mt-2 border-t border-border pt-1">
+          Efficiency: {payload[0].payload.efficiency}%
+        </p>
+      </div>
+    )
+  }
+  return null
 }
 
 export function BatchPerformanceChart({ data }: { data: BatchPerformanceData[] }) {
@@ -41,30 +65,6 @@ export function BatchPerformanceChart({ data }: { data: BatchPerformanceData[] }
         <p className="text-muted-foreground font-medium">No batch performance data available</p>
       </Card>
     )
-  }
-
-  // Format gravity for display (e.g. 1.050 instead of decimals that chart can clump)
-  // Actually the chart does better charting raw numbers or points. Recharts parses the raw value.
-  // We can format tooltip.
-
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-popover text-popover-foreground border border-border p-3 rounded-lg shadow-xl text-xs space-y-1">
-          <p className="font-bold mb-2">{label}</p>
-          <p className="text-primary font-bold">
-            Actual OG: {payload[0].value ? payload[0].value.toFixed(3) : 'N/A'}
-          </p>
-          <p className="text-muted-foreground font-bold">
-            Target OG: {payload[1].value ? payload[1].value.toFixed(3) : 'N/A'}
-          </p>
-          <p className="text-foreground mt-2 border-t border-border pt-1">
-            Efficiency: {payload[0].payload.efficiency}%
-          </p>
-        </div>
-      )
-    }
-    return null
   }
 
   // Y-axis formatting constraint (we don't want 0-1.1, we want domain like [1.000, 1.150])

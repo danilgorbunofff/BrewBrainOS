@@ -244,12 +244,20 @@ function InventoryRow({ item }: { item: InventoryItem }) {
   return (
     <TableRow className="border-border hover:bg-surface transition-colors group cursor-pointer">
       <TableCell className="py-6 px-8">
-        <Link href={`/inventory/${item.id}`} className="flex items-center gap-3 font-black text-lg tracking-tight text-foreground group-hover:text-primary transition-colors hover:underline">
-          {isLowStock && <LucideAlertCircle className="h-5 w-5 text-primary animate-pulse" />}
-          {expirationStatus?.type === 'expired' && <LucideAlertCircle className="h-5 w-5 text-red-500 animate-pulse" />}
-          {expirationStatus?.type === 'expiring' && <LucideAlertCircle className="h-5 w-5 text-yellow-500 animate-pulse" />}
-          {item.name}
-        </Link>
+        <div className="space-y-1">
+          <Link href={`/inventory/${item.id}`} className="flex items-center gap-3 font-black text-lg tracking-tight text-foreground group-hover:text-primary transition-colors hover:underline">
+            {isLowStock && <LucideAlertCircle className="h-5 w-5 text-primary animate-pulse" />}
+            {expirationStatus?.type === 'expired' && <LucideAlertCircle className="h-5 w-5 text-red-500 animate-pulse" />}
+            {expirationStatus?.type === 'expiring' && <LucideAlertCircle className="h-5 w-5 text-yellow-500 animate-pulse" />}
+            {item.name}
+          </Link>
+          {(item.lot_number || item.manufacturer) && (
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground font-black pl-[32px]">
+              {item.lot_number && <span className="font-mono bg-secondary/50 px-1.5 py-0.5 rounded border border-border/50">Lot: {item.lot_number}</span>}
+              {item.manufacturer && <span>Mfg: {item.manufacturer}</span>}
+            </div>
+          )}
+        </div>
       </TableCell>
       <TableCell>
         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-secondary px-3 py-1 rounded-lg border border-border">
@@ -403,7 +411,7 @@ function DesktopTable({ items, query }: { items: InventoryItem[]; query: string 
 
 export function InventoryTable({ items }: { items: InventoryItem[] }) {
   return (
-    <SearchFilter items={items} searchKeys={['name', 'item_type']} placeholder="Search inventory by name or type…">
+    <SearchFilter<InventoryItem> items={items} searchKeys={['name', 'item_type']} placeholder="Search inventory by name or type…">
       {(filtered, query) => (
         <div className="space-y-4">
           <div className="flex items-center justify-between">

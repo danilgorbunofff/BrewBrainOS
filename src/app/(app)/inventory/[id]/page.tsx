@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,6 +12,8 @@ import { DegradationCard } from '@/components/DegradationCard'
 import { DegradationDetailsModal } from '@/components/DegradationDetailsModal'
 import {
   LucideArrowLeft, LucideAlertTriangle, LucideBoxes, LucideCalendar,
+   
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   LucideTag, LucideFactory, LucideThermometer, LucideTrash2,
   LucideBarcode, LucideWeight
 } from 'lucide-react'

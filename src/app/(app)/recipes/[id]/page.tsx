@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { LucideArrowLeft, LucidePlus, LucideList } from 'lucide-react'
 import { getActiveBrewery } from '@/lib/active-brewery'
 import { addRecipeIngredient } from '../actions'

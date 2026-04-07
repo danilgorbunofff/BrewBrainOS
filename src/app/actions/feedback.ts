@@ -34,7 +34,7 @@ export async function submitFeedback(formData: FormData): Promise<ActionResult> 
     }
 
     return { success: true, data: null }
-  } catch (e: any) {
-    return { success: false, error: e.message || 'Server error' }
+  } catch (e: unknown) {
+    return { success: false, error: e instanceof Error ? e.message : String(e) || 'Server error' }
   }
 }

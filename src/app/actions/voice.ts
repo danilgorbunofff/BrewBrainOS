@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
@@ -97,12 +98,18 @@ export async function processVoiceLog(formData: FormData) {
     }
 
     // Insert Reading
+    const reqHeaders = await headers()
+    const ip = reqHeaders.get('x-forwarded-for') || reqHeaders.get('x-real-ip') || 'unknown'
+    const userAgent = reqHeaders.get('user-agent') || 'unknown'
+
     const { error: insertError } = await supabase.from('batch_readings').insert({
       batch_id: finalBatchId,
       logger_id: user.id,
       temperature: extractedData.temperature || null,
       gravity: extractedData.gravity || null,
-      notes: extractedData.notes || 'No notes.'
+      notes: extractedData.notes || 'No notes.',
+      provenance_ip: ip,
+      provenance_user_agent: userAgent
     })
 
     if (insertError) {
@@ -118,8 +125,8 @@ export async function processVoiceLog(formData: FormData) {
     revalidatePath('/dashboard')
 
     return { success: true, message: 'Log safely recorded to database.', data: extractedData }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Process Voice Log Error:', error)
-    return { success: false, error: error.message || 'Internal Server Error' }
+    return { success: false, error: error instanceof Error ? error.message : 'Internal Server Error' }
   }
 }

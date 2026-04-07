@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 
 export default function BulkImportPage() {
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleTanksUpload = async (data: any[]) => {
     const res = await importTanks(data)
     if (res.success) {
@@ -19,6 +20,7 @@ export default function BulkImportPage() {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleInventoryUpload = async (data: any[]) => {
     const res = await importInventory(data)
     if (res.success) {

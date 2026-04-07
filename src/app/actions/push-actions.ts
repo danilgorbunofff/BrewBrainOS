@@ -2,8 +2,10 @@
 
 import { createClient } from '@/utils/supabase/server'
 import webpush from 'web-push'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { FermentationAlert, FermentationAlertType } from '@/types/database'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function saveSubscription(subscription: any) {
   try {
     const supabase = await createClient()
@@ -34,9 +36,9 @@ export async function saveSubscription(subscription: any) {
     }
 
     return { success: true }
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('Save subscription error:', e)
-    return { success: false, error: e.message }
+    return { success: false, error: e instanceof Error ? e.message : String(e) }
   }
 }
 
@@ -89,9 +91,9 @@ export async function sendTestNotification() {
     }
 
     return { success: true }
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('Send test notification error:', e)
-    return { success: false, error: e.message }
+    return { success: false, error: e instanceof Error ? e.message : String(e) }
   }
 }
 

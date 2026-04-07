@@ -4,7 +4,7 @@ import { useState, useTransition, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   LucideBuilding2, LucideChevronDown, LucideCheck,
-  LucidePlus, LucideMapPin, LucideLock, LucideLoader2
+  LucidePlus, LucideLock, LucideLoader2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { switchBrewery, createBrewery, deleteBrewery } from '@/app/(app)/brewery-actions'
@@ -40,6 +40,7 @@ export function BrewerySwitcher({ breweries, activeBreweryId, activeBreweryName 
     if (activeBreweryName !== prevName.current && activeBreweryName === switchedToName.current) {
       toast.success(`Switched to ${activeBreweryName}`)
       switchedToName.current = null
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: clearing pending state after server prop confirms switch
       setPendingId(null)
     }
     prevName.current = activeBreweryName
@@ -84,8 +85,9 @@ export function BrewerySwitcher({ breweries, activeBreweryId, activeBreweryName 
       setShowNewForm(false)
       router.refresh()
       setOpen(false)
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to create brewery')
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to create brewery'
+      toast.error(msg)
     }
   }
 

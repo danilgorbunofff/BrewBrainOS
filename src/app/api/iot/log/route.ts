@@ -1,15 +1,12 @@
-import { createClient } from '@supabase/supabase-js'
 import type { BatchReadingInput } from '@/lib/fermentation-alerts'
 import { withSentry } from '@/lib/with-sentry'
+import { createServiceRoleClient } from '@/utils/supabase/service-role'
 
 export const runtime = 'nodejs'
 
 export const POST = withSentry(async (req: Request) => {
   // Use service role so we can bypass RLS since IoT sensors don't have authenticated user sessions
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-  )
+  const supabase = createServiceRoleClient()
 
   const authHeader = req.headers.get('authorization')
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

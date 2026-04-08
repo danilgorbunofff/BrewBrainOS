@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/utils/supabase/client'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -27,7 +26,6 @@ export default function InventoryItemPage() {
   const params = useParams()
   const router = useRouter()
   const id = params.id as string
-  const supabase = createClient()
 
   const [item, setItem] = useState<InventoryItem | null>(null)
   const [loading, setLoading] = useState(true)
@@ -35,14 +33,20 @@ export default function InventoryItemPage() {
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
 
   useEffect(() => {
+    let isActive = true
+
     const fetchItem = async () => {
       try {
         setLoading(true)
+        const { createClient } = await import('@/utils/supabase/client')
+        const supabase = createClient()
         const { data, error: fetchError } = await supabase
           .from('inventory')
           .select('*')
           .eq('id', id)
           .single()
+
+        if (!isActive) return
 
         if (fetchError) {
           setError('Inventory item not found')
@@ -53,15 +57,22 @@ export default function InventoryItemPage() {
           setItem(data as InventoryItem)
         }
       } catch (err) {
+        if (!isActive) return
         setError('Failed to load inventory item')
         console.error(err)
       } finally {
-        setLoading(false)
+        if (isActive) {
+          setLoading(false)
+        }
       }
     }
 
     fetchItem()
-  }, [id, supabase])
+
+    return () => {
+      isActive = false
+    }
+  }, [id])
 
   const handleItemUpdate = (updatedItem: InventoryItem) => {
     setItem(updatedItem)

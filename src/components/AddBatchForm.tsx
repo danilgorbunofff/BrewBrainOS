@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useId, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { SubmitButton } from '@/components/SubmitButton'
@@ -39,6 +39,8 @@ function getErrorMessage(error: unknown, fallback: string) {
 export function AddBatchForm({ onSuccess, onOptimisticAdd, onOptimisticRollback }: AddBatchFormProps) {
   const formRef = useRef<HTMLFormElement>(null)
   const router = useRouter()
+  const recipeNameId = useId()
+  const ogId = useId()
 
   const handleSubmit = async (formData: FormData) => {
     const recipeName = (formData.get('recipeName') as string | null)?.trim() || ''
@@ -72,10 +74,25 @@ export function AddBatchForm({ onSuccess, onOptimisticAdd, onOptimisticRollback 
   return (
     <form ref={formRef} action={handleSubmit}>
       <div className="glass p-2 rounded-2xl flex flex-row items-center gap-2 border-border glow-primary shadow-2xl">
-        <Input name="recipeName" placeholder="Recipe Name" required className="bg-transparent border-none focus-visible:ring-0 w-36 font-bold" />
+        <label className="sr-only" htmlFor={recipeNameId}>Recipe name</label>
+        <Input
+          id={recipeNameId}
+          name="recipeName"
+          placeholder="Recipe Name"
+          required
+          className="bg-transparent border-none focus-visible:ring-0 w-36 font-bold"
+        />
         <div className="h-6 w-px bg-secondary/50 mx-2" />
-        <Input name="og" type="number" step="0.001" placeholder="OG" className="bg-transparent border-none focus-visible:ring-0 w-20 font-mono" />
-        <SubmitButton size="icon" className="shrink-0 aspect-square" pendingText="">
+        <label className="sr-only" htmlFor={ogId}>Target original gravity</label>
+        <Input
+          id={ogId}
+          name="og"
+          type="number"
+          step="0.001"
+          placeholder="OG"
+          className="bg-transparent border-none focus-visible:ring-0 w-20 font-mono"
+        />
+        <SubmitButton ariaLabel="Create batch" size="icon" className="shrink-0 aspect-square" pendingText="Saving batch">
           <LucidePlus className="h-5 w-5" />
         </SubmitButton>
       </div>

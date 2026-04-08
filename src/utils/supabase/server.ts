@@ -1,9 +1,10 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { getRequiredEnv } from '@/lib/env'
 
 export async function createClient() {
   const cookieStore = await cookies()
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const url = getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL', 'public')
 
   if (process.env.NODE_ENV === 'production' && url.includes('localhost')) {
     console.error('CRITICAL WARNING: Localhost Supabase URL detected in production build (Vercel/Preview). Check your environment variables!')
@@ -11,7 +12,7 @@ export async function createClient() {
 
   return createServerClient(
     url,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    getRequiredEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'public'),
     {
       cookies: {
         getAll() {

@@ -5,6 +5,9 @@ const serverURL = process.env.PLAYWRIGHT_SERVER_URL || `http://127.0.0.1:${PORT}
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || new URL(serverURL).origin
 const serverCommand = process.env.PLAYWRIGHT_SERVER_COMMAND || `npm run dev -- -p ${PORT}`
 const useExistingServer = process.env.PLAYWRIGHT_USE_EXISTING_SERVER === 'true'
+const reuseExistingServer = process.env.PLAYWRIGHT_REUSE_EXISTING_SERVER === 'false'
+  ? false
+  : !process.env.CI
 
 export default defineConfig({
   testDir: './playwright',
@@ -29,7 +32,7 @@ export default defineConfig({
     : {
         command: serverCommand,
         url: serverURL,
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer,
         timeout: 180000,
       },
 })

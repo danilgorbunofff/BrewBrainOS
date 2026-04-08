@@ -1,9 +1,9 @@
 import { BatchesTable } from '@/components/BatchesTable'
 import { InventoryTable } from '@/components/InventoryTable'
+import { buildBatchFixture } from '@/lib/batch-fixtures'
 
 const FIXTURE_DATE = new Date('2026-04-07T12:00:00.000Z')
 const INVENTORY_TYPES = ['Hops', 'Grain', 'Yeast', 'Adjunct', 'Packaging'] as const
-const BATCH_STATUSES = ['brewing', 'fermenting', 'conditioning', 'packaging', 'complete'] as const
 
 function addDays(baseDate: Date, days: number) {
   const nextDate = new Date(baseDate)
@@ -35,21 +35,6 @@ function buildInventoryFixture(count: number) {
   })
 }
 
-function buildBatchFixture(count: number) {
-  return Array.from({ length: count }, (_, index) => {
-    const status = BATCH_STATUSES[index % BATCH_STATUSES.length]
-
-    return {
-      id: `fixture-batch-${index + 1}`,
-      recipe_name: `Fixture Batch ${String(index + 1).padStart(4, '0')}`,
-      status,
-      og: 1.044 + ((index % 8) * 0.003),
-      fg: status === 'complete' ? 1.008 + ((index % 3) * 0.001) : null,
-      created_at: addDays(FIXTURE_DATE, -(index % 120)),
-    }
-  })
-}
-
 export function VirtualizationFixturePage({
   mode = 'signed-in',
 }: {
@@ -59,7 +44,7 @@ export function VirtualizationFixturePage({
   const batches = buildBatchFixture(900)
 
   return (
-    <div data-testid="virtualization-fixture-page" className="min-h-screen bg-background text-foreground p-4 md:p-8 pb-24">
+    <main data-testid="virtualization-fixture-page" className="min-h-screen bg-background text-foreground p-4 md:p-8 pb-24">
       <div className="mx-auto max-w-7xl space-y-8">
         <header className="space-y-3">
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
@@ -74,14 +59,14 @@ export function VirtualizationFixturePage({
           </div>
         </header>
 
-        <section className="rounded-2xl border border-border bg-surface/60 p-5 md:p-6">
+        <div className="rounded-2xl border border-border bg-surface/60 p-5 md:p-6">
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <span>Inventory rows: {inventoryItems.length}</span>
             <span>Batches: {batches.length}</span>
             <span>Virtualization threshold: 100 rows</span>
             <span>{mode === 'benchmark' ? 'Public dev-only benchmark surface.' : 'Use a desktop viewport to exercise the virtualized table path.'}</span>
           </div>
-        </section>
+        </div>
 
         <section data-benchmark-table-section="inventory" className="space-y-4">
           <div className="space-y-1">
@@ -99,6 +84,6 @@ export function VirtualizationFixturePage({
           <BatchesTable batches={batches} />
         </section>
       </div>
-    </div>
+    </main>
   )
 }

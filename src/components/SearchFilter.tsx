@@ -9,6 +9,7 @@ interface SearchFilterProps<T> {
   searchKeys: (keyof T)[]
   children: (filteredItems: T[], searchQuery: string) => React.ReactNode
   placeholder?: string
+  inputLabel?: string
 }
 
 export function SearchFilter<T>({
@@ -16,6 +17,7 @@ export function SearchFilter<T>({
   searchKeys,
   children,
   placeholder = 'Search…',
+  inputLabel = 'Search',
 }: SearchFilterProps<T>) {
   const [query, setQuery] = useState('')
 
@@ -38,6 +40,7 @@ export function SearchFilter<T>({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
+          aria-label={inputLabel}
           className="pl-10 bg-surface border-border font-medium text-sm h-10 rounded-xl"
         />
       </div>

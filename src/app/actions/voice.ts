@@ -1,6 +1,5 @@
 'use server'
 
-import { z } from 'zod'
 import { createClient } from '@/utils/supabase/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { revalidatePath } from 'next/cache'
@@ -80,7 +79,7 @@ export async function processVoiceLog(formData: FormData) {
     let extractedData
     try {
       extractedData = JSON.parse(responseText)
-    } catch (e) {
+    } catch {
       console.error('Failed to parse Gemini output:', responseText)
       return { success: false, error: 'AI failed to extract structured data from speech.' }
     }

@@ -41,6 +41,8 @@ describe('POST /api/iot/log', () => {
     vi.resetModules()
     vi.clearAllMocks()
     process.env.SENTRY_DSN = 'https://server@example.ingest.sentry.io/1'
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key'
 
     selectSingleMock.mockResolvedValue({
       data: { id: 'brewery-1', owner_id: 'owner-1' },
@@ -93,5 +95,74 @@ describe('POST /api/iot/log', () => {
     expect(captureExceptionMock).toHaveBeenCalledWith(expect.any(Error))
     expect(setTagMock).toHaveBeenCalledWith('handler', 'api/iot/log')
     expect(flushMock).toHaveBeenCalledWith(2000)
+  })
+
+  it('returns 401 when authorization header is missing', async () => {
+    const { POST } = await import('@/app/api/iot/log/route')
+    const response = await POST(new Request('http://localhost/api/iot/log', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ batch_id: 'batch-1', temperature: 18.5 }),
+    }))
+
+    expect(response.status).toBe(401)
+    await expect(response.json()).resolves.toEqual({ error: 'Unauthorized: Missing or invalid token' })
+  })
+
+  it('returns 400 when neither tank_id nor batch_id is provided', async () => {
+    const { POST } = await import('@/app/api/iot/log/route')
+    const response = await POST(new Request('http://localhost/api/iot/log', {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer sensor-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ temperature: 18.5 }),
+    }))
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({ error: 'Bad Request: Must provide either tank_id or batch_id' })
+  })
+
+  it('returns success when the reading is inserted', async () => {
+    insertMock.mockResolvedValue({ error: null })
+
+    const selectMock = vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        order: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue({ data: null }),
+        }),
+      }),
+    })
+
+    createClientMock.mockReturnValue({
+      from: (table: string) => {
+        if (table === 'breweries') {
+          const query = {
+            eq: vi.fn(() => query),
+            select: vi.fn(() => query),
+            single: selectSingleMock,
+          }
+          return query
+        }
+        if (table === 'batch_readings') {
+          return { insert: insertMock, select: selectMock }
+        }
+        throw new Error(`Unexpected table lookup: ${table}`)
+      },
+    })
+
+    const { POST } = await import('@/app/api/iot/log/route')
+    const response = await POST(new Request('http://localhost/api/iot/log', {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer sensor-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ batch_id: 'batch-1', temperature: 18.5 }),
+    }))
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({ success: true })
   })
 })

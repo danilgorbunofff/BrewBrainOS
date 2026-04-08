@@ -60,6 +60,7 @@ export function OfflineSyncFixturePage() {
       delete (window as Window & { __offlineSyncDisableBackgroundSync?: boolean }).__offlineSyncDisableBackgroundSync
       delete (window as Window & { __offlineSyncFixture?: typeof api }).__offlineSyncFixture
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queueCount])
 
   const run = async (task: () => Promise<unknown>) => {

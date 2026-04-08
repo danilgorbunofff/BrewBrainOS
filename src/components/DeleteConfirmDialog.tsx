@@ -35,6 +35,7 @@ export function DeleteConfirmDialog({
     <Button
       variant="ghost"
       size="icon-xs"
+      aria-label={`Delete ${itemName}`}
       className={cn(
         'text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors shrink-0',
         className

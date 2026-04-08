@@ -1,18 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
-
-function getRequiredEnv(name: 'NEXT_PUBLIC_SUPABASE_URL' | 'SUPABASE_SERVICE_ROLE_KEY') {
-  const value = process.env[name]
-
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`)
-  }
-
-  return value
-}
+import { getRequiredEnv } from '@/lib/env'
 
 export function createServiceRoleClient() {
   return createClient(
-    getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL'),
+    getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL', 'public'),
     getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY'),
     {
       auth: {

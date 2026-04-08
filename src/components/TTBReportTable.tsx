@@ -3,8 +3,6 @@
 import { useState } from 'react'
 import { LucideDownload, LucideFileBarChart, LucideChevronDown, LucideChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { jsPDF } from 'jspdf'
-import autoTable from 'jspdf-autotable'
 
 interface MonthlyRow {
   month: string
@@ -28,6 +26,7 @@ interface TTBReportTableProps {
 
 export function TTBReportTable({ batches, avgTankCapacity, breweryName, licenseNumber }: TTBReportTableProps) {
   const [expanded, setExpanded] = useState(true)
+  const [isExportingPdf, setIsExportingPdf] = useState(false)
 
   // Group batches dynamically on the client so that New Date() respects the local browser timezone
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -146,96 +145,111 @@ export function TTBReportTable({ batches, avgTankCapacity, breweryName, licenseN
     gallons: monthlyReport.reduce((s, m) => s + m.gallons, 0),
   }
 
-  const exportPDF = () => {
-    const doc = new jsPDF()
+  const exportPDF = async () => {
+    if (isExportingPdf) return
 
-    // Title & Header
-    doc.setFontSize(22)
-    doc.setTextColor(20, 20, 20)
-    doc.text('BrewBrain OS', 14, 20)
-    
-    doc.setFontSize(16)
-    doc.setTextColor(60, 60, 60)
-    doc.text("Brewer's Report of Operations (TTB 5130.9)", 14, 30)
+    setIsExportingPdf(true)
 
-    // Metadata
-    doc.setFontSize(10)
-    doc.setTextColor(100, 100, 100)
-    doc.text(`Brewery: ${breweryName}`, 14, 42)
-    if (licenseNumber) doc.text(`License: ${licenseNumber}`, 14, 47)
-    doc.text(`Generated: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, 14, 52)
-    doc.text(`Formula: 1 BBL = 31 US Gallons`, 14, 57)
+    try {
+      const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable')
+      ])
 
-    const tableHeaders = [['Month', 'Batches', 'Completed', 'Active', 'Dumped', 'BBL', 'Gallons', 'Avg OG', 'Avg FG']]
-    
-    const tableRows = monthlyReport.map(m => [
-      m.month,
-      m.totalBatches,
-      m.completedBatches,
-      m.activeBatches,
-      m.dumpedBatches || '0',
-      m.estimatedBBL.toFixed(1),
-      Math.round(m.gallons).toLocaleString(),
-      m.avgOG ? m.avgOG.toFixed(3) : '—',
-      m.avgFG ? m.avgFG.toFixed(3) : '—'
-    ])
+      const doc = new jsPDF()
 
-    // Add Totals Row
-    tableRows.push([
-      'GRAND TOTAL',
-      totals.batches.toString(),
-      monthlyReport.reduce((s, m) => s + m.completedBatches, 0).toString(),
-      '-',
-      '-',
-      totals.bbl.toFixed(1),
-      Math.round(totals.gallons).toLocaleString(),
-      '-',
-      '-'
-    ])
+      // Title & Header
+      doc.setFontSize(22)
+      doc.setTextColor(20, 20, 20)
+      doc.text('BrewBrain OS', 14, 20)
+      
+      doc.setFontSize(16)
+      doc.setTextColor(60, 60, 60)
+      doc.text("Brewer's Report of Operations (TTB 5130.9)", 14, 30)
 
-    autoTable(doc, {
-      startY: 65,
-      head: tableHeaders,
-      body: tableRows,
-      theme: 'striped',
-      headStyles: { 
-        fillColor: [245, 158, 11], // BrewBrain Primary
-        textColor: [255, 255, 255],
-        fontStyle: 'bold' 
-      },
-      styles: {
-        fontSize: 9,
-        cellPadding: 4,
-      },
-      columnStyles: {
-        0: { fontStyle: 'bold' },
-        5: { fontStyle: 'bold' }
-      },
-      didParseCell: (data) => {
-        // Style the last row (Grand Total)
-        if (data.row.index === tableRows.length - 1) {
-          data.cell.styles.fontStyle = 'bold'
-          // Use a light version of the primary color [254, 245, 230]
-          data.cell.styles.fillColor = [254, 245, 230]
+      // Metadata
+      doc.setFontSize(10)
+      doc.setTextColor(100, 100, 100)
+      doc.text(`Brewery: ${breweryName}`, 14, 42)
+      if (licenseNumber) doc.text(`License: ${licenseNumber}`, 14, 47)
+      doc.text(`Generated: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, 14, 52)
+      doc.text(`Formula: 1 BBL = 31 US Gallons`, 14, 57)
+
+      const tableHeaders = [['Month', 'Batches', 'Completed', 'Active', 'Dumped', 'BBL', 'Gallons', 'Avg OG', 'Avg FG']]
+      
+      const tableRows = monthlyReport.map(m => [
+        m.month,
+        m.totalBatches,
+        m.completedBatches,
+        m.activeBatches,
+        m.dumpedBatches || '0',
+        m.estimatedBBL.toFixed(1),
+        Math.round(m.gallons).toLocaleString(),
+        m.avgOG ? m.avgOG.toFixed(3) : '—',
+        m.avgFG ? m.avgFG.toFixed(3) : '—'
+      ])
+
+      // Add Totals Row
+      tableRows.push([
+        'GRAND TOTAL',
+        totals.batches.toString(),
+        monthlyReport.reduce((s, m) => s + m.completedBatches, 0).toString(),
+        '-',
+        '-',
+        totals.bbl.toFixed(1),
+        Math.round(totals.gallons).toLocaleString(),
+        '-',
+        '-'
+      ])
+
+      autoTable(doc, {
+        startY: 65,
+        head: tableHeaders,
+        body: tableRows,
+        theme: 'striped',
+        headStyles: { 
+          fillColor: [245, 158, 11], // BrewBrain Primary
+          textColor: [255, 255, 255],
+          fontStyle: 'bold' 
+        },
+        styles: {
+          fontSize: 9,
+          cellPadding: 4,
+        },
+        columnStyles: {
+          0: { fontStyle: 'bold' },
+          5: { fontStyle: 'bold' }
+        },
+        didParseCell: (data) => {
+          // Style the last row (Grand Total)
+          if (data.row.index === tableRows.length - 1) {
+            data.cell.styles.fontStyle = 'bold'
+            // Use a light version of the primary color [254, 245, 230]
+            data.cell.styles.fillColor = [254, 245, 230]
+          }
         }
+      })
+
+      // Footer
+      const pageCount = doc.getNumberOfPages()
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i)
+        doc.setFontSize(8)
+        doc.setTextColor(150, 150, 150)
+        doc.text(
+          `Generated by BrewBrain OS — The Digital Brain for Craft Breweries. Page ${i} of ${pageCount}`,
+          doc.internal.pageSize.getWidth() / 2,
+          doc.internal.pageSize.getHeight() - 10,
+          { align: 'center' }
+        )
       }
-    })
 
-    // Footer
-    const pageCount = doc.getNumberOfPages()
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i)
-      doc.setFontSize(8)
-      doc.setTextColor(150, 150, 150)
-      doc.text(
-        `Generated by BrewBrain OS — The Digital Brain for Craft Breweries. Page ${i} of ${pageCount}`,
-        doc.internal.pageSize.getWidth() / 2,
-        doc.internal.pageSize.getHeight() - 10,
-        { align: 'center' }
-      )
+      doc.save(`TTB-Report-${breweryName.replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 7)}.pdf`)
+    } catch (error) {
+      console.error('Failed to export TTB PDF', error)
+    } finally {
+      setIsExportingPdf(false)
     }
-
-    doc.save(`TTB-Report-${breweryName.replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 7)}.pdf`)
   }
 
   return (
@@ -268,12 +282,13 @@ export function TTBReportTable({ batches, avgTankCapacity, breweryName, licenseN
           </Button>
           <Button
             onClick={exportPDF}
+            disabled={isExportingPdf}
             variant="outline"
             size="sm"
             className="text-xs gap-1.5 border-border text-muted-foreground hover:text-primary hover:border-primary/30 h-8"
           >
             <LucideDownload className="h-3.5 w-3.5" />
-            PDF
+            {isExportingPdf ? 'Building' : 'PDF'}
           </Button>
         </div>
       </div>

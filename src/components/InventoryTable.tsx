@@ -160,26 +160,38 @@ function MobileInventoryCard({ item }: { item: InventoryItem }) {
               {item.current_stock}
               <span className="text-xs font-medium text-muted-foreground ml-1.5 uppercase font-sans tracking-normal">{item.unit}</span>
             </span>
-            {isLowStock && <p className="text-[9px] font-black uppercase text-primary/50 tracking-widest mt-0.5">Reorder Required</p>}
+            {isLowStock && <p className="text-[9px] font-black uppercase text-primary tracking-widest mt-0.5">Reorder Required</p>}
             {expirationStatus?.type === 'expired' && (
-              <p className="text-[9px] font-black uppercase text-red-500/70 tracking-widest mt-0.5">Expired</p>
+              <p className="text-[9px] font-black uppercase text-red-400 tracking-widest mt-0.5">Expired</p>
             )}
             {expirationStatus?.type === 'expiring' && (
-              <p className="text-[9px] font-black uppercase text-yellow-500/70 tracking-widest mt-0.5">Expires in {expirationStatus.daysUntilExpiry} days</p>
+              <p className="text-[9px] font-black uppercase text-yellow-300 tracking-widest mt-0.5">Expires in {expirationStatus.daysUntilExpiry} days</p>
             )}
           </div>
           <div className="flex items-center gap-1">
             <form action={submitStockUpdate}>
               <input type="hidden" name="itemId" value={item.id} />
               <input type="hidden" name="stock" value={Math.max(0, item.current_stock - 1)} />
-              <Button type="submit" variant="ghost" size="icon" className="size-9 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 border border-border rounded-xl">
+              <Button
+                type="submit"
+                variant="ghost"
+                size="icon"
+                aria-label={`Decrease ${item.name} stock by 1 ${item.unit}`}
+                className="size-9 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 border border-border rounded-xl"
+              >
                 <LucideMinus className="h-4 w-4" />
               </Button>
             </form>
             <form action={submitStockUpdate}>
               <input type="hidden" name="itemId" value={item.id} />
               <input type="hidden" name="stock" value={item.current_stock + 1} />
-              <Button type="submit" variant="ghost" size="icon" className="size-9 text-muted-foreground hover:text-green-500 hover:bg-green-500/10 border border-border rounded-xl">
+              <Button
+                type="submit"
+                variant="ghost"
+                size="icon"
+                aria-label={`Increase ${item.name} stock by 1 ${item.unit}`}
+                className="size-9 text-muted-foreground hover:text-green-500 hover:bg-green-500/10 border border-border rounded-xl"
+              >
                 <LucidePlus className="h-4 w-4" />
               </Button>
             </form>
@@ -290,12 +302,12 @@ function InventoryRow({
             {item.current_stock}
             <span className="text-xs font-medium text-muted-foreground ml-1.5 uppercase font-sans tracking-normal">{item.unit}</span>
           </span>
-          {isLowStock && <span className="text-[9px] font-black uppercase text-primary/50 tracking-widest">Reorder Required</span>}
+          {isLowStock && <span className="text-[9px] font-black uppercase text-primary tracking-widest">Reorder Required</span>}
           {expirationStatus?.type === 'expired' && (
-            <span className="text-[9px] font-black uppercase text-red-500/70 tracking-widest">Expired</span>
+            <span className="text-[9px] font-black uppercase text-red-400 tracking-widest">Expired</span>
           )}
           {expirationStatus?.type === 'expiring' && (
-            <span className="text-[9px] font-black uppercase text-yellow-500/70 tracking-widest">Expires in {expirationStatus.daysUntilExpiry} days</span>
+            <span className="text-[9px] font-black uppercase text-yellow-300 tracking-widest">Expires in {expirationStatus.daysUntilExpiry} days</span>
           )}
         </div>
       </TableCell>
@@ -310,14 +322,26 @@ function InventoryRow({
           <form action={submitStockUpdate}>
             <input type="hidden" name="itemId" value={item.id} />
             <input type="hidden" name="stock" value={Math.max(0, item.current_stock - 1)} />
-            <Button type="submit" variant="ghost" size="icon" className="size-10 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/20">
+            <Button
+              type="submit"
+              variant="ghost"
+              size="icon"
+              aria-label={`Decrease ${item.name} stock by 1 ${item.unit}`}
+              className="size-10 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/20"
+            >
               <LucideMinus className="h-5 w-5" />
             </Button>
           </form>
           <form action={submitStockUpdate}>
             <input type="hidden" name="itemId" value={item.id} />
             <input type="hidden" name="stock" value={item.current_stock + 1} />
-            <Button type="submit" variant="ghost" size="icon" className="size-10 text-muted-foreground hover:text-green-500 hover:bg-green-500/10 border border-transparent hover:border-green-500/20">
+            <Button
+              type="submit"
+              variant="ghost"
+              size="icon"
+              aria-label={`Increase ${item.name} stock by 1 ${item.unit}`}
+              className="size-10 text-muted-foreground hover:text-green-500 hover:bg-green-500/10 border border-transparent hover:border-green-500/20"
+            >
               <LucidePlus className="h-5 w-5" />
             </Button>
           </form>
@@ -452,7 +476,12 @@ function DesktopTable({ items, query }: { items: InventoryItem[]; query: string 
 
 export function InventoryTable({ items }: { items: InventoryItem[] }) {
   return (
-    <SearchFilter<InventoryItem> items={items} searchKeys={['name', 'item_type']} placeholder="Search inventory by name or type…">
+    <SearchFilter<InventoryItem>
+      items={items}
+      searchKeys={['name', 'item_type']}
+      placeholder="Search inventory by name or type…"
+      inputLabel="Inventory search"
+    >
       {(filtered, query) => (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -477,7 +506,11 @@ export function InventoryTable({ items }: { items: InventoryItem[] }) {
           </div>
 
           <Tabs defaultValue="All" className="w-full max-w-full overflow-hidden gap-0">
-            <TabsList className="bg-background/50 border border-border p-1.5 h-auto rounded-2xl mb-6 gap-1 flex w-full overflow-x-auto scrollbar-none">
+            <TabsList
+              aria-label="Inventory categories"
+              tabIndex={0}
+              className="bg-background/50 border border-border p-1.5 h-auto rounded-2xl mb-6 gap-1 flex w-full overflow-x-auto scrollbar-none"
+            >
               {categories.map(cat => (
                 <TabsTrigger
                   key={cat}

@@ -103,6 +103,11 @@ describe('offlineQueue', () => {
             register: vi.fn(),
           },
         }),
+        getRegistration: vi.fn().mockResolvedValue({
+          sync: {
+            register: vi.fn(),
+          },
+        }),
         addEventListener: vi.fn(),
         removeEventListener: vi.fn(),
       },
@@ -136,6 +141,7 @@ describe('offlineQueue', () => {
       configurable: true,
       value: {
         ready: Promise.resolve({ sync: { register: registerMock } }),
+        getRegistration: vi.fn().mockResolvedValue({ sync: { register: registerMock } }),
         addEventListener: vi.fn(),
         removeEventListener: vi.fn(),
       },

@@ -1,10 +1,11 @@
-import { createClient } from '@supabase/supabase-js'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { runFermentationAlertCheck } from '@/app/(app)/batches/[id]/actions'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { detectFermentationAlerts, BatchReadingInput, BatchConfig } from '@/lib/fermentation-alerts'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { sendFermentationAlertNotification } from '@/app/actions/push-actions'
+import { getRequiredEnv } from '@/lib/env'
+import { createServiceRoleClient } from '@/utils/supabase/service-role'
 
 // Helper for external cron services (e.g. Vercel Cron, EasyCron, Render)
 // Schedule roughly every 4-6 hours to catch Stuck Fermentation anomalies or sudden environment changes
@@ -18,14 +19,11 @@ function getErrorMessage(error: unknown) {
 }
 
 export async function POST(req: Request) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-  )
+  const supabase = createServiceRoleClient()
   try {
     // Verify secret token for security
     const authHeader = req.headers.get('authorization')
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (authHeader !== `Bearer ${getRequiredEnv('CRON_SECRET')}`) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

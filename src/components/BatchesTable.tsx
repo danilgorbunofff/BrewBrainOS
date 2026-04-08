@@ -200,7 +200,9 @@ function VirtualDesktopTable({ batches }: { batches: BatchListItem[] }) {
       <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6">Target OG</TableHead>
       <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6">Current FG</TableHead>
       <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6 text-right px-6">Cycle Status</TableHead>
-      <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6 w-10" />
+      <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6 w-10">
+        <span className="sr-only">Actions</span>
+      </TableHead>
     </TableRow>
   )
 
@@ -271,7 +273,9 @@ function DesktopTable({
             <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6">Target OG</TableHead>
             <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6">Current FG</TableHead>
             <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6 text-right px-6">Cycle Status</TableHead>
-            <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6 w-10" />
+            <TableHead className="text-xs font-black uppercase tracking-widest text-muted-foreground py-6 w-10">
+              <span className="sr-only">Actions</span>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -311,6 +315,7 @@ export function BatchesTable({
       items={batches}
       searchKeys={['recipe_name', 'status']}
       placeholder="Search batches by name or status…"
+      inputLabel="Batch search"
     >
       {(filtered, query) => (
         <div className="space-y-4">

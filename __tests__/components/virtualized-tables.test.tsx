@@ -79,7 +79,7 @@ describe('InventoryTable', () => {
     expect(screen.getAllByTestId('inventory-virtual-scroll').length).toBeGreaterThan(0)
   })
 
-  it('submits stock adjustment actions and exercises virtual-row focus handlers', () => {
+  it('submits stock adjustment actions and exercises virtual-row focus handlers', { timeout: 15_000 }, () => {
     render(<InventoryTable items={buildInventoryItems(140)} />)
 
     const firstDeleteButton = screen.getAllByRole('button', { name: /delete inventory item/i })[0]

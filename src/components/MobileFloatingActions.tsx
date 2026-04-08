@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import {
   LucideMic, LucideSquare, LucideLoader2, LucideQrCode,
   LucideX, LucideCheck, LucideThermometer, LucideFlaskConical,
@@ -10,10 +11,21 @@ import {
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { transcribeVoiceLog, saveVoiceLog } from '@/app/actions/voiceModal'
-import { Scanner } from '@yudiel/react-qr-scanner'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { enqueueAction } from '@/lib/offlineQueue'
+
+const QRCodeScanner = dynamic(
+  () => import('@yudiel/react-qr-scanner').then((mod) => mod.Scanner),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="absolute inset-0 flex items-center justify-center bg-card text-sm font-bold text-muted-foreground">
+        Starting camera...
+      </div>
+    )
+  }
+)
 
 type VoiceStep = 'idle' | 'recording' | 'processing' | 'review'
 
@@ -413,7 +425,7 @@ export function MobileFloatingActions() {
           </div>
           <div className="flex-1 flex items-center justify-center p-6">
             <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-border aspect-square shadow-2xl">
-              <Scanner
+              <QRCodeScanner
                 onScan={handleScan}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onError={(err: any) => {

@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import type { NextConfig } from "next";
+import bundleAnalyzer from "@next/bundle-analyzer";
 import withSerwistInit from "@serwist/next";
 
 type ManifestEntryWithSize = {
@@ -86,10 +87,19 @@ const withSerwist = withSerwistInit({
   disable: process.env.NODE_ENV !== "production",
 });
 
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+  openAnalyzer: false,
+  generateStatsFile: true,
+} as Parameters<typeof bundleAnalyzer>[0] & {
+  generateStatsFile: boolean;
+});
+
 const nextConfig: NextConfig = {
   // Turbopack is used for `next dev` (fast HMR).
   // `next build` uses webpack (where Serwist compiles the SW).
   turbopack: {},
+  allowedDevOrigins: ['127.0.0.1'],
 };
 
-export default withSerwist(nextConfig);
+export default withBundleAnalyzer(withSerwist(nextConfig));

@@ -1,9 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Scanner } from '@yudiel/react-qr-scanner'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+
+const QRCodeScanner = dynamic(
+  () => import('@yudiel/react-qr-scanner').then((mod) => mod.Scanner),
+  { ssr: false }
+)
 
 export function QRScanner() {
   const [isScanning, setIsScanning] = useState(false)
@@ -74,7 +79,7 @@ export function QRScanner() {
   return (
     <div className="relative mx-auto max-w-sm overflow-hidden rounded-2xl border border-zinc-800 bg-background aspect-square shadow-2xl">
       {isMounted && isScanning ? (
-        <Scanner
+        <QRCodeScanner
           onScan={handleScan}
           onError={handleError}
           paused={!isScanning}

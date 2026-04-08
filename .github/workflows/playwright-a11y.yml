@@ -1,0 +1,135 @@
+name: Playwright A11y
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  playwright-a11y:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: true
+      NODE_ENV: production
+      ENABLE_BENCHMARK_ROUTES: '1'
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://ci-placeholder.supabase.co' }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'ci-placeholder-anon-key' }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ vars.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY || 'ci-placeholder-service-role-key' }}
+      STRIPE_SECRET_KEY: ${{ vars.STRIPE_SECRET_KEY || secrets.STRIPE_SECRET_KEY || 'sk_test_ci_placeholder' }}
+      STRIPE_WEBHOOK_SECRET: ${{ vars.STRIPE_WEBHOOK_SECRET || secrets.STRIPE_WEBHOOK_SECRET || 'whsec_ci_placeholder' }}
+      SENTRY_DSN: ${{ vars.SENTRY_DSN || secrets.SENTRY_DSN || '' }}
+      NEXT_PUBLIC_SENTRY_DSN: ${{ vars.NEXT_PUBLIC_SENTRY_DSN || secrets.NEXT_PUBLIC_SENTRY_DSN || '' }}
+      SENTRY_ENV: a11y
+      SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE || '0.1' }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN || '' }}
+      E2E_TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL || '' }}
+      E2E_TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD || '' }}
+      PLAYWRIGHT_SERVER_COMMAND: npm run start -- -p 3005
+      PLAYWRIGHT_SERVER_URL: http://127.0.0.1:3005/benchmarks/batches
+      PLAYWRIGHT_BASE_URL: http://127.0.0.1:3005
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production app
+        run: npm run build
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run a11y suites
+        id: a11y
+        continue-on-error: true
+        run: npx playwright test playwright/a11y --project=chromium --reporter=github,html
+
+      - name: Upload a11y artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-a11y-artifacts
+          path: |
+            playwright-report
+            test-results/a11y
+            test-results
+          if-no-files-found: ignore
+
+      - name: Publish a11y summary
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs')
+            const path = require('node:path')
+
+            const marker = '<!-- playwright-a11y-summary -->'
+            const summaryDir = path.join(process.env.GITHUB_WORKSPACE, 'test-results', 'a11y')
+            const summaryFiles = ['batches-summary.md', 'virtualization-summary.md']
+            const sections = []
+
+            for (const fileName of summaryFiles) {
+              const filePath = path.join(summaryDir, fileName)
+
+              if (!fs.existsSync(filePath)) {
+                sections.push(`## ${fileName}\n\nSummary file was not generated.`)
+                continue
+              }
+
+              sections.push(fs.readFileSync(filePath, 'utf8').trim())
+            }
+
+            const body = `${marker}\n# Playwright accessibility audit\n\n${sections.join('\n\n---\n\n')}`
+
+            await core.summary
+              .addRaw(body)
+              .write()
+
+            if (!context.payload.pull_request) {
+              return
+            }
+
+            const { owner, repo } = context.repo
+            const issue_number = context.payload.pull_request.number
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+            })
+
+            const existing = comments.find((comment) => comment.body && comment.body.includes(marker))
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              })
+              return
+            }
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number,
+              body,
+            })
+
+      - name: Fail on critical accessibility violations
+        if: steps.a11y.outcome == 'failure'
+        run: |
+          echo "Critical accessibility violations were detected by the Playwright axe suite."
+          exit 1

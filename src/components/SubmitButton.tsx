@@ -12,6 +12,7 @@ interface SubmitButtonProps {
   size?: 'default' | 'sm' | 'lg' | 'icon'
   pendingText?: string
   icon?: React.ReactNode
+  ariaLabel?: string
 }
 
 export function SubmitButton({
@@ -21,6 +22,7 @@ export function SubmitButton({
   size = 'default',
   pendingText = 'Processing…',
   icon,
+  ariaLabel,
 }: SubmitButtonProps) {
   const { pending } = useFormStatus()
 
@@ -30,6 +32,8 @@ export function SubmitButton({
       variant={variant}
       size={size}
       disabled={pending}
+      aria-label={ariaLabel}
+      aria-busy={pending}
       className={cn('transition-all', className)}
     >
       {pending ? (

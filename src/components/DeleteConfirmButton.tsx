@@ -34,6 +34,7 @@ export function DeleteConfirmButton({
     <Button
       variant={buttonVariant}
       size={size}
+      aria-label={label ? undefined : `Delete ${itemName}`}
       onClick={() => {
         openDeleteConfirm({
           action,

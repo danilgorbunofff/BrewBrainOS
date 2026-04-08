@@ -20,6 +20,15 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Environment
+
+Use `.env.example` as the canonical env map for local development, CI, and deployment.
+
+- Copy `.env.example` to `.env.local` for local work and fill in only the values you actually need.
+- `NEXT_PUBLIC_*` values are intentionally browser-visible; keep server-only secrets such as `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CRON_SECRET`, and `VAPID_PRIVATE_KEY` in GitHub Actions secrets or your deployment secret manager.
+- `npm run verify:env` checks the minimum build prerequisites, `npm run verify:env:server` checks the critical server-only runtime secrets, `npm run verify:env:smoke` checks local smoke-test credentials, and `npm run verify:env:migrations` checks ordered migration prerequisites.
+- CI build placeholders live in `.github/workflows/ci.yml`; replace them with repository variables or secrets when you want CI to exercise real integrations instead of pure build coverage.
+
 ## Virtualization Fixture
 
 Run the development server, then open `/dev/virtualization` while signed in to exercise the large-table fixture route.
@@ -55,6 +64,10 @@ Sentry is wired into both browser instrumentation and server-side route handlers
 
 ## Validation
 
+- `npm run verify:env` confirms the minimum production build env is present before you run `npm run build`.
+- `npm run verify:env:server` confirms the server-only secrets required by cron, Stripe, and service-role flows.
+- `npm run verify:env:smoke` confirms the dedicated Playwright account is configured locally.
+- `npm run verify:env:migrations` confirms ordered migration validation has a database target.
 - `npm run test` runs the Vitest suite, including virtualization helper and component-level table tests.
 - `npm run test:components` runs only the component tests for `InventoryTable` and `BatchesTable`.
 - `npm run db:migrate:ordered` applies the canonical ordered SQL track in `supabase/migrations/ordered` to the database referenced by `SUPABASE_DB_URL`.
@@ -77,13 +90,14 @@ The repository keeps legacy feature migrations in `supabase/migrations`, but the
 
 The CI smoke workflow builds the production app, boots `next start`, and runs `playwright/ci/smoke.spec.ts` against Chromium only.
 
-- Build prerequisites: export `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` before `npm run build` and before any production-mode Playwright run.
+- Start from `.env.example`, then run `npm run verify:env` before `npm run build` and `npm run verify:env:smoke` before any production-mode Playwright run.
 - Optional error reporting secrets for build/runtime: `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ENV`, `SENTRY_TRACES_SAMPLE_RATE`, and `SENTRY_AUTH_TOKEN` if you later enable source-map uploads.
 - Benchmark fixture prerequisite: export `ENABLE_BENCHMARK_ROUTES=1` for the smoke suite so the public offline-sync benchmark route remains available in production-mode Playwright runs.
 - Offline queue local verification: after `npm run build`, run `npm run test:offline-queue` to exercise the dedicated offline queue E2E coverage against `next start`.
 - Test account prerequisites: export `E2E_TEST_USER_EMAIL` and `E2E_TEST_USER_PASSWORD` for a dedicated Supabase user that already owns at least one brewery.
 - Local run sequence: `npm run build` and then `npm run e2e:smoke:local`.
 - GitHub Actions secrets required by `.github/workflows/playwright-smoke.yml`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `E2E_TEST_USER_EMAIL`, and `E2E_TEST_USER_PASSWORD`.
+- GitHub Actions repository secrets or variables recommended for `.github/workflows/ci.yml`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, and `SUPABASE_MIGRATION_DB_URL` when ordered migration validation is enabled.
 - Rotation guidance: keep the smoke account isolated from real brewery data, store only the public Supabase URL and anon key in repo secrets, and rotate the password or replace the account whenever CI access changes.
 
 ## Learn More

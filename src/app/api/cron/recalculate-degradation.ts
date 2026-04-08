@@ -1,6 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
 import { recalculateDegradationMetrics } from '@/lib/degradation'
+import { getRequiredEnv } from '@/lib/env'
 import { withSentry } from '@/lib/with-sentry'
+import { createServiceRoleClient } from '@/utils/supabase/service-role'
 
 // Helper to format date as YYYY-MM-DD
 function getToday() {
@@ -24,11 +25,6 @@ function getToday() {
  * - Render Cron Jobs
  */
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-)
-
 export const runtime = 'nodejs'
 
 function getErrorMessage(error: unknown) {
@@ -37,8 +33,9 @@ function getErrorMessage(error: unknown) {
 export const maxDuration = 300  // 5 minutes max
 
 export const POST = withSentry(async (req: Request) => {
+  const supabase = createServiceRoleClient()
   const authHeader = req.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${getRequiredEnv('CRON_SECRET')}`) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -60,7 +57,7 @@ export const POST = withSentry(async (req: Request) => {
 
   for (const brewery of breweries) {
     try {
-      const breweriesProcessed = await processBrewer(brewery.id)
+      const breweriesProcessed = await processBrewer(supabase, brewery.id)
       totalItemsUpdated += breweriesProcessed.itemsUpdated
       totalLogsCreated += breweriesProcessed.logsCreated
     } catch (error: unknown) {
@@ -88,7 +85,10 @@ export const POST = withSentry(async (req: Request) => {
 /**
  * Process a single brewery's degradation metrics
  */
-async function processBrewer(breweryId: string): Promise<{
+async function processBrewer(
+  supabase: ReturnType<typeof createServiceRoleClient>,
+  breweryId: string
+): Promise<{
   itemsUpdated: number
   logsCreated: number
 }> {

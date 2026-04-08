@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache'
 import { requireActiveBrewery } from '@/lib/require-brewery'
-import { batchSchema } from '@/lib/schemas'
 import { ActionResult } from '@/types/database'
 import { detectFermentationAlerts, BatchReadingInput, BatchConfig } from '@/lib/fermentation-alerts'
 import { sendFermentationAlertNotification } from '@/app/actions/push-actions'

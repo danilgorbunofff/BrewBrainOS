@@ -10,9 +10,10 @@ export const metadata = {
   description: 'Securely sign in to your BrewBrain OS brewery management dashboard.',
 }
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; trial?: string }> }) {
   const p = await searchParams
   const errorMessage = p?.error
+  const trialTier = p?.trial || ''
   return (
     <div className="dark relative flex min-h-screen items-center justify-center p-4 overflow-hidden">
       {/* Dynamic Background Mesh */}
@@ -44,6 +45,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </CardHeader>
           <form action={login}>
             <CardContent className="space-y-4">
+              {trialTier && <input type="hidden" name="trial" value={trialTier} />}
               {errorMessage && (
                 <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm text-center font-bold animate-in zoom-in-95 duration-300">
                   {errorMessage}

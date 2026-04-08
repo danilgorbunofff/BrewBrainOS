@@ -13,7 +13,7 @@ import { checkAndCreateReorderAlert } from '@/app/actions/reorder-actions'
 import { InventoryHistory, ShrinkageAlert, ActionResult } from '@/types/database'
 import { headers } from 'next/headers'
 import { inventoryChangeSchema, updateShrinkageAlertSchema } from '@/lib/schemas'
-import { sanitizeDbError } from '@/lib/utils'
+import { sanitizeDbError, toError } from '@/lib/utils'
 
 /**
  * Record an inventory stock change (stock adjustment, recipe usage, receipt, waste)
@@ -71,7 +71,7 @@ export async function recordInventoryChange(
       .select()
       .single()
 
-    if (error) throw error
+    if (error) throw toError(error)
 
     // Trigger baseline recalculation for this item
     await recalculateShrinkageBaseline(inventory_id)
@@ -300,7 +300,7 @@ export async function getShrinkageAlerts(status?: string): Promise<ActionResult<
 
     const { data, error } = await query.order('detected_at', { ascending: false })
 
-    if (error) throw error
+    if (error) throw toError(error)
 
     return { success: true, data: data || [] }
   } catch (e: unknown) {
@@ -348,7 +348,7 @@ export async function updateShrinkageAlertStatus(
       .eq('id', parsed.data.alert_id)
       .eq('brewery_id', brewery.id)
 
-    if (error) throw error
+    if (error) throw toError(error)
 
     revalidatePath('/inventory')
     return { success: true, data: null }

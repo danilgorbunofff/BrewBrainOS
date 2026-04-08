@@ -1,5 +1,6 @@
-item_type,name,current_stock,unit,reorder_point
-Hops,Citra,22.5,lbs,5
-Grain,Pale Ale Malt,550,lbs,100
-Yeast,US-05,5,sachets,1
-Adjunct,Lactose,10.2,lbs,2
+item_type,name,current_stock,unit,reorder_point,lot_number,manufacturer,received_date,storage_condition,degradation_tracked,hsi_initial,grain_moisture_initial
+Hops,Citra,22.5,lbs,5,LOT-2026-001,YCH Hops,2026-03-01,cool_dry,true,95,
+Grain,Pale Ale Malt,550,lbs,100,LOT-2026-002,Briess,2026-02-15,cool_dry,true,,10.5
+Yeast,US-05,5,sachets,1,,Fermentis,2026-03-10,cool_dry,false,,
+Adjunct,Lactose,10.2,lbs,2,,,,cool_dry,false,,
+Packaging,16oz Cans,500,ea,100,,Ball Corp,2026-01-20,room_temp,false,,

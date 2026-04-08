@@ -256,7 +256,7 @@ export function DevTools({ activeBreweryId, currentTier }: DevToolsProps) {
   // ─── Render ─────────────────────────────────────────────────────────
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] font-sans">
+    <div className="fixed top-4 right-4 z-[100] font-sans">
       {!isOpen ? (
         <button
           onClick={() => setIsOpen(true)}

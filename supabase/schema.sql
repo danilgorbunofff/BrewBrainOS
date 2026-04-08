@@ -389,6 +389,12 @@ CREATE TABLE IF NOT EXISTS feedback (
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   url TEXT,
   message TEXT NOT NULL,
+  category TEXT,
+  -- Attachment metadata (file stored in Supabase Storage bucket: feedback-attachments)
+  attachment_path TEXT,   -- storage path relative to the bucket, e.g. {user_id}/{uuid}.png
+  attachment_name TEXT,   -- original filename shown to the user
+  attachment_type TEXT,   -- MIME type
+  attachment_size INTEGER, -- bytes
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
 
@@ -399,6 +405,67 @@ CREATE POLICY "Users can insert feedback" ON feedback
 
 CREATE POLICY "Users can view own feedback" ON feedback
   FOR SELECT USING (auth.uid() = user_id);
+
+-- ─────────────────────────────────────────────
+-- FEEDBACK ATTACHMENTS STORAGE
+-- NOTE: run this after creating the `feedback-attachments` bucket in the
+-- Supabase dashboard (Storage → New bucket → name: feedback-attachments,
+-- private, file size limit: 5242880, allowed types: image/png image/jpeg
+-- image/gif image/webp application/pdf).
+-- ─────────────────────────────────────────────
+DO $$
+BEGIN
+  -- Create the bucket if not already present (works when storage extension is enabled)
+  INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+  VALUES (
+    'feedback-attachments',
+    'feedback-attachments',
+    false,
+    5242880,
+    ARRAY['image/png','image/jpeg','image/gif','image/webp','application/pdf']
+  )
+  ON CONFLICT (id) DO NOTHING;
+EXCEPTION WHEN others THEN
+  -- Bucket table may not be accessible via SQL; use the Supabase dashboard instead.
+  RAISE NOTICE 'Could not auto-create feedback-attachments bucket: %. Create it manually.', SQLERRM;
+END $$;
+
+-- Storage RLS: users can only upload to their own folder
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage' AND tablename = 'objects'
+      AND policyname = 'Users can upload feedback attachments'
+  ) THEN
+    EXECUTE $policy$
+      CREATE POLICY "Users can upload feedback attachments"
+      ON storage.objects FOR INSERT
+      WITH CHECK (
+        bucket_id = 'feedback-attachments' AND
+        auth.uid()::text = (storage.foldername(name))[1]
+      )
+    $policy$;
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage' AND tablename = 'objects'
+      AND policyname = 'Users can read own feedback attachments'
+  ) THEN
+    EXECUTE $policy$
+      CREATE POLICY "Users can read own feedback attachments"
+      ON storage.objects FOR SELECT
+      USING (
+        bucket_id = 'feedback-attachments' AND
+        auth.uid()::text = (storage.foldername(name))[1]
+      )
+    $policy$;
+  END IF;
+END $$;
 
 -- ─────────────────────────────────────────────
 -- REORDER AUTOMATION

@@ -116,7 +116,7 @@ export function PricingCards({ tiers }: PricingCardsProps) {
                     </li>
                   ))}
                 </ul>
-                <Link href="/login" className="block">
+                <Link href={`/login?trial=${plan.slug}`} className="block">
                   {isPopular ? (
                     <Button className="w-full bg-orange-600 hover:bg-orange-500 font-bold shadow-[0_0_20px_rgba(234,88,12,0.2)]">
                       Start Free Trial

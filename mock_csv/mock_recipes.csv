@@ -1,0 +1,5 @@
+name,batch_size_bbls,style,target_og,target_fg,target_ibu,target_abv,notes
+Hazy IPA,7,IPA - New England,1.065,1.012,45,6.8,Dry hopped with Citra and Mosaic
+West Coast Pale,7,American Pale Ale,1.052,1.010,40,5.5,Classic APA
+Oatmeal Stout,3.5,Stout - Oatmeal,1.070,1.018,35,6.8,
+Kölsch,7,Kölsch,1.048,1.008,22,5.2,Lager yeast at ale temps

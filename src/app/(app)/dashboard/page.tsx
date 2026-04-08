@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils'
 import { getActiveBrewery } from '@/lib/active-brewery'
 import { RealtimeRefresh } from '@/components/RealtimeRefresh'
 import { logger } from '@/lib/logger'
+import { buildGravityTrend } from '@/lib/gravity-trend'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -31,7 +32,9 @@ export const metadata = {
   description: 'Your brewery command center. Real-time production, tank status, and inventory alerts.',
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ trial?: string }> }) {
+  const params = await searchParams
+  const trialTier = params?.trial || ''
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -66,7 +69,7 @@ export default async function DashboardPage() {
             <div className="max-w-md mx-auto space-y-6">
               <h2 className="text-4xl font-black text-foreground tracking-tighter italic">Initialize facility</h2>
               <p className="text-muted-foreground font-medium leading-relaxed">Establish your digital footprint. Define your brewery&apos;s identity to synchronize hardware and logs.</p>
-              <InitializeBreweryForm />
+              <InitializeBreweryForm trialTier={trialTier} />
             </div>
           </div>
         )}
@@ -98,15 +101,6 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
   const batches = batchRes.data || []
   const tanks = tankRes.data || []
   const inventory = inventoryRes.data || []
-  const batchIds = batches.map(b => b.id)
-
-  // Only fetch readings for batches belonging to this brewery
-  const readingsRes = batchIds.length > 0 
-    ? await supabase.from('batch_readings').select('gravity, created_at')
-        .in('batch_id', batchIds)
-        .order('created_at', { ascending: true })
-        .limit(14)
-    : { data: [] }
 
   const stats = {
     activeBatches: batches.filter(b => b.status === 'fermenting' || b.status === 'conditioning').length,
@@ -120,11 +114,26 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
   const recentBatches = batches.slice(0, 4)
   const lowStockList = inventory.filter(i => i.current_stock <= (i.reorder_point || 0)).slice(0, 5)
 
-  // Build gravity sparkline from readings
-  const readings = readingsRes.data || []
-  const gravityData = readings
-    .filter(r => r.gravity != null)
-    .map(r => Math.round((r.gravity - 1) * 1000)) // Convert 1.065 → 65
+  // Choose the primary batch for the gravity sparkline: prefer the first
+  // active (fermenting/conditioning) batch, otherwise the most recent one.
+  const primaryBatch =
+    batches.find(b => b.status === 'fermenting' || b.status === 'conditioning') ??
+    batches[0] ??
+    null
+
+  // Fetch the latest 14 readings for that one batch, then reverse into
+  // chronological order so the sparkline reads left-to-right.
+  const readingsRes = primaryBatch
+    ? await supabase
+        .from('batch_readings')
+        .select('gravity, created_at')
+        .eq('batch_id', primaryBatch.id)
+        .order('created_at', { ascending: false })
+        .limit(14)
+    : { data: [] }
+
+  const rawReadings = (readingsRes.data ?? []).slice().reverse()
+  const gravityTrend = buildGravityTrend(rawReadings)
 
   const statusColor = (status: string) => {
     switch (status) {
@@ -203,15 +212,15 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
         {/* Gravity Trend */}
         <div className="md:col-span-2 rounded-2xl border border-border bg-surface p-5 flex flex-col">
           <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">
-            Gravity Trend{recentBatches[0] ? ` — ${recentBatches[0].recipe_name}` : ''}
+            Gravity Trend{primaryBatch ? ` — ${primaryBatch.recipe_name}` : ''}
           </p>
           <div className="flex-1 flex items-end gap-[3px] min-h-[100px]">
-            {gravityData.length >= 2 ? (
-              gravityData.map((val, i) => (
+            {gravityTrend.values.length >= 2 ? (
+              gravityTrend.values.map((val, i) => (
                 <div
                   key={i}
                   className="flex-1 rounded-t-sm bg-primary/60 hover:bg-primary transition-colors cursor-default"
-                  style={{ height: `${Math.max((val / (gravityData[0] || 65)) * 100, 4)}%` }}
+                  style={{ height: `${gravityTrend.heights[i]}%` }}
                   title={`1.${val.toString().padStart(3, '0')}`}
                 />
               ))
@@ -229,8 +238,8 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
           <div className="flex items-center justify-between mt-3">
             <span className="text-[9px] font-mono text-muted-foreground">Day 1</span>
             <span className="text-[9px] font-mono text-primary/70">
-              {gravityData.length >= 2
-                ? `1.${gravityData[gravityData.length - 1]?.toString().padStart(3, '0')} current`
+              {gravityTrend.currentDisplay
+                ? `${gravityTrend.currentDisplay} current`
                 : 'No readings yet'
               }
             </span>

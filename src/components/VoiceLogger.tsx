@@ -146,14 +146,14 @@ export function VoiceLogger({ tankId, className, disabled, variant = 'default' }
       "flex flex-col items-center",
       isSidebar ? "w-full py-2" : className
     )}>
-      <div className="relative group w-full flex justify-center">
+      <div className="relative group w-full flex justify-center overflow-hidden">
         {/* Static Aura */}
-        {(isRecording || isSidebar) && (
+        {isRecording && !isSidebar && (
           <div className={cn(
-            "absolute inset-0 -z-10 blur-lg transition-all duration-1000",
-            (isRecording || (isSidebar && isPremium))
-              ? "bg-primary/20 scale-125 opacity-100" 
-              : "bg-primary/5 scale-100 opacity-0 group-hover:opacity-40",
+            "absolute inset-0 -z-10 blur-2xl transition-all duration-1000",
+            isRecording
+              ? "bg-primary/40 scale-125 opacity-100" 
+              : "bg-primary/10 scale-100 opacity-0 group-hover:opacity-60",
             isSidebar ? "rounded-xl" : "rounded-full"
           )} />
         )}
@@ -170,11 +170,11 @@ export function VoiceLogger({ tankId, className, disabled, variant = 'default' }
           className={cn(
             "transition-all duration-500 transform-gpu overflow-hidden relative",
             isSidebar 
-              ? "w-full h-12 rounded-xl flex items-center justify-center gap-2.5 px-4 border shadow-[0_0_15px_rgba(245,158,11,0.15)]" 
+              ? "w-full h-12 rounded-xl flex items-center justify-center gap-2.5 px-4 border shadow-none" 
               : "h-24 w-24 rounded-full border-2 shadow-2xl",
             isSidebar && (
               isPremium 
-                ? "bg-gradient-to-br from-orange-500 to-orange-700 border-orange-500/30 text-foreground shadow-orange-500/25 hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] active:scale-[0.98]" 
+                ? "bg-gradient-to-br from-orange-500 to-orange-700 border-orange-500/30 text-foreground shadow-none active:scale-[0.98]" 
                 : "bg-secondary border-border text-muted-foreground grayscale opacity-60"
             ),
             !isSidebar && (

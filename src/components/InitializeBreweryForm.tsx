@@ -6,7 +6,11 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { LucideAlertCircle, LucideLoader2 } from 'lucide-react'
 
-export function InitializeBreweryForm() {
+interface InitializeBreweryFormProps {
+  trialTier?: string
+}
+
+export function InitializeBreweryForm({ trialTier }: InitializeBreweryFormProps) {
   const [state, formAction, isPending] = useActionState(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (prevState: any, formData: FormData) => {
@@ -18,6 +22,7 @@ export function InitializeBreweryForm() {
   return (
     <div className="space-y-4">
       <form action={formAction} className="flex flex-col gap-4">
+        {trialTier && <input type="hidden" name="trialTier" value={trialTier} />}
         <Input 
           name="name" 
           placeholder="Official Brewery Name" 

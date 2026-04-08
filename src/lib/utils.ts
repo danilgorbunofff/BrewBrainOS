@@ -79,3 +79,32 @@ export function sanitizeDbError(err: unknown, context?: string): string {
 
   return 'An unexpected error occurred. Please try again.'
 }
+
+/**
+ * Converts any thrown value into a proper JS Error instance.
+ * Supabase's PostgrestError is a plain object with no `.stack`, which causes
+ * React 19's dev-mode fake-call-stack builder to crash. Always throw the
+ * result of this function instead of a raw Supabase error.
+ */
+export function toError(value: unknown): Error {
+  if (value instanceof Error) return value
+
+  if (typeof value === 'string') return new Error(value)
+
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    'message' in value &&
+    typeof (value as Record<string, unknown>).message === 'string'
+  ) {
+    const msg = (value as Record<string, unknown>).message as string
+    const err = new Error(msg)
+    const code = (value as Record<string, unknown>).code
+    if (code !== undefined) {
+      Object.assign(err, { code })
+    }
+    return err
+  }
+
+  return new Error(String(value))
+}

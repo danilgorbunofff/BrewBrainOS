@@ -2,7 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { supplierSchema, purchaseOrderSchema, supplierRatingSchema } from '@/lib/schemas'
-import { sanitizeDbError } from '@/lib/utils'
+import { sanitizeDbError, toError } from '@/lib/utils'
 import { 
   Supplier, 
   PurchaseOrder, 
@@ -65,7 +65,7 @@ export async function getSuppliers(breweryId: string): Promise<ActionResult<Supp
       .eq('brewery_id', breweryId)
       .order('name')
     
-    if (error) throw error
+    if (error) throw toError(error)
     return { success: true, data: data || [] }
   } catch (error) {
     return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
@@ -85,7 +85,7 @@ export async function getSupplier(supplierId: string): Promise<ActionResult<Supp
       .eq('id', supplierId)
       .single()
     
-    if (error) throw error
+    if (error) throw toError(error)
     if (!data) throw new Error('Supplier not found')
     
     return { success: true, data }
@@ -125,7 +125,7 @@ export async function createSupplier(
       .select()
       .single()
     
-    if (error) throw error
+    if (error) throw toError(error)
     if (!data) throw new Error('Failed to create supplier')
     
     return { success: true, data }
@@ -154,7 +154,7 @@ export async function updateSupplier(
       .select()
       .single()
     
-    if (error) throw error
+    if (error) throw toError(error)
     if (!data) throw new Error('Failed to update supplier')
     
     return { success: true, data }
@@ -175,7 +175,7 @@ export async function deleteSupplier(supplierId: string): Promise<ActionResult<v
       .update({ is_active: false, updated_at: new Date().toISOString() })
       .eq('id', supplierId)
     
-    if (error) throw error
+    if (error) throw toError(error)
     
     return { success: true, data: undefined }
   } catch (error) {
@@ -294,7 +294,7 @@ export async function getPurchaseOrders(breweryId: string): Promise<ActionResult
       .eq('brewery_id', breweryId)
       .order('order_date', { ascending: false })
     
-    if (error) throw error
+    if (error) throw toError(error)
     return { success: true, data: data || [] }
   } catch (error) {
     return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
@@ -314,7 +314,7 @@ export async function getPurchaseOrder(orderId: string): Promise<ActionResult<Pu
       .eq('id', orderId)
       .single()
     
-    if (error) throw error
+    if (error) throw toError(error)
     if (!data) throw new Error('Purchase order not found')
     
     return { success: true, data }
@@ -354,7 +354,7 @@ export async function createPurchaseOrder(
       .select()
       .single()
     
-    if (error) throw error
+    if (error) throw toError(error)
     if (!data) throw new Error('Failed to create purchase order')
     
     return { success: true, data }
@@ -383,7 +383,7 @@ export async function updatePurchaseOrder(
       .select()
       .single()
     
-    if (error) throw error
+    if (error) throw toError(error)
     if (!data) throw new Error('Failed to update purchase order')
     
     return { success: true, data }
@@ -425,7 +425,7 @@ export async function deletePurchaseOrder(orderId: string): Promise<ActionResult
       .delete()
       .eq('id', orderId)
     
-    if (error) throw error
+    if (error) throw toError(error)
     
     return { success: true, data: undefined }
   } catch (error) {
@@ -449,7 +449,7 @@ export async function getPurchaseOrderItems(orderId: string): Promise<ActionResu
       .select('*')
       .eq('purchase_order_id', orderId)
     
-    if (error) throw error
+    if (error) throw toError(error)
     return { success: true, data: data || [] }
   } catch (error) {
     return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
@@ -483,7 +483,7 @@ export async function addPurchaseOrderItem(
       .select()
       .single()
     
-    if (error) throw error
+    if (error) throw toError(error)
     if (!data) throw new Error('Failed to add item')
     
     return { success: true, data }
@@ -512,7 +512,7 @@ export async function updatePurchaseOrderItem(
       .select()
       .single()
     
-    if (error) throw error
+    if (error) throw toError(error)
     if (!data) throw new Error('Failed to update item')
     
     return { success: true, data }
@@ -533,7 +533,7 @@ export async function deletePurchaseOrderItem(itemId: string): Promise<ActionRes
       .delete()
       .eq('id', itemId)
     
-    if (error) throw error
+    if (error) throw toError(error)
     
     return { success: true, data: undefined }
   } catch (error) {
@@ -558,7 +558,7 @@ export async function getSupplierRatings(supplierId: string): Promise<ActionResu
       .eq('supplier_id', supplierId)
       .order('rating_date', { ascending: false })
     
-    if (error) throw error
+    if (error) throw toError(error)
     return { success: true, data: data || [] }
   } catch (error) {
     return { success: false, error: sanitizeDbError(error, 'supplier-actions') }
@@ -597,7 +597,7 @@ export async function createSupplierRating(
       .select()
       .single()
     
-    if (error) throw error
+    if (error) throw toError(error)
     if (!data) throw new Error('Failed to create rating')
     
     return { success: true, data }
@@ -626,7 +626,7 @@ export async function updateSupplierRating(
       .select()
       .single()
     
-    if (error) throw error
+    if (error) throw toError(error)
     if (!data) throw new Error('Failed to update rating')
     
     return { success: true, data }
@@ -647,7 +647,7 @@ export async function deleteSupplierRating(ratingId: string): Promise<ActionResu
       .delete()
       .eq('id', ratingId)
     
-    if (error) throw error
+    if (error) throw toError(error)
     
     return { success: true, data: undefined }
   } catch (error) {
@@ -891,7 +891,7 @@ export async function getSupplierTrends(supplierId: string, daysBack: number = 9
       .gte('rating_date', cutoffDateStr)
       .order('rating_date', { ascending: true })
 
-    if (error) throw error
+    if (error) throw toError(error)
 
     // Group by date and calculate daily averages
     const trendMap = new Map<string, { date: string, ratings: SupplierRating[] }>()

@@ -57,8 +57,8 @@ export function BatchPerformanceChart({ data }: { data: BatchPerformanceData[] }
   const colors = {
     grid: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
     text: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-    actual: 'hsl(var(--primary))',
-    target: isDark ? '#4b5563' : '#9ca3af' // gray-600 / gray-400
+    actual: 'var(--primary)',
+    target: 'var(--muted-foreground)'
   }
 
   if (!data || data.length === 0) {

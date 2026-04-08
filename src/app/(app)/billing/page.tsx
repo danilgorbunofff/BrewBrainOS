@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import {
   LucideCreditCard, LucideArrowLeft, LucideCheck, LucideSparkles,
-  LucideZap, LucideShield, LucideGlobe, LucidePackageCheck,
+  LucideZap, LucideShield, LucideGlobe, LucidePackageCheck, LucideAlertCircle,
 } from 'lucide-react'
 import { useSubscription } from '@/components/SubscriptionProvider'
 import { TIERS, WHITE_GLOVE_PRICE, type TierSlug, type BillingInterval } from '@/lib/tier-config'
@@ -51,7 +51,7 @@ const tierFeatures: Record<TierSlug, string[]> = {
 }
 
 export default function BillingPage() {
-  const { tier: currentTier, status, isActive, tierName, whiteGlovePaid, currentPeriodEnd } = useSubscription()
+  const { tier: currentTier, status, isActive, isTrial, trialExpired, tierName, whiteGlovePaid, currentPeriodEnd } = useSubscription()
   const [loading, setLoading] = useState<TierSlug | null>(null)
   const [whiteGlove, setWhiteGlove] = useState(false)
   const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly')
@@ -99,7 +99,7 @@ export default function BillingPage() {
         </div>
 
         {/* Current Plan Banner */}
-        {isActive && (
+        {isActive && !isTrial && (
           <div className="rounded-2xl border border-primary/20 bg-primary/[0.03] p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
@@ -121,6 +121,44 @@ export default function BillingPage() {
                       year: 'numeric',
                     })}</>
                   )}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Trial Banner */}
+        {isTrial && !trialExpired && currentPeriodEnd && (
+          <div className="rounded-2xl border border-blue-500/20 bg-blue-500/[0.03] p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                <LucideZap className="h-6 w-6 text-blue-400" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-foreground">
+                  You&apos;re on a <span className="text-blue-400 font-black">14-day trial</span> of {tierName}
+                </p>
+                <p className="text-xs text-muted-foreground font-medium mt-0.5">
+                  Trial ends {new Date(currentPeriodEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} — <span className="font-bold text-blue-400">{Math.max(0, Math.ceil((new Date(currentPeriodEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))} days remaining</span>. Subscribe below to keep your features.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Trial Expired Banner */}
+        {trialExpired && (
+          <div className="rounded-2xl border border-red-500/20 bg-red-500/[0.03] p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                <LucideAlertCircle className="h-6 w-6 text-red-400" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-foreground">
+                  Your trial has <span className="text-red-400 font-black">expired</span>
+                </p>
+                <p className="text-xs text-muted-foreground font-medium mt-0.5">
+                  You&apos;re now on the Free tier with limited features. Subscribe below to unlock everything you had during your trial.
                 </p>
               </div>
             </div>
@@ -284,7 +322,7 @@ export default function BillingPage() {
               },
               {
                 q: 'Do you offer a free trial?',
-                a: 'All new accounts start on the Free tier with full access to core features, limited only in scale.',
+                a: 'Yes! New accounts get a 14-day free trial of a paid plan — no credit card required. After the trial, you can subscribe or continue on the Free tier.',
               },
             ].map((faq) => (
               <div key={faq.q} className="p-4 rounded-xl bg-surface border border-border">

@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
  * Subscription status card for the Settings page.
  */
 export function SubscriptionCard() {
-  const { tier, tierName, status, isActive, currentPeriodEnd, whiteGlovePaid } = useSubscription()
+  const { tier, tierName, status, isActive, isTrial, trialExpired, currentPeriodEnd, whiteGlovePaid } = useSubscription()
 
   const statusBadge = {
     active: { label: 'Active', color: 'text-green-400 bg-green-500/10 border-green-500/20' },
@@ -45,7 +45,7 @@ export function SubscriptionCard() {
           </div>
 
           {/* Period info */}
-          {isActive && currentPeriodEnd && (
+          {isActive && !isTrial && currentPeriodEnd && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <LucideCheck className="h-3.5 w-3.5 text-green-400" />
               <span className="font-medium">
@@ -55,6 +55,27 @@ export function SubscriptionCard() {
                   year: 'numeric',
                 })}
               </span>
+            </div>
+          )}
+
+          {/* Trial info */}
+          {isTrial && !trialExpired && currentPeriodEnd && (
+            <div className="flex items-center gap-2 text-xs text-blue-400">
+              <LucideCheck className="h-3.5 w-3.5" />
+              <span className="font-bold">
+                Trial ends {new Date(currentPeriodEnd).toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })} — {Math.max(0, Math.ceil((new Date(currentPeriodEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))} days remaining
+              </span>
+            </div>
+          )}
+
+          {trialExpired && (
+            <div className="flex items-center gap-2 text-xs text-red-400">
+              <LucideAlertCircle className="h-3.5 w-3.5" />
+              <span className="font-bold">Your trial has expired. Subscribe to keep your features.</span>
             </div>
           )}
 

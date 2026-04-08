@@ -84,4 +84,18 @@ describe('PricingCards', () => {
     render(<PricingCards tiers={TIERS} />)
     expect(screen.queryByText('Free')).not.toBeInTheDocument()
   })
+
+  it('links trial buttons to /login?trial=<tier>', () => {
+    render(<PricingCards tiers={TIERS} />)
+    const trialLinks = screen.getAllByRole('link', { name: /start free trial/i })
+    // nano and production should have trial links
+    expect(trialLinks[0]).toHaveAttribute('href', '/login?trial=nano')
+    expect(trialLinks[1]).toHaveAttribute('href', '/login?trial=production')
+  })
+
+  it('links multi_site to /login?trial=multi_site with contact sales label', () => {
+    render(<PricingCards tiers={TIERS} />)
+    const contactLink = screen.getByRole('link', { name: /contact sales/i })
+    expect(contactLink).toHaveAttribute('href', '/login?trial=multi_site')
+  })
 })

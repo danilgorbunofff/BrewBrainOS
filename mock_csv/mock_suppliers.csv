@@ -1,0 +1,5 @@
+name,country,supplier_type,contact_person,email,phone,specialty
+YCH Hops,US,Distributor,Jane Doe,jane@ychhops.com,555-0101,Hops
+Briess Malt,US,Direct,Bob Smith,bob@briess.com,555-0102,Grain
+Fermentis,FR,Direct,Pierre Martin,pierre@fermentis.com,,Yeast
+Ball Corporation,US,Direct,,,555-0104,Packaging

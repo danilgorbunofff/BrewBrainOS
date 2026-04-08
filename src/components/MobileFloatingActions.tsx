@@ -219,7 +219,7 @@ export function MobileFloatingActions() {
 
         <button
           onClick={openVoiceModal}
-          className="h-12 w-12 rounded-full bg-primary/90 backdrop-blur-xl border border-primary/30 shadow-[0_0_20px_rgba(245,158,11,0.2)] flex items-center justify-center shadow-lg active:scale-95 transition-all"
+          className="h-12 w-12 rounded-full bg-primary/90 backdrop-blur-xl border border-primary/30 shadow-[0_0_36px_rgba(245,158,11,0.5)] flex items-center justify-center active:scale-95 transition-all"
           aria-label="Voice Command"
         >
           <LucideMic className="h-5 w-5 text-black" />

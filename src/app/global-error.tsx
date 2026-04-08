@@ -49,7 +49,8 @@ export default function GlobalError({
                 A critical application error occurred. We need to clear your layout state to recover.
                 <br /><br />
                 <span className="font-mono text-[10px] opacity-50 bg-black/50 p-2 rounded block text-left overflow-hidden text-ellipsis whitespace-nowrap">
-                  {error.message || 'Unknown deep layout error'}
+                  {(error instanceof Error ? error.message : (error as { message?: string } | null)?.message) ||
+                    'Unknown deep layout error'}
                 </span>
               </p>
 

@@ -11,10 +11,11 @@ interface CSVUploaderProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onDataParsed: (data: any[]) => Promise<void>
   requiredHeaders: string[]
-  expectedType: 'tanks' | 'inventory'
+  optionalHeaders?: string[]
+  expectedType: 'tanks' | 'inventory' | 'batches' | 'suppliers' | 'recipes'
 }
 
-export function CSVUploader({ onDataParsed, requiredHeaders, expectedType }: CSVUploaderProps) {
+export function CSVUploader({ onDataParsed, requiredHeaders, optionalHeaders, expectedType }: CSVUploaderProps) {
   const [isHovering, setIsHovering] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -96,8 +97,13 @@ export function CSVUploader({ onDataParsed, requiredHeaders, expectedType }: CSV
               CSV file configured for {expectedType}
             </p>
             <p className="text-[10px] text-muted-foreground font-mono mt-2">
-              Expected cols: {requiredHeaders.join(', ')}
+              Required: {requiredHeaders.join(', ')}
             </p>
+            {optionalHeaders && optionalHeaders.length > 0 && (
+              <p className="text-[10px] text-muted-foreground/60 font-mono mt-0.5">
+                Optional: {optionalHeaders.join(', ')}
+              </p>
+            )}
           </div>
           <input 
             type="file" 

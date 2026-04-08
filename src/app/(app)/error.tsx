@@ -31,7 +31,8 @@ export default function AppError({
           
           <h1 className="text-2xl font-black text-foreground mb-2 tracking-tight">Something went wrong!</h1>
           <p className="text-sm text-muted-foreground mb-8 max-w-[280px]">
-            {error.message || 'An unexpected error occurred while loading your brewery data.'}
+            {(error instanceof Error ? error.message : (error as { message?: string } | null)?.message) ||
+              'An unexpected error occurred while loading your brewery data.'}
           </p>
 
           <button

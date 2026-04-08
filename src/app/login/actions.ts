@@ -6,6 +6,8 @@ import { redirect } from 'next/navigation'
 export async function login(formData: FormData) {
   const supabase = await createClient()
 
+  const trial = formData.get('trial') as string | null
+
   // type-casting here for simplified example
   const data = {
     email: formData.get('email') as string,
@@ -15,14 +17,18 @@ export async function login(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`)
+    const trialParam = trial ? `&trial=${encodeURIComponent(trial)}` : ''
+    redirect(`/login?error=${encodeURIComponent(error.message)}${trialParam}`)
   }
 
-  redirect('/dashboard')
+  const trialQuery = trial ? `?trial=${encodeURIComponent(trial)}` : ''
+  redirect(`/dashboard${trialQuery}`)
 }
 
 export async function signup(formData: FormData) {
   const supabase = await createClient()
+
+  const trial = formData.get('trial') as string | null
 
   // type-casting here for simplified example
   const data = {
@@ -33,10 +39,12 @@ export async function signup(formData: FormData) {
   const { error } = await supabase.auth.signUp(data)
 
   if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`)
+    const trialParam = trial ? `&trial=${encodeURIComponent(trial)}` : ''
+    redirect(`/login?error=${encodeURIComponent(error.message)}${trialParam}`)
   }
 
-  redirect('/dashboard')
+  const trialQuery = trial ? `?trial=${encodeURIComponent(trial)}` : ''
+  redirect(`/dashboard${trialQuery}`)
 }
 
 export async function forgotPassword(formData: FormData) {

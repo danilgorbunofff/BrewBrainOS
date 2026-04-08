@@ -7,7 +7,7 @@ import {
   LucideLayoutDashboard, LucideWaves, LucideClipboardList,
   LucidePackageSearch, LucideQrCode, LucideSettings,
   LucideX, LucideSearch, LucideFileBarChart, LucideCreditCard,
-  LucideTrendingUp
+  LucideTrendingUp, LucideHelpCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
@@ -29,6 +29,7 @@ const navItems = [
 ]
 
 const bottomItems = [
+  { label: 'Help & Docs', href: '/faq', icon: LucideHelpCircle },
   { label: 'Settings', href: '/settings', icon: LucideSettings },
 ]
 

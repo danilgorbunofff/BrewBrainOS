@@ -6,7 +6,7 @@ import { Command } from 'cmdk'
 import {
   LucideLayoutDashboard, LucideWaves, LucideClipboardList,
   LucidePackageSearch, LucideQrCode, LucideSettings, LucideSearch,
-  LucideFileBarChart
+  LucideFileBarChart, LucideHelpCircle, LucideBookOpen
 } from 'lucide-react'
 
 const pages = [
@@ -17,6 +17,8 @@ const pages = [
   { name: 'QR Scanner', href: '/scan', icon: LucideQrCode, keywords: 'scan qr code camera' },
   { name: 'TTB Reports', href: '/reports', icon: LucideFileBarChart, keywords: 'ttb compliance report production bbl fsma sanitation' },
   { name: 'Settings', href: '/settings', icon: LucideSettings, keywords: 'profile account preferences' },
+  { name: 'FAQ', href: '/faq', icon: LucideHelpCircle, keywords: 'help questions faq support' },
+  { name: 'Documentation', href: '/faq?tab=docs', icon: LucideBookOpen, keywords: 'documentation guides articles docs reference' },
 ]
 
 export function CommandPalette() {

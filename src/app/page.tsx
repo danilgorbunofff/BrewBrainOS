@@ -35,7 +35,7 @@ export default function LandingPage() {
                 Sign In
               </Button>
             </Link>
-            <Link href="/login">
+            <Link href="/login?trial=production">
               <Button className="bg-orange-600 hover:bg-orange-700 font-bold shadow-[0_0_20px_rgba(234,88,12,0.2)]">
                 Start Free Trial
               </Button>
@@ -73,7 +73,7 @@ export default function LandingPage() {
 
           {/* CTA */}
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-16 duration-1000">
-            <Link href="/login">
+            <Link href="/login?trial=production">
               <Button className="h-14 px-10 text-lg font-black bg-orange-600 hover:bg-orange-500 hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(234,88,12,0.3)] hover:shadow-[0_0_60px_rgba(234,88,12,0.4)]">
                 Start Free — No Credit Card
                 <LucideArrowRight className="ml-2 h-5 w-5" />
@@ -513,7 +513,7 @@ export default function LandingPage() {
             <p className="text-muted-foreground font-medium text-lg max-w-xl mx-auto mb-10">
               Join the breweries that stopped losing data on the floor and started running production like a machine.
             </p>
-            <Link href="/login">
+            <Link href="/login?trial=production">
               <Button className="h-16 px-12 text-xl font-black bg-orange-600 hover:bg-orange-500 hover:scale-105 transition-all duration-300 shadow-[0_0_50px_rgba(234,88,12,0.3)]">
                 Launch My Brewery Brain
                 <LucideArrowRight className="ml-3 h-6 w-6" />

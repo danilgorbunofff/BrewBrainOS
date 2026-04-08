@@ -59,7 +59,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
                   required
                 />
               </div>
-              <div className="grid gap-2">
+              <div className="grid gap-2 mb-4">
                 <Label htmlFor="password" title='Password' className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Password</Label>
                 <Input
                   id="password"

@@ -27,9 +27,9 @@ vi.mock('@/lib/stripe', () => ({
     },
   },
   priceIdToTier: (priceId: string) => {
-    if (priceId === 'price_production') return 'production'
-    if (priceId === 'price_nano') return 'nano'
-    if (priceId === 'price_multi_site') return 'multi_site'
+    if (priceId === 'price_production' || priceId === 'price_production_annual') return 'production'
+    if (priceId === 'price_nano' || priceId === 'price_nano_annual') return 'nano'
+    if (priceId === 'price_multi_site' || priceId === 'price_multi_site_annual') return 'multi_site'
     return 'free'
   },
 }))

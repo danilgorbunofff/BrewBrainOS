@@ -1,5 +1,6 @@
 'use client'
 
+import { useHasMounted } from '@/lib/hooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Bar,
@@ -34,10 +35,10 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
       <div className="bg-popover text-popover-foreground border border-border p-3 rounded-lg shadow-xl text-xs space-y-1">
         <p className="font-bold mb-2">{label}</p>
         <p className="text-primary font-bold">
-          Actual OG: {payload[0].value ? payload[0].value.toFixed(3) : 'N/A'}
+          Actual OG: {payload[0]?.value ? payload[0].value.toFixed(3) : 'N/A'}
         </p>
         <p className="text-muted-foreground font-bold">
-          Target OG: {payload[1].value ? payload[1].value.toFixed(3) : 'N/A'}
+          Target OG: {payload[1]?.value ? payload[1].value.toFixed(3) : 'N/A'}
         </p>
         <p className="text-foreground mt-2 border-t border-border pt-1">
           Efficiency: {payload[0].payload.efficiency}%
@@ -50,6 +51,7 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 
 export function BatchPerformanceChart({ data }: { data: BatchPerformanceData[] }) {
   const { resolvedTheme } = useTheme()
+  const mounted = useHasMounted()
   const isDark = resolvedTheme === 'dark'
 
   const colors = {
@@ -61,8 +63,19 @@ export function BatchPerformanceChart({ data }: { data: BatchPerformanceData[] }
 
   if (!data || data.length === 0) {
     return (
-      <Card className="h-[400px] flex items-center justify-center">
-        <p className="text-muted-foreground font-medium">No batch performance data available</p>
+      <Card className="flex h-full min-w-0 flex-col bg-surface" data-testid="batch-performance-card">
+        <CardHeader>
+          <CardTitle>Mash Efficiency Variance</CardTitle>
+          <CardDescription>Target vs Actual Original Gravity across recent batches</CardDescription>
+        </CardHeader>
+        <CardContent
+          className="flex flex-1 min-h-0 min-w-0 items-center justify-center"
+          data-testid="batch-performance-card-content"
+        >
+          <div className="flex h-full min-h-[300px] w-full items-center justify-center text-muted-foreground font-medium">
+            No batch performance data available
+          </div>
+        </CardContent>
       </Card>
     )
   }
@@ -79,49 +92,55 @@ export function BatchPerformanceChart({ data }: { data: BatchPerformanceData[] }
   ) + 0.010
 
   return (
-    <Card className="flex flex-col h-full bg-surface">
+    <Card className="flex h-full min-w-0 flex-col bg-surface" data-testid="batch-performance-card">
       <CardHeader>
         <CardTitle>Mash Efficiency Variance</CardTitle>
         <CardDescription>Target vs Actual Original Gravity across recent batches</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 min-h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={colors.grid} />
-            <XAxis 
-              dataKey="name" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fill: colors.text, fontSize: 10, fontWeight: 700 }}
-              dy={10}
-              tickFormatter={(val) => val.length > 12 ? val.substring(0, 12) + '...' : val}
-            />
-            <YAxis 
-              domain={[Math.max(1.000, minOG), maxOG]}
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fill: colors.text, fontSize: 10, fontWeight: 700 }}
-              tickFormatter={(val) => val.toFixed(3)}
-            />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: isDark ? '#ffffff05' : '#00000005' }} />
-            <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-            
-            <Bar 
-              dataKey="actualOG" 
-              name="Actual OG" 
-              fill={colors.actual} 
-              radius={[4, 4, 0, 0]} 
-              barSize={20}
-            />
-            <Bar 
-              dataKey="targetOG" 
-              name="Target OG" 
-              fill={colors.target} 
-              radius={[4, 4, 0, 0]} 
-              barSize={20}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+      <CardContent className="flex flex-1 min-h-0 min-w-0" data-testid="batch-performance-card-content">
+        {mounted ? (
+          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+            <BarChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={colors.grid} />
+              <XAxis 
+                dataKey="name" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: colors.text, fontSize: 10, fontWeight: 700 }}
+                dy={10}
+                tickFormatter={(val) => val.length > 12 ? val.substring(0, 12) + '...' : val}
+              />
+              <YAxis 
+                domain={[Math.max(1.000, minOG), maxOG]}
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: colors.text, fontSize: 10, fontWeight: 700 }}
+                tickFormatter={(val) => val.toFixed(3)}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: isDark ? '#ffffff05' : '#00000005' }} />
+              <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
+              <Bar 
+                dataKey="actualOG" 
+                name="Actual OG" 
+                fill={colors.actual} 
+                radius={[4, 4, 0, 0]} 
+                barSize={20}
+              />
+              <Bar 
+                dataKey="targetOG" 
+                name="Target OG" 
+                fill={colors.target} 
+                radius={[4, 4, 0, 0]} 
+                barSize={20}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div
+            className="flex h-full min-h-[300px] w-full items-center justify-center"
+            data-testid="batch-performance-chart-fallback"
+          />
+        )}
       </CardContent>
     </Card>
   )

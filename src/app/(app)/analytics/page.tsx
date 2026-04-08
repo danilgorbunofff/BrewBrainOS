@@ -84,11 +84,11 @@ export default async function AnalyticsPage() {
         </div>
 
         {/* Charts Grid */}
-        <div className="grid lg:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-12 duration-1000">
-          <div className="h-[450px]">
+        <div className="grid lg:grid-cols-2 lg:auto-rows-fr items-stretch gap-4 animate-in fade-in slide-in-from-bottom-12 duration-1000">
+          <div className="min-w-0 h-full">
             <InventoryTrendChart data={inventoryTrends} />
           </div>
-          <div className="h-[450px]">
+          <div className="min-w-0 h-full">
             <BatchPerformanceChart data={batchPerformance} />
           </div>
         </div>

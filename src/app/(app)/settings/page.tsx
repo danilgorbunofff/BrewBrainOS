@@ -146,7 +146,7 @@ export default async function SettingsPage() {
               </div>
 
               <form action="/api/auth/signout" method="post">
-                <Button variant="outline" className="w-full border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300 gap-2 font-bold">
+                <Button type="submit" variant="outline" className="w-full gap-2 border-red-500/20 font-bold text-red-400 hover:bg-red-500/10 hover:text-red-300">
                   <LucideLogOut className="h-4 w-4" />
                   Sign Out
                 </Button>

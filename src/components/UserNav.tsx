@@ -36,7 +36,7 @@ export async function UserNav() {
 
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <button className="relative h-10 w-10 rounded-full ring-2 ring-primary/20 hover:ring-primary transition-all duration-300 focus:outline-none">
+          <button aria-label="Open user menu" className="relative h-10 w-10 rounded-full ring-2 ring-primary/20 hover:ring-primary transition-all duration-300 focus:outline-none">
             <Avatar className="h-10 w-10 border border-border">
               <AvatarImage src="" alt={email} />
               <AvatarFallback className="bg-card text-primary font-bold">{initials}</AvatarFallback>

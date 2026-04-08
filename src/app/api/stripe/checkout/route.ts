@@ -8,7 +8,7 @@ import { createClient } from '@/utils/supabase/server'
 import { stripe, getOrCreateStripeCustomer } from '@/lib/stripe'
 import { createStripeIdempotencyKey } from '@/lib/stripeIdempotency'
 import { getStripePriceId, getWhiteGlovePriceId } from '@/lib/tier-config'
-import type { TierSlug } from '@/lib/tier-config'
+import type { TierSlug, BillingInterval } from '@/lib/tier-config'
 import { getActiveBrewery } from '@/lib/active-brewery'
 
 export async function POST(request: NextRequest) {
@@ -28,9 +28,10 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const tier = body.tier as TierSlug
+    const billingInterval: BillingInterval = body.billingInterval === 'annual' ? 'annual' : 'monthly'
     const includeWhiteGlove = body.includeWhiteGlove === true
 
-    const priceId = getStripePriceId(tier)
+    const priceId = getStripePriceId(tier, billingInterval)
     if (!priceId) {
       return Response.json({ error: 'Invalid tier' }, { status: 400 })
     }
@@ -65,12 +66,14 @@ export async function POST(request: NextRequest) {
       metadata: {
         brewery_id: brewery.id,
         tier,
+        billing_interval: billingInterval,
         white_glove: includeWhiteGlove ? 'true' : 'false',
       },
       subscription_data: {
         metadata: {
           brewery_id: brewery.id,
           tier,
+          billing_interval: billingInterval,
         },
       },
     }, {
@@ -78,6 +81,7 @@ export async function POST(request: NextRequest) {
         'checkout-session',
         brewery.id,
         tier,
+        billingInterval,
         includeWhiteGlove ? 'white-glove' : 'standard'
       ),
     })

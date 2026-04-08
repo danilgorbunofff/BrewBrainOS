@@ -6,6 +6,8 @@
 import { TierSlug } from '@/types/database'
 export type { TierSlug }
 
+export type BillingInterval = 'monthly' | 'annual'
+
 export interface TierLimits {
   maxTanks: number        // -1 = unlimited
   maxBatchesPerMonth: number // -1 = unlimited
@@ -19,6 +21,7 @@ export interface TierConfig {
   name: string
   tagline: string
   price: number           // monthly USD, 0 = free
+  annualPrice: number     // annual USD, 0 = free
   limits: TierLimits
   popular?: boolean
 }
@@ -29,6 +32,7 @@ export const TIERS: TierConfig[] = [
     name: 'Free',
     tagline: 'Explore BrewBrain with basic limits',
     price: 0,
+    annualPrice: 0,
     limits: {
       maxTanks: 2,
       maxBatchesPerMonth: 3,
@@ -42,6 +46,7 @@ export const TIERS: TierConfig[] = [
     name: 'Nanobrewery',
     tagline: 'For small-batch and homebrew-scale operations',
     price: 149,
+    annualPrice: 1428,
     limits: {
       maxTanks: 5,
       maxBatchesPerMonth: 10,
@@ -55,6 +60,7 @@ export const TIERS: TierConfig[] = [
     name: 'Production',
     tagline: 'AI voice logs, TTB reports & unlimited tanks',
     price: 299,
+    annualPrice: 2868,
     popular: true,
     limits: {
       maxTanks: -1,
@@ -69,6 +75,7 @@ export const TIERS: TierConfig[] = [
     name: 'Multi-Site',
     tagline: 'Regional hubs, complex supply chain, everything',
     price: 599,
+    annualPrice: 5748,
     limits: {
       maxTanks: -1,
       maxBatchesPerMonth: -1,
@@ -104,7 +111,19 @@ export function canUseTierFeature(
 }
 
 /** Stripe price IDs — loaded from env at runtime */
-export function getStripePriceId(tier: TierSlug): string | null {
+export function getStripePriceId(tier: TierSlug, interval: BillingInterval = 'monthly'): string | null {
+  if (interval === 'annual') {
+    switch (tier) {
+      case 'nano':
+        return process.env.STRIPE_PRICE_NANO_ANNUAL || null
+      case 'production':
+        return process.env.STRIPE_PRICE_PRODUCTION_ANNUAL || null
+      case 'multi_site':
+        return process.env.STRIPE_PRICE_MULTI_SITE_ANNUAL || null
+      default:
+        return null
+    }
+  }
   switch (tier) {
     case 'nano':
       return process.env.STRIPE_PRICE_NANO || null
@@ -115,6 +134,11 @@ export function getStripePriceId(tier: TierSlug): string | null {
     default:
       return null
   }
+}
+
+/** Get the display price for a tier and interval */
+export function getTierPrice(tier: TierConfig, interval: BillingInterval): number {
+  return interval === 'annual' ? tier.annualPrice : tier.price
 }
 
 export function getWhiteGlovePriceId(): string | null {

@@ -1,7 +1,8 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
 interface ScrollRevealProps {
   children: ReactNode
@@ -18,11 +19,21 @@ export function ScrollReveal({
   distance = 40,
   duration = 0.8
 }: ScrollRevealProps) {
+  const [hasMounted, setHasMounted] = useState(false)
+
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+
   const directions = {
     up: { y: distance },
     down: { y: -distance },
     left: { x: distance },
     right: { x: -distance }
+  }
+
+  if (!hasMounted) {
+    return <div>{children}</div>
   }
 
   return (

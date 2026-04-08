@@ -90,8 +90,8 @@ export async function getSubscription(breweryId: string) {
  * Map a Stripe price ID back to our tier slug.
  */
 export function priceIdToTier(priceId: string): TierSlug {
-  if (priceId === process.env.STRIPE_PRICE_NANO) return 'nano'
-  if (priceId === process.env.STRIPE_PRICE_PRODUCTION) return 'production'
-  if (priceId === process.env.STRIPE_PRICE_MULTI_SITE) return 'multi_site'
+  if (priceId === process.env.STRIPE_PRICE_NANO || priceId === process.env.STRIPE_PRICE_NANO_ANNUAL) return 'nano'
+  if (priceId === process.env.STRIPE_PRICE_PRODUCTION || priceId === process.env.STRIPE_PRICE_PRODUCTION_ANNUAL) return 'production'
+  if (priceId === process.env.STRIPE_PRICE_MULTI_SITE || priceId === process.env.STRIPE_PRICE_MULTI_SITE_ANNUAL) return 'multi_site'
   return 'free'
 }

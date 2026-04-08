@@ -7,7 +7,8 @@ import {
   LucideZap, LucideShield, LucideGlobe, LucidePackageCheck,
 } from 'lucide-react'
 import { useSubscription } from '@/components/SubscriptionProvider'
-import { TIERS, WHITE_GLOVE_PRICE, type TierSlug } from '@/lib/tier-config'
+import { TIERS, WHITE_GLOVE_PRICE, type TierSlug, type BillingInterval } from '@/lib/tier-config'
+import { PricingToggle } from '@/components/pricing/PricingToggle'
 import { cn } from '@/lib/utils'
 
 const tierIcons: Record<TierSlug, typeof LucideZap> = {
@@ -53,6 +54,7 @@ export default function BillingPage() {
   const { tier: currentTier, status, isActive, tierName, whiteGlovePaid, currentPeriodEnd } = useSubscription()
   const [loading, setLoading] = useState<TierSlug | null>(null)
   const [whiteGlove, setWhiteGlove] = useState(false)
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>('monthly')
 
   async function handleSubscribe(tier: TierSlug) {
     setLoading(tier)
@@ -60,7 +62,7 @@ export default function BillingPage() {
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier, includeWhiteGlove: whiteGlove }),
+        body: JSON.stringify({ tier, billingInterval, includeWhiteGlove: whiteGlove }),
       })
       const data = await res.json()
       if (data.url) {
@@ -125,6 +127,11 @@ export default function BillingPage() {
           </div>
         )}
 
+        {/* Billing Interval Toggle */}
+        <div className="flex justify-center">
+          <PricingToggle interval={billingInterval} onChange={setBillingInterval} />
+        </div>
+
         {/* Pricing Grid */}
         <div className="grid md:grid-cols-3 gap-5">
           {paidTiers.map((plan) => {
@@ -170,9 +177,14 @@ export default function BillingPage() {
 
                   {/* Price */}
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-black tracking-tighter text-foreground">${plan.price}</span>
+                    <span className="text-4xl font-black tracking-tighter text-foreground">
+                      ${billingInterval === 'annual' ? Math.round(plan.annualPrice / 12) : plan.price}
+                    </span>
                     <span className="text-sm font-bold text-muted-foreground">/mo</span>
                   </div>
+                  {billingInterval === 'annual' && (
+                    <p className="text-xs text-muted-foreground font-medium">${plan.annualPrice} billed annually</p>
+                  )}
 
                   {/* Features */}
                   <ul className="space-y-2.5 flex-grow">

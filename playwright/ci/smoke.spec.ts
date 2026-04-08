@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, type BrowserContext, test } from '@playwright/test'
 
 import {
   callOfflineSyncFixture,
@@ -7,6 +7,17 @@ import {
   openOfflineSyncFixture,
   setBrowserOfflineState,
 } from '../helpers'
+
+async function expectSignedOutCookies(context: BrowserContext) {
+  await expect.poll(async () => {
+    const cookies = await context.cookies()
+
+    return cookies
+      .filter((cookie) => cookie.name === 'brewbrain_active_brewery' || cookie.name.startsWith('sb-'))
+      .map((cookie) => cookie.name)
+      .sort()
+  }).toEqual([])
+}
 
 test.describe('ci smoke', () => {
   test('logs in with the dedicated test account', async ({ page }) => {
@@ -38,6 +49,34 @@ test.describe('ci smoke', () => {
 
     await expect(page.getByText(`Permanently deleted ${batchName}`)).toBeVisible()
     await expect(page.getByRole('link', { name: batchName })).toHaveCount(0)
+  })
+
+  test('signs out from the settings page and clears auth cookies', async ({ page }) => {
+    await loginAsTestUser(page)
+    await page.goto('/settings')
+
+    await page.getByRole('button', { name: /^sign out$/i }).click()
+
+    await expect(page).toHaveURL(/\/login/)
+    await expect(page.getByRole('button', { name: /log in/i })).toBeVisible()
+    await expectSignedOutCookies(page.context())
+
+    await page.goto('/dashboard')
+    await expect(page).toHaveURL(/\/login/)
+  })
+
+  test('signs out from the user menu and clears auth cookies', async ({ page }) => {
+    await loginAsTestUser(page)
+
+    await page.getByRole('button', { name: /open user menu/i }).click()
+    await page.getByRole('button', { name: /log out session/i }).click()
+
+    await expect(page).toHaveURL(/\/login/)
+    await expect(page.getByRole('button', { name: /log in/i })).toBeVisible()
+    await expectSignedOutCookies(page.context())
+
+    await page.goto('/dashboard')
+    await expect(page).toHaveURL(/\/login/)
   })
 
   test('flushes queued offline work when connectivity returns', async ({ browser, baseURL }) => {

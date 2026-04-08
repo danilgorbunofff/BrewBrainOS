@@ -8,6 +8,8 @@ import {
 } from 'lucide-react'
 import { ScrollReveal } from '@/components/ScrollReveal'
 import { CookieConsent } from '@/components/CookieConsent'
+import { PricingCards } from '@/components/pricing/PricingCards'
+import { TIERS } from '@/lib/tier-config'
 
 export default function LandingPage() {
   return (
@@ -495,74 +497,7 @@ export default function LandingPage() {
             </div>
           </ScrollReveal>
 
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {/* Nano */}
-            <ScrollReveal delay={0.1}>
-              <div className="rounded-2xl border border-border bg-white/[0.01] p-8 flex flex-col h-full">
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-2">Nanobrewery</p>
-                <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-5xl font-black tracking-tighter">$149</span>
-                  <span className="text-muted-foreground font-bold">/mo</span>
-                </div>
-                <p className="text-sm text-muted-foreground font-medium mb-8">Up to 5 tanks. Perfect for taproom brewing.</p>
-                <ul className="space-y-3 flex-1 mb-8">
-                  {['Up to 5 tanks', 'Inventory tracking', 'QR tank scanning', 'Basic compliance logs', 'Offline-first PWA'].map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
-                      <LucideCheck className="h-4 w-4 text-green-500 shrink-0" /> {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/login" className="block">
-                  <Button variant="outline" className="w-full border-border font-bold">Start Free Trial</Button>
-                </Link>
-              </div>
-            </ScrollReveal>
-
-            {/* Production — Highlighted */}
-            <ScrollReveal delay={0.2}>
-              <div className="rounded-2xl border border-orange-600/30 bg-orange-600/[0.03] p-8 flex flex-col relative shadow-[0_0_60px_rgba(234,88,12,0.08)] h-full">
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-widest bg-orange-600 text-foreground px-4 py-1.5 rounded-full">Most Popular</span>
-                <p className="text-xs font-black uppercase tracking-widest text-orange-400 mb-2">Production</p>
-                <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-5xl font-black tracking-tighter text-foreground">$299</span>
-                  <span className="text-muted-foreground font-bold">/mo</span>
-                </div>
-                <p className="text-sm text-muted-foreground font-medium mb-8">Unlimited tanks. Full AI and compliance suite.</p>
-                <ul className="space-y-3 flex-1 mb-8">
-                  {['Unlimited tanks & batches', 'AI voice logging', 'TTB & FSMA report exports', 'Real-time analytics', 'Priority support', 'White-glove setup included'].map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-foreground font-medium">
-                      <LucideCheck className="h-4 w-4 text-orange-500 shrink-0" /> {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/login" className="block">
-                  <Button className="w-full bg-orange-600 hover:bg-orange-500 font-bold shadow-[0_0_20px_rgba(234,88,12,0.2)]">Start Free Trial</Button>
-                </Link>
-              </div>
-            </ScrollReveal>
-
-            {/* Multi-Site */}
-            <ScrollReveal delay={0.3}>
-              <div className="rounded-2xl border border-border bg-white/[0.01] p-8 flex flex-col h-full">
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-2">Multi-Site</p>
-                <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-5xl font-black tracking-tighter">$599</span>
-                  <span className="text-muted-foreground font-bold">/mo</span>
-                </div>
-                <p className="text-sm text-muted-foreground font-medium mb-8">Multiple facilities. Regional oversight.</p>
-                <ul className="space-y-3 flex-1 mb-8">
-                  {['Everything in Production', 'Multi-brewery management', 'Team roles & permissions', 'Supply chain dashboard', 'Dedicated account manager', 'Custom integrations'].map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
-                      <LucideCheck className="h-4 w-4 text-green-500 shrink-0" /> {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/login" className="block">
-                  <Button variant="outline" className="w-full border-border font-bold">Contact Sales</Button>
-                </Link>
-              </div>
-            </ScrollReveal>
-          </div>
+          <PricingCards tiers={TIERS} />
         </div>
       </section>
 

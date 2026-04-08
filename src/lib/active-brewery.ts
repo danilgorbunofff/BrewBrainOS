@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
 
-const ACTIVE_BREWERY_COOKIE = 'brewbrain_active_brewery'
+export const ACTIVE_BREWERY_COOKIE = 'brewbrain_active_brewery'
 
 export interface BrewerySummary {
   id: string

@@ -25,9 +25,11 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 Use `.env.example` as the canonical env map for local development, CI, and deployment.
 
 - Copy `.env.example` to `.env.local` for local work and fill in only the values you actually need.
+- The `npm run verify:env*` scripts load the same `.env.local` and `.env.*` files that Next.js reads, so they work before `npm run build` as long as your local env file is populated.
 - `NEXT_PUBLIC_*` values are intentionally browser-visible; keep server-only secrets such as `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CRON_SECRET`, and `VAPID_PRIVATE_KEY` in GitHub Actions secrets or your deployment secret manager.
 - `npm run verify:env` checks the minimum build prerequisites, `npm run verify:env:server` checks the critical server-only runtime secrets, `npm run verify:env:smoke` checks local smoke-test credentials, and `npm run verify:env:migrations` checks ordered migration prerequisites.
 - CI build placeholders live in `.github/workflows/ci.yml`; replace them with repository variables or secrets when you want CI to exercise real integrations instead of pure build coverage.
+- After editing `.env.local` or any other Next env file, restart `npm run dev` or rerun the build so the updated values are picked up.
 
 ## Virtualization Fixture
 
@@ -64,7 +66,7 @@ Sentry is wired into both browser instrumentation and server-side route handlers
 
 ## Validation
 
-- `npm run verify:env` confirms the minimum production build env is present before you run `npm run build`.
+- `npm run verify:env` confirms the minimum production build env is present before you run `npm run build`, using shell variables plus the local Next env files when present.
 - `npm run verify:env:server` confirms the server-only secrets required by cron, Stripe, and service-role flows.
 - `npm run verify:env:smoke` confirms the dedicated Playwright account is configured locally.
 - `npm run verify:env:migrations` confirms ordered migration validation has a database target.

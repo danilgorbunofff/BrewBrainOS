@@ -22,7 +22,7 @@ describe('instrumentation-client', () => {
     vi.resetModules()
     vi.stubEnv('NEXT_PUBLIC_SENTRY_DSN', 'https://browser@example.ingest.sentry.io/1')
     vi.stubEnv('NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE', '0.25')
-    vi.spyOn(window.performance, 'mark').mockImplementation(() => undefined)
+    vi.spyOn(window.performance, 'mark').mockImplementation(() => undefined as unknown as PerformanceMark)
 
     await import('@/instrumentation-client')
   })

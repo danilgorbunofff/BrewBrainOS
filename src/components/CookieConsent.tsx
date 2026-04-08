@@ -68,6 +68,7 @@ export function CookieConsent() {
               
               <button 
                 onClick={() => setIsVisible(false)}
+                aria-label="Close cookie consent"
                 className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <LucideX className="h-4 w-4" />
@@ -136,6 +137,9 @@ export function CookieConsent() {
                 <p className="text-xs text-muted-foreground">Helps us understand how you use the floor dashboard to improve our UI.</p>
               </div>
               <button 
+                role="switch"
+                aria-checked={settings.analytics}
+                aria-label="Toggle brewery analytics"
                 onClick={() => setSettings(s => ({ ...s, analytics: !s.analytics }))}
                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${settings.analytics ? 'bg-orange-600' : 'bg-muted-foreground/40'}`}
               >
@@ -150,6 +154,9 @@ export function CookieConsent() {
                 <p className="text-xs text-muted-foreground">Allows us to show you relevant brewery equipment and yeast partner offers.</p>
               </div>
               <button 
+                role="switch"
+                aria-checked={settings.marketing}
+                aria-label="Toggle partners and marketing"
                 onClick={() => setSettings(s => ({ ...s, marketing: !s.marketing }))}
                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${settings.marketing ? 'bg-orange-600' : 'bg-muted-foreground/40'}`}
               >

@@ -228,6 +228,7 @@ export function DegradationCard({ item, onUpdate }: DegradationCardProps) {
               <Button
                 size="sm"
                 variant="default"
+                aria-label="Confirm storage condition"
                 onClick={handleStorageChange}
                 disabled={isUpdating}
               >
@@ -236,6 +237,7 @@ export function DegradationCard({ item, onUpdate }: DegradationCardProps) {
               <Button
                 size="sm"
                 variant="outline"
+                aria-label="Cancel storage condition edit"
                 onClick={() => {
                   setIsEditingStorage(false)
                   setNewStorageCondition(item.storage_condition || 'cool_dry')
@@ -255,6 +257,7 @@ export function DegradationCard({ item, onUpdate }: DegradationCardProps) {
               <Button
                 size="sm"
                 variant="ghost"
+                aria-label="Edit storage condition"
                 onClick={() => setIsEditingStorage(true)}
               >
                 <Edit2 className="w-4 h-4" />

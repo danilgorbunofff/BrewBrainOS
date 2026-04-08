@@ -46,14 +46,14 @@ vi.mock('@/lib/stripeWebhook', () => ({
       ? session.subscription
       : session.subscription.id
   },
-  getInvoiceSubscriptionId: (invoice: Stripe.Invoice) => {
+  getInvoiceSubscriptionId: (invoice: Stripe.Invoice & Record<string, unknown>) => {
     if (!invoice.subscription) {
       return null
     }
 
     return typeof invoice.subscription === 'string'
       ? invoice.subscription
-      : invoice.subscription.id
+      : (invoice.subscription as { id: string }).id
   },
   getStripeCustomerId: (
     customer: string | Stripe.Customer | Stripe.DeletedCustomer | null | undefined
@@ -71,7 +71,7 @@ vi.mock('@/lib/stripeWebhook', () => ({
       return directValue
     }
 
-    const firstItem = subscription.items?.data?.[0] as Record<string, unknown> | undefined
+    const firstItem = subscription.items?.data?.[0] as unknown as Record<string, unknown> | undefined
     return typeof firstItem?.current_period_start === 'number' ? firstItem.current_period_start : null
   },
   getSubscriptionPeriodEnd: (subscription: Stripe.Subscription & Record<string, unknown>) => {
@@ -81,7 +81,7 @@ vi.mock('@/lib/stripeWebhook', () => ({
       return directValue
     }
 
-    const firstItem = subscription.items?.data?.[0] as Record<string, unknown> | undefined
+    const firstItem = subscription.items?.data?.[0] as unknown as Record<string, unknown> | undefined
     return typeof firstItem?.current_period_end === 'number' ? firstItem.current_period_end : null
   },
 }))

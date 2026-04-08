@@ -18,7 +18,7 @@ describe('withSentry', () => {
 
   it('passes through successful responses without capturing', async () => {
     const { withSentry } = await import('@/lib/with-sentry')
-    const handler = withSentry(async () => new Response('ok', { status: 201 }), { name: 'api/success' })
+    const handler = withSentry(async (_req: Request) => new Response('ok', { status: 201 }), { name: 'api/success' })
 
     const response = await handler(new Request('http://localhost/test'))
 

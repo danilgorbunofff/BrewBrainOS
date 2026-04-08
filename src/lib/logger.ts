@@ -7,6 +7,7 @@
  */
 
 const LOG_FILE = 'brewbrain.log'
+const MAX_LOG_SIZE = 10 * 1024 * 1024 // 10 MB
 
 type LogLevel = 'info' | 'warn' | 'error' | 'debug'
 
@@ -41,6 +42,17 @@ async function writeToDisk(payload: LogPayload) {
     const logEntry = `[${payload.timestamp}] [${payload.level.toUpperCase()}] ${payload.message} ${payload.context ? JSON.stringify(payload.context) : ''}\n`
     
     try {
+      // Rotate log if it exceeds max size
+      try {
+        const stats = fs.statSync(filePath)
+        if (stats.size > MAX_LOG_SIZE) {
+          const rotatedPath = `${filePath}.1`
+          fs.renameSync(filePath, rotatedPath)
+        }
+      } catch {
+        // File doesn't exist yet, that's fine
+      }
+
       fs.appendFileSync(filePath, logEntry)
     } catch (err) {
       console.warn('Writing to log file failed:', err)

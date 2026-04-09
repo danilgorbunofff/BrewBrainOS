@@ -145,6 +145,7 @@ export function DeleteConfirmProvider({ children }: { children: React.ReactNode 
         }
       } catch (error: unknown) {
         if (isNextRedirectError(error)) {
+          setRequest(null)
           return
         }
 

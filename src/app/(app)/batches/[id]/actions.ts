@@ -6,7 +6,7 @@ import { ActionResult } from '@/types/database'
 import { detectFermentationAlerts, BatchReadingInput, BatchConfig } from '@/lib/fermentation-alerts'
 import { sendFermentationAlertNotification } from '@/app/actions/push-actions'
 import { headers } from 'next/headers'
-import { isUniqueViolationFor } from '@/lib/utils'
+import { isUniqueViolationFor, sanitizeDbError } from '@/lib/utils'
 
 // ─────────────────────────────────────────────
 // EXISTING ACTIONS
@@ -94,7 +94,7 @@ export async function updateBatchFG(formData: FormData): Promise<ActionResult> {
  */
 export async function logManualReading(formData: FormData): Promise<ActionResult> {
   try {
-    const { supabase, brewery } = await requireActiveBrewery()
+    const { supabase } = await requireActiveBrewery()
     const { data: { user } } = await supabase.auth.getUser()
 
     const batchId = formData.get('batchId') as string
@@ -112,10 +112,8 @@ export async function logManualReading(formData: FormData): Promise<ActionResult
     const ip = reqHeaders.get('x-forwarded-for') || reqHeaders.get('x-real-ip') || 'unknown'
     const userAgent = reqHeaders.get('user-agent') || 'unknown'
 
-    const reading = {
+    const reading: Record<string, unknown> = {
       batch_id: batchId,
-      brewery_id: brewery.id,
-      external_id: externalId,
       temperature: parseOptional('temperature'),
       gravity: parseOptional('gravity'),
       ph: parseOptional('ph'),
@@ -127,6 +125,10 @@ export async function logManualReading(formData: FormData): Promise<ActionResult
       provenance_user_agent: userAgent,
     }
 
+    if (externalId) {
+      reading.external_id = externalId
+    }
+
     const { error } = await supabase.from('batch_readings').insert(reading)
     if (error) {
       if (isUniqueViolationFor(error, 'external_id')) {
@@ -134,7 +136,7 @@ export async function logManualReading(formData: FormData): Promise<ActionResult
       }
 
       console.error('Failed to log reading:', error)
-      return { success: false, error: 'Failed to log reading' }
+      return { success: false, error: sanitizeDbError(error, 'logManualReading') || 'Failed to save reading' }
     }
 
     // Run alert check after inserting a new reading
@@ -144,7 +146,8 @@ export async function logManualReading(formData: FormData): Promise<ActionResult
     revalidatePath('/dashboard')
     return { success: true, data: null }
   } catch (e: unknown) {
-    return { success: false, error: e instanceof Error ? e.message : 'Authentication error' }
+    const msg = e instanceof Error ? e.message : ''
+    return { success: false, error: msg || 'Failed to save reading' }
   }
 }
 

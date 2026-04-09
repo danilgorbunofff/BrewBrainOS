@@ -92,7 +92,7 @@ export function AddBatchForm({ onSuccess, onOptimisticAdd, onOptimisticRollback 
           placeholder="OG"
           className="bg-transparent border-none focus-visible:ring-0 w-20 font-mono"
         />
-        <SubmitButton ariaLabel="Create batch" size="icon" className="shrink-0 aspect-square" pendingText="Saving batch">
+        <SubmitButton ariaLabel="Create batch" size="icon" className="shrink-0 aspect-square" pendingText="">
           <LucidePlus className="h-5 w-5" />
         </SubmitButton>
       </div>

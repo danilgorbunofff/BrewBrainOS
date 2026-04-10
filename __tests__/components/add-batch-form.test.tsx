@@ -62,6 +62,27 @@ describe('AddBatchForm', () => {
     expect(toastSuccessMock).toHaveBeenCalledWith('Batch created successfully')
   })
 
+  it('keeps the add button icon-only while submission is pending', async () => {
+    let resolveAdd: (() => void) | undefined
+    const pendingPromise = new Promise((resolve) => {
+      resolveAdd = resolve
+    })
+
+    addBatchMock.mockReturnValue(pendingPromise)
+
+    render(<AddBatchForm onOptimisticAdd={vi.fn()} />)
+
+    fireEvent.change(screen.getByPlaceholderText('Recipe Name'), { target: { value: 'Test Batch' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Create batch' }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Create batch' })).not.toHaveTextContent('Saving batch')
+    })
+
+    resolveAdd?.()
+    await waitFor(() => expect(addBatchMock).toHaveBeenCalledTimes(1))
+  })
+
   it('rolls back the optimistic row when the server action fails', async () => {
     const onOptimisticRollback = vi.fn()
     addBatchMock.mockResolvedValue({ success: false, error: 'Recipe name is required' })

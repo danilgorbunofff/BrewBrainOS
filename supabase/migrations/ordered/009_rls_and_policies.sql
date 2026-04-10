@@ -151,11 +151,20 @@ CREATE POLICY "Owner manages supplier_ratings" ON supplier_ratings
     brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid())
   );
 
-DROP POLICY IF EXISTS "Owner manages fermentation_alerts" ON fermentation_alerts;
-CREATE POLICY "Owner manages fermentation_alerts" ON fermentation_alerts
-  FOR ALL USING (
-    brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid())
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policy
+    WHERE polname = 'Owner manages fermentation_alerts'
+      AND polrelid = 'fermentation_alerts'::regclass
+  ) THEN
+    CREATE POLICY "Owner manages fermentation_alerts" ON fermentation_alerts
+      FOR ALL USING (
+        brewery_id IN (SELECT id FROM breweries WHERE owner_id = auth.uid())
+      );
+  END IF;
+END $$;
 
 DROP POLICY IF EXISTS "Users manage own alert_preferences" ON alert_preferences;
 CREATE POLICY "Users manage own alert_preferences" ON alert_preferences

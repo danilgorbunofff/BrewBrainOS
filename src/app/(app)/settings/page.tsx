@@ -82,6 +82,8 @@ export default async function SettingsPage() {
     activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
   }
 
+  const recentActivities = activities.slice(0, 3)
+
   const email = user.email || ''
   const initials = email.substring(0, 2).toUpperCase()
 
@@ -252,7 +254,7 @@ export default async function SettingsPage() {
           <SubscriptionCard />
 
           {/* Activity Log */}
-          <ActivityLog activities={activities} />
+          <ActivityLog activities={recentActivities} />
 
         </div>
 

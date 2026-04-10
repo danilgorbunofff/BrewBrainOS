@@ -114,7 +114,6 @@ export async function logManualReading(formData: FormData): Promise<ActionResult
 
     const reading = {
       batch_id: batchId,
-      brewery_id: brewery.id,
       external_id: externalId,
       temperature: parseOptional('temperature'),
       gravity: parseOptional('gravity'),

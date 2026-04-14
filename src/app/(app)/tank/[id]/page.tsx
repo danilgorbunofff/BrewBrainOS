@@ -7,12 +7,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   LucideWaves, LucideHistory, LucideCheckCircle, LucideAlertTriangle,
-  LucideMic, LucideLink, LucideUnlink, LucideArrowLeft, LucideTrash2
+  LucideMic, LucideUnlink, LucideArrowLeft, LucideTrash2
 } from 'lucide-react'
 import { logSanitation, assignBatch, unassignBatch } from './actions'
 import { deleteTank } from '@/app/(app)/tanks/actions'
 import { VoiceLogger } from '@/components/VoiceLogger'
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
+import { AssignBatchSelect } from '@/components/AssignBatchSelect'
 import { cn } from '@/lib/utils'
 
 export const metadata = {
@@ -209,31 +210,14 @@ export default async function TankPage({ params }: PageProps) {
                     <p className="text-muted-foreground font-medium text-sm">Tank is empty & available</p>
                   </div>
                   {allBatches && allBatches.length > 0 ? (
-                    <form
+                    <AssignBatchSelect
+                      tankId={tank.id}
+                      batches={allBatches}
                       action={async (formData) => {
                         'use server'
                         await assignBatch(formData)
                       }}
-                      className="space-y-2"
-                    >
-                      <input type="hidden" name="tankId" value={tank.id} />
-                      <select
-                        name="batchId"
-                        required
-                        className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
-                      >
-                        <option value="" disabled>Select batch to assign…</option>
-                        {allBatches.map(b => (
-                          <option key={b.id} value={b.id} className="bg-card">
-                            {b.recipe_name} ({b.status})
-                          </option>
-                        ))}
-                      </select>
-                      <Button type="submit" className="w-full rounded-xl gap-2">
-                        <LucideLink className="h-4 w-4" />
-                        Assign Batch to Tank
-                      </Button>
-                    </form>
+                    />
                   ) : (
                     <p className="text-center text-xs text-muted-foreground font-medium">
                       No active batches to assign.{' '}

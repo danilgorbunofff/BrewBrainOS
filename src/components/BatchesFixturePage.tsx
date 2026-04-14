@@ -25,7 +25,12 @@ export function BatchesFixturePage() {
             </div>
           }
         >
-          <BatchesExperience batches={buildBatchFixture(180)} />
+          <BatchesExperience
+            batches={buildBatchFixture(180)}
+            currentPage={1}
+            pageSize={180}
+            totalCount={180}
+          />
         </ClientErrorBoundary>
       </div>
     </main>

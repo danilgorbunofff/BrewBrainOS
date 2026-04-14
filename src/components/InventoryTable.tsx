@@ -143,9 +143,11 @@ function MobileInventoryCard({ item }: { item: InventoryItem }) {
       <div className="p-4 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <Link href={`/inventory/${item.id}`} className="flex items-center gap-2 min-w-0 flex-1 group hover:opacity-75 transition-opacity">
-            {isLowStock && <LucideAlertCircle className="h-4 w-4 text-primary animate-pulse shrink-0" />}
-            {expirationStatus?.type === 'expired' && <LucideAlertCircle className="h-4 w-4 text-red-500 animate-pulse shrink-0" />}
-            {expirationStatus?.type === 'expiring' && <LucideAlertCircle className="h-4 w-4 text-yellow-500 animate-pulse shrink-0" />}
+            <span data-testid="inventory-icon-zone" className="flex items-center gap-1 w-9 shrink-0">
+              {isLowStock && <LucideAlertCircle className="h-4 w-4 text-primary animate-pulse" />}
+              {expirationStatus?.type === 'expired' && <LucideAlertCircle className="h-4 w-4 text-red-500 animate-pulse" />}
+              {expirationStatus?.type === 'expiring' && <LucideAlertCircle className="h-4 w-4 text-yellow-500 animate-pulse" />}
+            </span>
             <h3 className="font-black text-base tracking-tight text-foreground truncate group-hover:text-primary group-hover:underline transition-colors">{item.name}</h3>
           </Link>
           <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground bg-secondary px-2.5 py-1 rounded-lg border border-border shrink-0">
@@ -278,13 +280,15 @@ function InventoryRow({
       <TableCell className="py-6 px-8">
         <div className="space-y-1">
           <Link href={`/inventory/${item.id}`} className="flex items-center gap-3 font-black text-lg tracking-tight text-foreground group-hover:text-primary transition-colors hover:underline">
-            {isLowStock && <LucideAlertCircle className="h-5 w-5 text-primary animate-pulse" />}
-            {expirationStatus?.type === 'expired' && <LucideAlertCircle className="h-5 w-5 text-red-500 animate-pulse" />}
-            {expirationStatus?.type === 'expiring' && <LucideAlertCircle className="h-5 w-5 text-yellow-500 animate-pulse" />}
+            <span data-testid="inventory-icon-zone" className="flex items-center gap-1 w-11 shrink-0">
+              {isLowStock && <LucideAlertCircle className="h-5 w-5 text-primary animate-pulse" />}
+              {expirationStatus?.type === 'expired' && <LucideAlertCircle className="h-5 w-5 text-red-500 animate-pulse" />}
+              {expirationStatus?.type === 'expiring' && <LucideAlertCircle className="h-5 w-5 text-yellow-500 animate-pulse" />}
+            </span>
             {item.name}
           </Link>
           {(item.lot_number || item.manufacturer) && (
-            <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground font-black pl-[32px]">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground font-black pl-[56px]">
               {item.lot_number && <span className="font-mono bg-secondary/50 px-1.5 py-0.5 rounded border border-border/50">Lot: {item.lot_number}</span>}
               {item.manufacturer && <span>Mfg: {item.manufacturer}</span>}
             </div>

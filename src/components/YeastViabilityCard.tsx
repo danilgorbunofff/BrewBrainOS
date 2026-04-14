@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { LucideTestTube2, LucideLoaderCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { formatShortDate } from '@/lib/date-format'
 
 interface YeastViabilityCardProps {
   batchId: string
@@ -98,6 +99,11 @@ export function YeastViabilityCard({ batchId, yeastLogs }: YeastViabilityCardPro
               </div>
             ))}
           </div>
+        )}
+
+        {/* Latest log notes */}
+        {latest?.notes && (
+          <p className="text-xs text-muted-foreground">{latest.notes}</p>
         )}
 
         {/* Log new entry */}
@@ -196,10 +202,7 @@ export function YeastViabilityCard({ batchId, yeastLogs }: YeastViabilityCardPro
                     )}
                   </div>
                   <span className="text-[10px] font-mono text-muted-foreground">
-                    {new Date(log.created_at).toLocaleDateString(undefined, {
-                      month: 'short',
-                      day: 'numeric',
-                    })}
+                    {formatShortDate(log.created_at)}
                   </span>
                 </div>
               ))}

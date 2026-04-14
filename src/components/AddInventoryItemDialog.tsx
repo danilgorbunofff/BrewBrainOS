@@ -15,6 +15,7 @@ export function AddInventoryItemDialog() {
   const [open, setOpen] = useState(false)
   const [itemType, setItemType] = useState('hop')
   const [unit, setUnit] = useState('kg')
+  const [storageCondition, setStorageCondition] = useState('cool_dry')
   const stockInputRef = useRef<HTMLInputElement>(null)
 
   const handleWeightCaptured = (reading: ScaleReading) => {
@@ -143,7 +144,7 @@ export function AddInventoryItemDialog() {
 
                 <div className="grid gap-2">
                   <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Storage Condition</Label>
-                  <Select name="storageCondition" defaultValue="cool_dry">
+                  <Select name="storageCondition" value={storageCondition} onValueChange={(val) => val && setStorageCondition(val)}>
                     <SelectTrigger className="h-11 rounded-xl bg-secondary border-border text-foreground font-bold">
                       <SelectValue />
                     </SelectTrigger>
@@ -184,7 +185,7 @@ export function AddInventoryItemDialog() {
                   </div>
                   <div className="grid gap-2">
                     <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Storage Condition</Label>
-                    <Select name="storageCondition" defaultValue="cool_dry">
+                    <Select name="storageCondition" value={storageCondition} onValueChange={(val) => val && setStorageCondition(val)}>
                       <SelectTrigger className="h-11 rounded-xl bg-secondary border-border text-foreground font-bold">
                         <SelectValue />
                       </SelectTrigger>

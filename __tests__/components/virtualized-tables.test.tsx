@@ -141,6 +141,44 @@ describe('InventoryTable', () => {
     expect(screen.getAllByText(/PPG -18\.9%/).length).toBeGreaterThan(0)
   })
 
+  it('renders the icon zone placeholder on every row regardless of alert state', () => {
+    render(
+      <InventoryTable
+        items={[
+          {
+            id: 'inventory-no-alerts',
+            name: 'Healthy Grain',
+            item_type: 'Grain',
+            current_stock: 50,
+            unit: 'kg',
+            reorder_point: 5,
+          },
+          {
+            id: 'inventory-low-stock',
+            name: 'Low Hops',
+            item_type: 'Hops',
+            current_stock: 1,
+            unit: 'kg',
+            reorder_point: 5,
+          },
+          {
+            id: 'inventory-expiring',
+            name: 'Expiring Yeast',
+            item_type: 'Yeast',
+            current_stock: 10,
+            unit: 'packs',
+            reorder_point: 2,
+            expiration_date: '2026-04-20T00:00:00.000Z',
+          },
+        ]}
+      />
+    )
+
+    // Every row renders the fixed icon zone placeholder — three items × two layouts (desktop + mobile)
+    const iconZones = screen.getAllByTestId('inventory-icon-zone')
+    expect(iconZones.length).toBeGreaterThanOrEqual(3)
+  })
+
   it('expands lot information on the mobile inventory card', () => {
     render(
       <InventoryTable

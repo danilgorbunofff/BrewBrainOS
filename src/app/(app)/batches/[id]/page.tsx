@@ -24,8 +24,11 @@ import { YeastViabilityCard } from '@/components/YeastViabilityCard'
 import { BatchReadingsTable } from '@/components/BatchReadingsTable'
 import { BrewingMetricsForm } from '@/components/BrewingMetricsForm'
 
+const ALLOWED_PAGE_SIZES = [5, 10, 20, 50] as const
+
 interface PageProps {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ page?: string; limit?: string }>
 }
 
 const BATCH_STATUSES = [
@@ -36,8 +39,15 @@ const BATCH_STATUSES = [
   { value: 'dumped', label: 'Dumped', color: 'text-red-500 bg-red-500/10 border-red-500/20' },
 ]
 
-export default async function BatchDetailPage({ params }: PageProps) {
+export default async function BatchDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params
+  const { page: pageParam, limit: limitParam } = await searchParams
+
+  const rawLimit = parseInt(limitParam ?? '5', 10)
+  const pageSize = (ALLOWED_PAGE_SIZES as readonly number[]).includes(rawLimit) ? rawLimit : 5
+  const currentPage = Math.max(parseInt(pageParam ?? '1', 10), 1)
+  const from = (currentPage - 1) * pageSize
+  const to = from + pageSize - 1
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -56,12 +66,21 @@ export default async function BatchDetailPage({ params }: PageProps) {
 
   if (error || !batch) notFound()
 
+  // Chart query – keeps the last 20 readings for the fermentation curve
   const { data: readings } = await supabase
     .from('batch_readings')
     .select('*')
     .eq('batch_id', id)
     .order('created_at', { ascending: false })
     .limit(20)
+
+  // Paginated query for the Production Readings table
+  const { data: tableReadings, count: readingsCount } = await supabase
+    .from('batch_readings')
+    .select('*', { count: 'exact' })
+    .eq('batch_id', id)
+    .order('created_at', { ascending: false })
+    .range(from, to)
 
   const { data: alerts } = await supabase
     .from('fermentation_alerts')
@@ -229,7 +248,12 @@ export default async function BatchDetailPage({ params }: PageProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <BatchReadingsTable readings={readings || []} />
+            <BatchReadingsTable
+              readings={tableReadings || []}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              totalCount={readingsCount ?? 0}
+            />
           </CardContent>
         </Card>
 

@@ -8,12 +8,22 @@ import { getActiveBrewery } from '@/lib/active-brewery'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { RealtimeRefresh } from '@/components/RealtimeRefresh'
+import { TanksPaginationControls } from '@/components/TanksPaginationControls'
 
 export const metadata = {
   title: 'Vessels | BrewBrain OS',
 }
 
-export default async function TanksPage() {
+// Multiples of 4: fill rows on lg (4-col) and md (2-col) grids.
+// Keep in sync with TANK_PAGE_SIZES in TanksPaginationControls.tsx.
+const ALLOWED_PAGE_SIZES = [4, 8, 12, 16, 20, 24] as const
+const DEFAULT_PAGE_SIZE = 20
+
+interface PageProps {
+  searchParams: Promise<{ page?: string; limit?: string }>
+}
+
+export default async function TanksPage({ searchParams }: PageProps) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -26,6 +36,11 @@ export default async function TanksPage() {
   if (!brewery) {
     redirect('/dashboard')
   }
+
+  const { page: pageParam, limit: limitParam } = await searchParams
+  const rawLimit = parseInt(limitParam ?? String(DEFAULT_PAGE_SIZE), 10)
+  const pageSize = (ALLOWED_PAGE_SIZES as readonly number[]).includes(rawLimit) ? rawLimit : DEFAULT_PAGE_SIZE
+  const currentPage = Math.max(parseInt(pageParam ?? '1', 10), 1)
 
   const { count: tankCount } = await supabase
     .from('tanks')
@@ -65,7 +80,7 @@ export default async function TanksPage() {
         <RealtimeRefresh table="tanks" breweryId={brewery.id} />
 
         <Suspense fallback={<TanksSkeleton />}>
-          <TanksContent breweryId={brewery.id} currentTankCount={currentTankCount} />
+          <TanksContent breweryId={brewery.id} currentTankCount={currentTankCount} currentPage={currentPage} pageSize={pageSize} />
         </Suspense>
 
       </div>
@@ -73,19 +88,39 @@ export default async function TanksPage() {
   )
 }
 
-async function TanksContent({ breweryId, currentTankCount }: { breweryId: string; currentTankCount: number }) {
+async function TanksContent({
+  breweryId,
+  currentTankCount,
+  currentPage,
+  pageSize,
+}: {
+  breweryId: string
+  currentTankCount: number
+  currentPage: number
+  pageSize: number
+}) {
   const supabase = await createClient()
+  const from = (currentPage - 1) * pageSize
+  const to = from + pageSize - 1
 
-  const { data: tanks } = await supabase
+  const { data: tanks, count } = await supabase
     .from('tanks')
-    .select('*')
+    .select('*', { count: 'exact' })
     .eq('brewery_id', breweryId)
     .order('name')
+    .range(from, to)
 
   return (
-    <TankAddGate currentCount={currentTankCount}>
-      <TanksGrid tanks={tanks ?? []} />
-    </TankAddGate>
+    <div className="space-y-6">
+      <TankAddGate currentCount={currentTankCount}>
+        <TanksGrid tanks={tanks ?? []} />
+      </TankAddGate>
+      <TanksPaginationControls
+        currentPage={currentPage}
+        pageSize={pageSize}
+        totalCount={count ?? 0}
+      />
+    </div>
   )
 }
 

@@ -13,14 +13,29 @@ export const metadata = {
 export const revalidate = 0
 export const fetchCache = 'force-no-store'
 
+const ALLOWED_PAGE_SIZES = [10, 20, 50] as const
+const DEFAULT_PAGE_SIZE = 20
+
+interface PageProps {
+  searchParams: Promise<{ page?: string; limit?: string }>
+}
+
 function shouldUsePlaywrightA11yFixtures() {
   return process.env.NODE_ENV !== 'production' && process.env.PLAYWRIGHT_A11Y_USE_FIXTURES === '1'
 }
 
-export default async function BatchesPage() {
+export default async function BatchesPage({ searchParams }: PageProps) {
   if (shouldUsePlaywrightA11yFixtures()) {
     return <BatchesFixturePage />
   }
+
+  const { page: pageParam, limit: limitParam } = await searchParams
+
+  const rawLimit = parseInt(limitParam ?? String(DEFAULT_PAGE_SIZE), 10)
+  const pageSize = (ALLOWED_PAGE_SIZES as readonly number[]).includes(rawLimit) ? rawLimit : DEFAULT_PAGE_SIZE
+  const currentPage = Math.max(parseInt(pageParam ?? '1', 10), 1)
+  const from = (currentPage - 1) * pageSize
+  const to = from + pageSize - 1
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -31,11 +46,12 @@ export default async function BatchesPage() {
 
   if (!brewery) redirect('/dashboard')
 
-  const { data: batches } = await supabase
+  const { data: batches, count } = await supabase
     .from('batches')
-    .select('*')
+    .select('*', { count: 'exact' })
     .eq('brewery_id', brewery.id)
     .order('created_at', { ascending: false })
+    .range(from, to)
 
   return (
     <main className="min-h-screen bg-background text-foreground p-4 md:p-8 pt-6 md:pt-8 pb-24 md:pb-8 selection:bg-primary/30">
@@ -55,7 +71,12 @@ export default async function BatchesPage() {
             </div>
           }
         >
-          <BatchesExperience batches={batches || []} />
+          <BatchesExperience
+            batches={batches || []}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            totalCount={count ?? 0}
+          />
         </ClientErrorBoundary>
       </div>
     </main>

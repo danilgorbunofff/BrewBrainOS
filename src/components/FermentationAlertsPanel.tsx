@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useRef, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { FermentationAlert } from '@/types/database'
 import { acknowledgeAlert } from '@/app/(app)/batches/[id]/actions'
@@ -15,8 +15,10 @@ import {
   LucideGauge,
   LucideActivity,
   LucideZap,
+  LucideChevronDown,
 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 
@@ -38,13 +40,17 @@ const ALERT_TYPE_META: Record<
 }
 
 export function FermentationAlertsPanel({ alerts, batchId }: FermentationAlertsPanelProps) {
-  const [pendingAlertId, setPendingAlertId] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
-  const router = useRouter()
   const active = alerts.filter((a) => a.status === 'active')
   const acknowledged = alerts.filter((a) => a.status === 'acknowledged')
+  const [expanded, setExpanded] = useState(() => active.length > 0)
+  const [pendingAlertId, setPendingAlertId] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+  const pendingRef = useRef<string | null>(null)
+  const router = useRouter()
 
   const handleAcknowledge = (alertId: string) => {
+    if (pendingRef.current === alertId) return
+    pendingRef.current = alertId
     setPendingAlertId(alertId)
 
     startTransition(async () => {
@@ -64,6 +70,7 @@ export function FermentationAlertsPanel({ alerts, batchId }: FermentationAlertsP
         const message = error instanceof Error ? error.message : 'Failed to acknowledge alert'
         toast.error(message)
       } finally {
+        pendingRef.current = null
         setPendingAlertId(null)
       }
     })
@@ -71,20 +78,45 @@ export function FermentationAlertsPanel({ alerts, batchId }: FermentationAlertsP
 
   return (
     <Card className="glass border-border overflow-hidden">
-      <CardHeader className="border-b border-border pb-4">
-        <CardTitle className="text-lg font-black tracking-tight flex items-center gap-3">
-          <LucideAlertTriangle className="h-5 w-5 text-amber-400" />
-          Fermentation Alerts
-          {active.length > 0 && (
-            <span className="ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-red-500/10 text-red-400 border border-red-500/20">
-              <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse" />
-              {active.length} Active
-            </span>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
-        {active.length === 0 && acknowledged.length === 0 ? (
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        className="w-full text-left flex items-center gap-3 px-6 py-5 border-b border-border hover:bg-secondary/40 transition-colors"
+      >
+        <LucideAlertTriangle className="h-5 w-5 text-amber-400 shrink-0" />
+        <span className="text-lg font-black tracking-tight text-foreground">Fermentation Alerts</span>
+        {active.length > 0 ? (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-red-500/10 text-red-400 border border-red-500/20">
+            <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse" />
+            {active.length} Active
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-green-500/10 text-green-400 border border-green-500/20">
+            <LucideCheckCircle2 className="h-3 w-3" />
+            Nominal
+          </span>
+        )}
+        <motion.span
+          className="ml-auto text-muted-foreground shrink-0 inline-flex"
+          animate={{ rotate: expanded ? 180 : 0 }}
+          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+        >
+          <LucideChevronDown className="h-4 w-4" />
+        </motion.span>
+      </button>
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            key="alerts-content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            style={{ overflow: 'hidden' }}
+          >
+          <CardContent className="p-0">
+          {active.length === 0 && acknowledged.length === 0 ? (
           <div className="py-16 text-center">
             <LucideCheckCircle2 className="h-10 w-10 text-green-400 mx-auto mb-3" />
             <p className="text-sm font-bold text-green-400">All parameters nominal</p>
@@ -155,7 +187,7 @@ export function FermentationAlertsPanel({ alerts, batchId }: FermentationAlertsP
                     type="button"
                     variant="outline"
                     size="sm"
-                    disabled={isPending && pendingAlertId === alert.id}
+                    disabled={pendingAlertId === alert.id}
                     onClick={() => handleAcknowledge(alert.id)}
                     className="shrink-0 text-xs font-bold border-border hover:bg-secondary"
                   >
@@ -187,6 +219,9 @@ export function FermentationAlertsPanel({ alerts, batchId }: FermentationAlertsP
           </div>
         )}
       </CardContent>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Card>
   )
 }

@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
 
 export const metadata = {
   title: 'Sign In — BrewBrain OS',
@@ -11,6 +13,14 @@ export const metadata = {
 }
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; trial?: string }> }) {
+  // If the user is already authenticated, redirect to dashboard immediately.
+  // This is a defense-in-depth complement to the middleware redirect.
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    redirect('/dashboard')
+  }
+
   const p = await searchParams
   const errorMessage = p?.error
   const trialTier = p?.trial || ''

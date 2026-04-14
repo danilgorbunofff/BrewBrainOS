@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { LucideFlaskConical, LucideChevronDown, LucideChevronUp, LucideLoaderCircle } from 'lucide-react'
+import { LucideFlaskConical, LucideChevronDown, LucideLoaderCircle } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 interface ManualReadingFormProps {
@@ -108,13 +109,26 @@ export function ManualReadingForm({ batchId }: ManualReadingFormProps) {
             <LucideFlaskConical className="h-4 w-4 text-primary/60" />
             Log Manual Reading
           </CardTitle>
-          <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-            {open ? <LucideChevronUp className="h-4 w-4" /> : <LucideChevronDown className="h-4 w-4" />}
-          </span>
+          <motion.span
+            className="text-muted-foreground group-hover:text-foreground transition-colors inline-flex"
+            animate={{ rotate: open ? 180 : 0 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+          >
+            <LucideChevronDown className="h-4 w-4" />
+          </motion.span>
         </button>
       </CardHeader>
 
-      {open && (
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="reading-form-body"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            style={{ overflow: 'hidden' }}
+          >
         <CardContent className="pt-2 pb-6">
           <p className="text-sm text-muted-foreground font-medium mb-6">
             Log temperature, gravity, pH, dissolved oxygen, and pressure. Leave any field blank to skip.
@@ -172,7 +186,7 @@ export function ManualReadingForm({ batchId }: ManualReadingFormProps) {
 
               <div className="space-y-1.5">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Dissolved O₂ (ppm)
+                  DO (ppm)
                 </Label>
                 <Input
                   name="dissolved_oxygen"
@@ -238,7 +252,9 @@ export function ManualReadingForm({ batchId }: ManualReadingFormProps) {
             </div>
           </form>
         </CardContent>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Card>
   )
 }

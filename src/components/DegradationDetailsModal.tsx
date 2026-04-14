@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getDegradationHistory, updateDegradationMetrics } from '@/app/(app)/inventory/actions'
+import { formatDegradationChangeReason } from '@/lib/degradation'
  
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { TrendingDown, Calendar, AlertCircle } from 'lucide-react'
@@ -337,7 +338,7 @@ export function DegradationDetailsModal({
                             log.change_reason === 'storage_change' && 'bg-orange-600 dark:bg-orange-700',
                             log.change_reason === 'quality_test' && 'bg-green-600 dark:bg-green-700'
                           )}>
-                            {log.change_reason}
+                            {formatDegradationChangeReason(log.change_reason)}
                           </span>
                         </TableCell>
                       </TableRow>

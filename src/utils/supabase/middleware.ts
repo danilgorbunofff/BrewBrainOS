@@ -34,9 +34,30 @@ export async function updateSession(request: NextRequest) {
   // issues with users being logged out.
 
   const {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     data: { user },
   } = await supabase.auth.getUser()
+
+  const pathname = request.nextUrl.pathname
+
+  // Authenticated user on /login → send them to the dashboard
+  if (user && pathname === '/login') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
+  }
+
+  // Unauthenticated user on a protected path → send them to /login
+  const isPublicPath =
+    pathname === '/' ||
+    pathname === '/login' ||
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/benchmarks')
+
+  if (!user && !isPublicPath) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
 
   return supabaseResponse
 }

@@ -1,12 +1,73 @@
 'use client'
 
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
+import { formatShortDate } from '@/lib/date-format'
 
 interface Reading {
   id: string
   gravity: number | null
   temperature: number | null
   created_at: string
+}
+
+interface TooltipPayloadEntry {
+  dataKey: string
+  value: number | null
+  color: string
+  payload?: { timestamp?: number; date?: string }
+}
+
+export function FermentationTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean
+  payload?: TooltipPayloadEntry[]
+  label?: string | number
+}) {
+  if (!active || !payload?.length) return null
+
+  const gravityEntry = payload.find(p => p.dataKey === 'gravity')
+  const tempEntry = payload.find(p => p.dataKey === 'temp')
+
+  if (gravityEntry?.value == null && tempEntry?.value == null) return null
+
+  // Prefer timestamp stored on the payload data point (works with index-keyed axis);
+  // fall back to string label for direct tooltip renders (e.g. tests).
+  const ts = payload?.[0]?.payload?.timestamp
+  const displayLabel = ts
+    ? new Date(ts).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      })
+    : typeof label === 'string' ? label : undefined
+
+  return (
+    <div
+      style={{
+        background: '#0c0c0c',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '12px',
+        padding: '10px 14px',
+        fontSize: '12px',
+        fontWeight: 700,
+        color: '#d4d4d8',
+      }}
+    >
+      {displayLabel && (
+        <p style={{ marginBottom: 6, color: '#71717a', fontSize: 11 }}>{displayLabel}</p>
+      )}
+      {gravityEntry?.value != null && (
+        <p style={{ color: '#f59e0b' }}>Gravity : {Number(gravityEntry.value).toFixed(3)}</p>
+      )}
+      {tempEntry?.value != null && (
+        <p style={{ color: '#3b82f6' }}>Temp (°F) : {Number(tempEntry.value).toFixed(1)}</p>
+      )}
+    </div>
+  )
 }
 
 export function GravityChart({ 
@@ -45,7 +106,9 @@ export function GravityChart({
     }
 
     return {
-      date: new Date(r.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit' }),
+      index: rawData.indexOf(r),
+      timestamp: t,
+      date: formatShortDate(r.created_at),
       gravity: r.gravity,
       temp: r.temperature,
       expected: expected_gravity ? Number(expected_gravity.toFixed(3)) : null
@@ -57,7 +120,8 @@ export function GravityChart({
       <LineChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
         <XAxis
-          dataKey="date"
+          dataKey="index"
+          tickFormatter={(i: number) => data[i]?.date ?? ''}
           tick={{ fill: '#52525b', fontSize: 10, fontWeight: 700 }}
           axisLine={{ stroke: 'rgba(255,255,255,0.05)' }}
           tickLine={false}
@@ -76,16 +140,7 @@ export function GravityChart({
           axisLine={false}
           tickLine={false}
         />
-        <Tooltip
-          contentStyle={{
-            background: '#0c0c0c',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '12px',
-            fontSize: '12px',
-            fontWeight: 700,
-            color: '#d4d4d8',
-          }}
-        />
+        <Tooltip content={<FermentationTooltip />} />
         <Line
           yAxisId="gravity"
           type="monotone"

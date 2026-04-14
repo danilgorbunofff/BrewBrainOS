@@ -28,6 +28,13 @@ import { getDegradationHealthStatus, generateDegradationAlerts } from '@/lib/deg
 import { updateStorageCondition, updateDegradationMetrics } from '@/app/(app)/inventory/actions'
 import { cn } from '@/lib/utils'
 
+const STORAGE_CONDITION_LABELS: Record<StorageCondition, string> = {
+  cool_dry: '🧊 Cool & Dry (Ideal)',
+  cool_humid: '💨 Cool & Humid (Good)',
+  room_temp: '🌡️ Room Temperature (Fair)',
+  warm: '🔥 Warm (Poor)',
+}
+
 interface DegradationCardProps {
   item: InventoryItem
   onUpdate?: (updatedItem: InventoryItem) => void
@@ -216,13 +223,13 @@ export function DegradationCard({ item, onUpdate }: DegradationCardProps) {
             <div className="flex gap-2">
               <Select value={newStorageCondition} onValueChange={(val) => val && setNewStorageCondition(val as StorageCondition)}>
                 <SelectTrigger className="flex-1">
-                  <SelectValue />
+                  <span>{STORAGE_CONDITION_LABELS[newStorageCondition]}</span>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cool_dry">Cool & Dry (Ideal)</SelectItem>
-                  <SelectItem value="cool_humid">Cool & Humid (Good)</SelectItem>
-                  <SelectItem value="room_temp">Room Temperature (Fair)</SelectItem>
-                  <SelectItem value="warm">Warm (Poor)</SelectItem>
+                  <SelectItem value="cool_dry">🧊 Cool & Dry (Ideal)</SelectItem>
+                  <SelectItem value="cool_humid">💨 Cool & Humid (Good)</SelectItem>
+                  <SelectItem value="room_temp">🌡️ Room Temperature (Fair)</SelectItem>
+                  <SelectItem value="warm">🔥 Warm (Poor)</SelectItem>
                 </SelectContent>
               </Select>
               <Button
@@ -249,10 +256,7 @@ export function DegradationCard({ item, onUpdate }: DegradationCardProps) {
           ) : (
             <div className="flex items-center justify-between">
               <span className="text-sm">
-                {item.storage_condition === 'cool_dry' && '🧊 Cool & Dry (Ideal)'}
-                {item.storage_condition === 'cool_humid' && '💨 Cool & Humid (Good)'}
-                {item.storage_condition === 'room_temp' && '🌡️ Room Temperature (Fair)'}
-                {item.storage_condition === 'warm' && '🔥 Warm (Poor)'}
+                {STORAGE_CONDITION_LABELS[item.storage_condition as StorageCondition] ?? item.storage_condition}
               </span>
               <Button
                 size="sm"

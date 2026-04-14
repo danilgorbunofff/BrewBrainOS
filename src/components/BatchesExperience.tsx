@@ -3,6 +3,7 @@
 import { startTransition, useOptimistic } from 'react'
 import { AddBatchForm } from '@/components/AddBatchForm'
 import { BatchesTable } from '@/components/BatchesTable'
+import { PaginationControls } from '@/components/PaginationControls'
 import type { BatchListItem } from '@/types/database'
 
 type OptimisticBatchAction =
@@ -21,7 +22,17 @@ function optimisticBatchReducer(state: BatchListItem[], action: OptimisticBatchA
   return state
 }
 
-export function BatchesExperience({ batches }: { batches: BatchListItem[] }) {
+export function BatchesExperience({
+  batches,
+  currentPage,
+  pageSize,
+  totalCount,
+}: {
+  batches: BatchListItem[]
+  currentPage: number
+  pageSize: number
+  totalCount: number
+}) {
   const [optimisticBatches, dispatchOptimistic] = useOptimistic(batches, optimisticBatchReducer)
 
   const handleOptimisticAdd = (id: string, recipeName: string, og: number | null) => {
@@ -63,6 +74,12 @@ export function BatchesExperience({ batches }: { batches: BatchListItem[] }) {
         batches={optimisticBatches}
         onOptimisticAdd={handleOptimisticAdd}
         onOptimisticRollback={handleOptimisticRollback}
+      />
+
+      <PaginationControls
+        currentPage={currentPage}
+        pageSize={pageSize}
+        totalCount={totalCount}
       />
     </div>
   )

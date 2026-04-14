@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node -e \"fs=require('fs');p='.next';fs.existsSync(p)&&fs.rmSync(p,{recursive:true,force:true})\"",
     "dev": "next dev",
     "build": "next build --webpack",
     "analyze": "cross-env ANALYZE=true npm run build",

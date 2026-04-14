@@ -114,10 +114,7 @@ export async function logManualReading(formData: FormData): Promise<ActionResult
 
     const reading: Record<string, unknown> = {
       batch_id: batchId,
-<<<<<<< HEAD
       external_id: externalId,
-=======
->>>>>>> 5a06f61233d13c94b6a917129ffe099940152cd0
       temperature: parseOptional('temperature'),
       gravity: parseOptional('gravity'),
       ph: parseOptional('ph'),
@@ -302,6 +299,7 @@ export async function acknowledgeAlert(formData: FormData): Promise<ActionResult
       })
       .eq('id', alertId)
       .eq('brewery_id', brewery.id)
+      .eq('status', 'active')
 
     if (error) {
       console.error('Failed to acknowledge alert:', error)

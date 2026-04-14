@@ -13,6 +13,7 @@ import {
   getDegradationHealthStatus,
   generateDegradationAlerts,
   recalculateDegradationMetrics,
+  formatDegradationChangeReason,
 } from '@/lib/degradation'
 
 describe('Degradation Metrics - HSI Calculation', () => {
@@ -306,5 +307,23 @@ describe('Degradation Metrics - Performance', () => {
     }
     const elapsed = performance.now() - start
     expect(elapsed).toBeLessThan(200)
+  })
+})
+
+describe('Degradation Metrics - Change Reason Labels', () => {
+  it('formats auto_calc as "Auto-calculated"', () => {
+    expect(formatDegradationChangeReason('auto_calc')).toBe('Auto-calculated')
+  })
+
+  it('formats manual_input as "Manual input"', () => {
+    expect(formatDegradationChangeReason('manual_input')).toBe('Manual input')
+  })
+
+  it('formats storage_change as "Storage change"', () => {
+    expect(formatDegradationChangeReason('storage_change')).toBe('Storage change')
+  })
+
+  it('formats quality_test as "Quality test"', () => {
+    expect(formatDegradationChangeReason('quality_test')).toBe('Quality test')
   })
 })

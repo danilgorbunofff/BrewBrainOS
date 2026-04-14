@@ -16,6 +16,14 @@ vi.mock('@/lib/offlineQueue', () => ({
   enqueueAction: enqueueActionMock,
 }))
 
+vi.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div {...props}>{children}</div>,
+    span: ({ children, ...props }: React.HTMLAttributes<HTMLSpanElement>) => <span {...props}>{children}</span>,
+  },
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}))
+
 import { ManualReadingForm } from '@/components/ManualReadingForm'
 
 describe('ManualReadingForm', () => {

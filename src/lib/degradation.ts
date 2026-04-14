@@ -335,6 +335,19 @@ export function generateDegradationAlerts(metrics: {
 }
 
 /**
+ * Format a DegradationChangeReason value for human-readable display
+ */
+export function formatDegradationChangeReason(reason: import('@/types/database').DegradationChangeReason): string {
+  const labels: Record<import('@/types/database').DegradationChangeReason, string> = {
+    auto_calc: 'Auto-calculated',
+    manual_input: 'Manual input',
+    storage_change: 'Storage change',
+    quality_test: 'Quality test',
+  }
+  return labels[reason]
+}
+
+/**
  * Format degradation metrics for display
  */
 export function formatDegradationMetrics(metrics: Partial<DegradationMetrics>) {

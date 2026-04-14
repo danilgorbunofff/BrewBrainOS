@@ -10,6 +10,44 @@ interface FlatQuestion extends FAQQuestion {
   category: string
 }
 
+function FAQItem({ item }: { item: FlatQuestion }) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div
+      className={cn(
+        'rounded-xl border border-border bg-card/60 transition-colors',
+        open ? 'bg-card' : 'hover:bg-card'
+      )}
+    >
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left cursor-pointer"
+      >
+        <span className="text-sm font-bold text-foreground">{item.q}</span>
+        <LucideChevronDown
+          className={cn(
+            'h-4 w-4 text-muted-foreground shrink-0 transition-transform duration-300 ease-in-out',
+            open && 'rotate-180'
+          )}
+        />
+      </button>
+      <div
+        className="grid transition-[grid-template-rows] duration-300 ease-in-out"
+        style={{ gridTemplateRows: open ? '1fr' : '0fr' }}
+      >
+        <div className="overflow-hidden">
+          <p className="px-5 pb-4 text-sm text-muted-foreground leading-relaxed">
+            {item.a}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function FAQTab() {
   const [query, setQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
@@ -117,20 +155,7 @@ export function FAQTab() {
               </h2>
               <div className="space-y-3">
                 {questions.map((item) => (
-                  <details
-                    key={item.q}
-                    className="group rounded-xl border border-border bg-card/60 hover:bg-card transition-colors"
-                  >
-                    <summary className="flex items-center justify-between gap-3 px-5 py-4 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
-                      <span className="text-sm font-bold text-foreground">
-                        {item.q}
-                      </span>
-                      <LucideChevronDown className="h-4 w-4 text-muted-foreground shrink-0 transition-transform group-open:rotate-180" />
-                    </summary>
-                    <div className="px-5 pb-4 text-sm text-muted-foreground leading-relaxed">
-                      {item.a}
-                    </div>
-                  </details>
+                  <FAQItem key={item.q} item={item} />
                 ))}
               </div>
             </section>

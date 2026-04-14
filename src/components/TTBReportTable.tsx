@@ -293,9 +293,9 @@ export function TTBReportTable({ batches, avgTankCapacity, breweryName, licenseN
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table — desktop */}
       {expanded && (
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
@@ -345,6 +345,72 @@ export function TTBReportTable({ batches, avgTankCapacity, breweryName, licenseN
               </tfoot>
             )}
           </table>
+        </div>
+      )}
+
+      {/* Mobile card view */}
+      {expanded && (
+        <div className="md:hidden divide-y divide-border">
+          {monthlyReport.length > 0 ? monthlyReport.map((row) => (
+            <div key={row.month} className="px-4 py-3 space-y-2">
+              <p className="font-bold text-foreground text-sm">{row.month}</p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                <div className="flex justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Batches</span>
+                  <span className="font-mono text-sm text-muted-foreground">{row.totalBatches}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">BBL</span>
+                  <span className="font-mono text-sm font-bold text-primary">{row.estimatedBBL.toFixed(1)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Completed</span>
+                  <span className="font-mono text-sm text-green-400">{row.completedBatches}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Gallons</span>
+                  <span className="font-mono text-sm text-muted-foreground">{Math.round(row.gallons)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Active</span>
+                  <span className="font-mono text-sm text-primary">{row.activeBatches}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Dumped</span>
+                  <span className="font-mono text-sm text-red-400">{row.dumpedBatches || '—'}</span>
+                </div>
+              </div>
+            </div>
+          )) : (
+            <div className="px-4 py-12 text-center text-muted-foreground font-medium">
+              No batch data yet. Create batches to generate TTB production reports.
+            </div>
+          )}
+
+          {/* Grand Total — mobile */}
+          {monthlyReport.length > 0 && (
+            <div className="px-4 py-3 bg-primary/[0.02] border-t-2 border-primary/20">
+              <p className="font-black text-primary text-xs uppercase tracking-widest mb-2">Grand Total</p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                <div className="flex justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Batches</span>
+                  <span className="font-mono text-sm font-bold text-foreground">{totals.batches}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">BBL</span>
+                  <span className="font-mono text-sm font-black text-primary">{totals.bbl.toFixed(1)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Completed</span>
+                  <span className="font-mono text-sm font-bold text-green-400">{totals.completed}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Gallons</span>
+                  <span className="font-mono text-sm font-bold text-foreground">{Math.round(totals.gallons).toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

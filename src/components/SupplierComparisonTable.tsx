@@ -64,7 +64,7 @@ export function SupplierComparisonTable({
           <CardDescription>Compare suppliers across multiple dimensions</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-6 text-slate-500">No suppliers to compare</div>
+          <div className="text-center py-6 text-muted-foreground">No suppliers to compare</div>
         </CardContent>
       </Card>
     )
@@ -105,10 +105,11 @@ export function SupplierComparisonTable({
       </CardHeader>
 
       <CardContent>
-        <div className="overflow-x-auto">
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b dark:border-slate-700">
+              <tr className="border-b border-border">
                 <th className="text-left py-2 px-3 font-semibold">Supplier</th>
                 <th className="text-center py-2 px-2 font-semibold">
                   <button
@@ -160,9 +161,9 @@ export function SupplierComparisonTable({
               {sortedSuppliers.map((supplier) => (
                 <tr
                   key={supplier.supplierId}
-                  className={`border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer transition-colors ${
+                  className={`border-b border-border hover:bg-surface cursor-pointer transition-colors ${
                     selectedIds.has(supplier.supplierId)
-                      ? 'bg-blue-50 dark:bg-blue-950'
+                      ? 'bg-primary/5'
                       : ''
                   }`}
                   onClick={() => {
@@ -178,7 +179,7 @@ export function SupplierComparisonTable({
                   <td className="py-3 px-3">
                     <div>
                       <div className="font-medium">{supplier.supplierName}</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                      <div className="text-xs text-muted-foreground">
                         {supplier.supplierType}
                       </div>
                     </div>
@@ -272,9 +273,67 @@ export function SupplierComparisonTable({
           </table>
         </div>
 
+        {/* Mobile card view */}
+        <div className="md:hidden divide-y divide-border">
+          {sortedSuppliers.map((supplier) => (
+            <button
+              key={supplier.supplierId}
+              type="button"
+              className={`w-full text-left px-4 py-3 space-y-2 transition-colors ${
+                selectedIds.has(supplier.supplierId)
+                  ? 'bg-primary/5'
+                  : ''
+              }`}
+              onClick={() => {
+                if (selectedIds.has(supplier.supplierId)) {
+                  selectedIds.delete(supplier.supplierId)
+                } else {
+                  selectedIds.add(supplier.supplierId)
+                }
+                setSelectedIds(new Set(selectedIds))
+                onSelectSupplier?.(supplier.supplierId)
+              }}
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-medium text-sm">{supplier.supplierName}</p>
+                  <p className="text-xs text-muted-foreground">{supplier.supplierType}</p>
+                </div>
+                <span className={`px-2 py-1 rounded font-semibold text-sm ${getRatingColor(supplier.overallScore)}`}>
+                  {supplier.overallScore.toFixed(1)}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground block">Quality</span>
+                  <span className={`text-xs font-semibold ${getRatingColor(supplier.avgQualityRating)} px-1 py-0.5 rounded inline-block`}>
+                    {supplier.avgQualityRating.toFixed(1)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground block">Delivery</span>
+                  <span className={`text-xs font-semibold ${getRatingColor(supplier.avgDeliveryRating)} px-1 py-0.5 rounded inline-block`}>
+                    {supplier.avgDeliveryRating.toFixed(1)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground block">On-Time</span>
+                  <span className={`text-xs font-semibold ${getPercentColor(supplier.onTimeDeliveryPercent)} px-1 py-0.5 rounded inline-block`}>
+                    {supplier.onTimeDeliveryPercent}%
+                  </span>
+                </div>
+              </div>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{supplier.totalOrders} orders</span>
+                <span className="font-medium">${supplier.totalSpent.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+
         {/* Selection info */}
         {selectedIds.size > 0 && (
-          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 rounded text-sm">
+          <div className="mt-4 p-3 bg-primary/5 rounded text-sm">
             {selectedIds.size} supplier(s) selected
           </div>
         )}

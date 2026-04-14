@@ -192,7 +192,7 @@ export function PurchaseOrderForm({
           </div>
 
           {/* Order Information Section */}
-          <div className="space-y-4 p-4 border rounded-lg bg-slate-50 dark:bg-slate-900">
+          <div className="space-y-4 p-4 border rounded-lg bg-surface">
             <h2 className="font-bold text-lg">Order Information</h2>
 
             {/* Order Number & Date */}
@@ -255,7 +255,7 @@ export function PurchaseOrderForm({
           </div>
 
           {/* Supplier Selection Section */}
-          <div className="space-y-4 p-4 border rounded-lg bg-slate-50 dark:bg-slate-900">
+          <div className="space-y-4 p-4 border rounded-lg bg-surface">
             <h2 className="font-bold text-lg">Supplier *</h2>
             
             <SupplierSelector
@@ -277,7 +277,7 @@ export function PurchaseOrderForm({
           </div>
 
           {/* Line Items Section */}
-          <div className="space-y-4 p-4 border rounded-lg bg-slate-50 dark:bg-slate-900">
+          <div className="space-y-4 p-4 border rounded-lg bg-surface">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-bold text-lg">Line Items *</h2>
               <Button
@@ -297,15 +297,15 @@ export function PurchaseOrderForm({
             )}
 
             {lineItems.length === 0 ? (
-              <div className="p-4 border dashed rounded text-center text-slate-600 dark:text-slate-400">
+              <div className="p-4 border dashed rounded text-center text-muted-foreground">
                 No items added. Click &quot;Add Item&quot; to get started.
               </div>
             ) : (
               <div className="space-y-3">
                 {lineItems.map((item, index) => (
-                  <div key={item.id} className="p-3 border rounded bg-white dark:bg-slate-800 space-y-3">
+                  <div key={item.id} className="p-3 border rounded bg-card space-y-3">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                      <div className="text-sm font-medium text-muted-foreground">
                         Item {index + 1}
                       </div>
                       <button
@@ -334,7 +334,7 @@ export function PurchaseOrderForm({
                         <select
                           value={item.unit}
                           onChange={(e) => updateLineItem(item.id, 'unit', e.target.value)}
-                          className="w-full px-2 py-1 border rounded bg-white dark:bg-slate-700 text-sm"
+                          className="w-full px-2 py-1 border rounded bg-card border-border text-sm"
                         >
                           <option>kg</option>
                           <option>lb</option>
@@ -372,7 +372,7 @@ export function PurchaseOrderForm({
 
                       <div>
                         <label className="block text-xs font-medium mb-1">Line Total</label>
-                        <div className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-sm font-mono">
+                        <div className="px-2 py-1 bg-muted rounded text-sm font-mono">
                           ${calculateLineTotal(item.quantity_ordered, item.unit_price)}
                         </div>
                       </div>
@@ -405,7 +405,7 @@ export function PurchaseOrderForm({
 
           {/* Totals Section */}
           {lineItems.length > 0 && (
-            <div className="p-4 border rounded-lg bg-slate-50 dark:bg-slate-900">
+            <div className="p-4 border rounded-lg bg-surface">
               <div className="flex justify-end">
                 <div className="w-full max-w-sm space-y-2">
                   <div className="flex justify-between text-sm">

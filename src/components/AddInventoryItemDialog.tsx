@@ -35,7 +35,7 @@ export function AddInventoryItemDialog() {
         <LucidePlus className="size-5" />
         Provision Slot
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl glass border-border p-8 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl glass border-border p-8 max-h-[90vh] overflow-y-auto max-sm:max-w-full max-sm:h-dvh max-sm:rounded-none max-sm:border-0 max-sm:p-4">
         <DialogHeader className="space-y-1">
           <DialogTitle className="text-3xl font-black tracking-tighter">Inventory Sync</DialogTitle>
           <DialogDescription className="text-muted-foreground">

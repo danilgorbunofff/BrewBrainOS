@@ -1,6 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
-import { Sidebar } from '@/components/Sidebar'
-import { CommandPalette } from '@/components/CommandPalette'
+import { AppShellClient } from '@/components/AppShellClient'
 import { OfflineSyncBanner } from '@/components/OfflineSyncBanner'
 import { SubscriptionProvider } from '@/components/SubscriptionProvider'
 import { DevTools } from '@/components/DevTools'
@@ -60,23 +59,18 @@ export default async function AppLayout({
         <OfflineSyncBanner />
       </ClientErrorBoundary>
       <SubscriptionProvider subscription={subscription}>
-        <div className="min-h-screen flex max-w-[100vw] overflow-x-hidden md:mt-0 mt-8">
-        <Sidebar
+        <AppShellClient
           userEmail={user.email || ''}
           breweryName={activeBrewery?.name || null}
           breweries={breweries}
           activeBreweryId={activeBrewery?.id || null}
-        />
-        <CommandPalette />
-        <DevTools 
-          activeBreweryId={activeBrewery?.id || null} 
-          currentTier={subscription?.tier || 'free'}
-        />
-        {/* Main content area — pushed right past sidebar */}
-        <main className="flex-1 md:ml-[260px] min-h-screen max-w-[100vw] overflow-x-hidden">
+        >
+          <DevTools 
+            activeBreweryId={activeBrewery?.id || null} 
+            currentTier={subscription?.tier || 'free'}
+          />
           {children}
-        </main>
-        </div>
+        </AppShellClient>
         <FeedbackButton />
       </SubscriptionProvider>
     </>

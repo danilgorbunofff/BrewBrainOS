@@ -10,7 +10,6 @@ import {
   LucideTrendingUp, LucideHelpCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useState } from 'react'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { GloveModeToggle } from '@/components/GloveModeToggle'
 import { MobileFloatingActions } from '@/components/MobileFloatingActions'
@@ -45,11 +44,12 @@ interface SidebarProps {
   breweryName: string | null
   breweries: BrewerySummary[]
   activeBreweryId: string | null
+  mobileOpen: boolean
+  setMobileOpen: (open: boolean) => void
 }
 
-export function Sidebar({ userEmail, breweryName, breweries, activeBreweryId }: SidebarProps) {
+export function Sidebar({ userEmail, breweryName, breweries, activeBreweryId, mobileOpen, setMobileOpen }: SidebarProps) {
   const pathname = usePathname()
-  const [mobileOpen, setMobileOpen] = useState(false)
   const initials = userEmail.substring(0, 2).toUpperCase()
 
   return (
@@ -184,7 +184,7 @@ export function Sidebar({ userEmail, breweryName, breweries, activeBreweryId }: 
       {/* Mobile Bottom Tab Bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-sidebar/95 backdrop-blur-2xl border-t border-border px-2 pb-[env(safe-area-inset-bottom)]">
         <div className="flex items-center justify-around py-2">
-          {[...navItems.slice(0, 4), { label: 'More', href: '/settings', icon: LucideSettings }].map((item) => {
+          {navItems.slice(0, 4).map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
             return (
               <Link
@@ -200,6 +200,15 @@ export function Sidebar({ userEmail, breweryName, breweries, activeBreweryId }: 
               </Link>
             )
           })}
+          {/* "More" opens the sidebar drawer instead of navigating */}
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors min-w-[3rem] text-muted-foreground"
+            aria-label="Open full navigation menu"
+          >
+            <LucideSettings className="h-5 w-5" />
+            <span className="text-[9px] font-bold">More</span>
+          </button>
         </div>
       </nav>
 

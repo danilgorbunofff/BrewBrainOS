@@ -79,7 +79,8 @@ export function BatchReadingsTable({ readings, currentPage, pageSize, totalCount
 
   return (
     <div>
-      <div className="overflow-x-auto">
+      {/* Desktop table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
@@ -125,6 +126,52 @@ export function BatchReadingsTable({ readings, currentPage, pageSize, totalCount
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile card view */}
+      <div className="md:hidden divide-y divide-border">
+        {readings.map((r) => (
+          <div key={r.id} className="px-4 py-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono text-muted-foreground">{formatDate(r.created_at)}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Temp</span>
+                <span className="font-mono font-bold text-foreground text-sm">
+                  {r.temperature != null ? `${r.temperature.toFixed(1)}°` : '—'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Gravity</span>
+                <span className="font-mono font-bold text-foreground text-sm">
+                  {r.gravity != null ? r.gravity.toFixed(3) : '—'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">pH</span>
+                <span className={cn('font-mono text-sm', phColor(r.ph))}>
+                  {r.ph != null ? r.ph.toFixed(2) : '—'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">DO</span>
+                <span className={cn('font-mono text-sm', doColor(r.dissolved_oxygen))}>
+                  {r.dissolved_oxygen != null ? r.dissolved_oxygen.toFixed(2) : '—'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">PSI</span>
+                <span className={cn('font-mono text-sm', pressureColor(r.pressure))}>
+                  {r.pressure != null ? r.pressure.toFixed(1) : '—'}
+                </span>
+              </div>
+            </div>
+            {r.notes && r.notes !== 'No notes.' && (
+              <p className="text-xs text-muted-foreground line-clamp-2">{r.notes}</p>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* Pagination controls */}

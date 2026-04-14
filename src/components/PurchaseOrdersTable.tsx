@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
 import { LucidePlus, LucideExternalLink, LucideSearch } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface PurchaseOrdersTableProps {
   orders: (PurchaseOrder & { supplier?: Supplier })[]
@@ -87,9 +88,9 @@ export function PurchaseOrdersTable({ orders }: PurchaseOrdersTableProps) {
   // Empty state
   if (orders.length === 0) {
     return (
-      <div className="py-16 text-center border rounded-lg bg-slate-50 dark:bg-slate-900">
+      <div className="py-16 text-center border rounded-lg bg-surface">
         <div className="max-w-xs mx-auto space-y-4">
-          <p className="text-slate-600 dark:text-slate-400">
+          <p className="text-muted-foreground">
             No purchase orders yet. Create your first order to start tracking.
           </p>
           <Link href="/purchase-orders/create">
@@ -109,7 +110,7 @@ export function PurchaseOrdersTable({ orders }: PurchaseOrdersTableProps) {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex-1">
           <div className="relative">
-            <LucideSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <LucideSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -124,7 +125,7 @@ export function PurchaseOrdersTable({ orders }: PurchaseOrdersTableProps) {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as StatusFilter)}
-            className="px-3 py-2 border rounded-md bg-white dark:bg-slate-900 dark:border-slate-700 text-sm"
+            className="px-3 py-2 border rounded-md bg-card border-border text-sm"
           >
             <option>All</option>
             <option value="pending">Pending</option>
@@ -138,7 +139,7 @@ export function PurchaseOrdersTable({ orders }: PurchaseOrdersTableProps) {
           <select
             value={filterPayment}
             onChange={(e) => setFilterPayment(e.target.value as PaymentFilter)}
-            className="px-3 py-2 border rounded-md bg-white dark:bg-slate-900 dark:border-slate-700 text-sm"
+            className="px-3 py-2 border rounded-md bg-card border-border text-sm"
           >
             <option>All</option>
             <option value="unpaid">Unpaid</option>
@@ -157,16 +158,16 @@ export function PurchaseOrdersTable({ orders }: PurchaseOrdersTableProps) {
       </div>
 
       {/* Results counter */}
-      <div className="text-sm text-slate-600 dark:text-slate-400">
+      <div className="text-sm text-muted-foreground">
         Showing {filteredOrders.length} of {orders.length} orders
       </div>
 
-      {/* Table */}
-      <div className="border rounded-lg overflow-hidden">
+      {/* Table — desktop */}
+      <div className="border rounded-lg overflow-hidden hidden md:block">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-slate-50 dark:bg-slate-900">
+              <TableRow className="bg-surface">
                 <TableHead className="font-bold">Order #</TableHead>
                 <TableHead className="font-bold">Supplier</TableHead>
                 <TableHead className="font-bold">Date</TableHead>
@@ -188,7 +189,7 @@ export function PurchaseOrdersTable({ orders }: PurchaseOrdersTableProps) {
                     <TableCell className="font-mono font-bold">
                       <Link
                         href={`/purchase-orders/${order.id}`}
-                        className="text-blue-600 dark:text-blue-400 hover:underline"
+                        className="text-primary hover:underline"
                       >
                         {order.order_number}
                       </Link>
@@ -199,19 +200,19 @@ export function PurchaseOrdersTable({ orders }: PurchaseOrdersTableProps) {
                       {order.supplier ? (
                         <Link
                           href={`/suppliers/${order.supplier.id}`}
-                          className="text-blue-600 dark:text-blue-400 hover:underline"
+                          className="text-primary hover:underline"
                         >
                           {order.supplier.name}
                         </Link>
                       ) : (
-                        <span className="text-slate-400">Unknown Supplier</span>
+                        <span className="text-muted-foreground">Unknown Supplier</span>
                       )}
                     </TableCell>
 
                     {/* Order Date */}
                     <TableCell className="text-sm">
                       <div className="font-medium">{new Date(order.order_date).toLocaleDateString()}</div>
-                      <div className="text-slate-600 dark:text-slate-400 text-xs">
+                      <div className="text-muted-foreground text-xs">
                         {getDaysAgo(order.order_date)}
                       </div>
                     </TableCell>
@@ -252,7 +253,7 @@ export function PurchaseOrdersTable({ orders }: PurchaseOrdersTableProps) {
                       <Link
                         href={`/purchase-orders/${order.id}`}
                         title="View details"
-                        className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded inline-block"
+                        className="p-1 hover:bg-secondary rounded inline-block"
                       >
                         <LucideExternalLink className="w-4 h-4" />
                       </Link>
@@ -265,10 +266,51 @@ export function PurchaseOrdersTable({ orders }: PurchaseOrdersTableProps) {
         </div>
       </div>
 
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-3">
+        {filteredOrders.map((order) => {
+          const late = isOrderLate(order)
+          return (
+            <Link
+              key={order.id}
+              href={`/purchase-orders/${order.id}`}
+              className={cn(
+                'block p-4 rounded-xl border border-border bg-card hover:bg-surface transition-colors',
+                late && 'border-red-300 dark:border-red-800'
+              )}
+            >
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div>
+                  <span className="font-mono font-bold text-sm text-primary">{order.order_number}</span>
+                  <p className="text-sm font-medium text-foreground mt-0.5">
+                    {order.supplier?.name || 'Unknown Supplier'}
+                  </p>
+                </div>
+                <span className="font-bold text-foreground">
+                  {order.total_cost ? `$${order.total_cost.toFixed(2)}` : '—'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge className={getStatusColor(order.status)}>
+                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                </Badge>
+                <Badge className={getPaymentColor(order.payment_status)}>
+                  {order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1)}
+                </Badge>
+                {late && order.status !== 'delivered' && (
+                  <span className="text-xs text-red-600 dark:text-red-400 font-semibold">🔴 Late</span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">{getDaysAgo(order.order_date)}</p>
+            </Link>
+          )
+        })}
+      </div>
+
       {/* No results */}
       {filteredOrders.length === 0 && orders.length > 0 && (
-        <div className="py-8 text-center border rounded-lg bg-slate-50 dark:bg-slate-900">
-          <p className="text-slate-600 dark:text-slate-400">
+        <div className="py-8 text-center border rounded-lg bg-surface">
+          <p className="text-muted-foreground">
             No purchase orders match your search or filters.
           </p>
         </div>

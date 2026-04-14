@@ -106,7 +106,7 @@ export function ActivityLog({ activities }: { activities: ActivityEntry[] }) {
       </Card>
 
       <Dialog open={open} onOpenChange={handleOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col glass border-border p-0 overflow-hidden">
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col glass border-border p-0 overflow-hidden max-sm:max-w-full max-sm:h-dvh max-sm:rounded-none max-sm:border-0">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
             <DialogTitle className="text-xl font-black tracking-tight flex items-center gap-2">
               <LucideHistory className="h-5 w-5 text-primary/60" />

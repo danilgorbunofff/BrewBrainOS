@@ -2,7 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { requireActiveBrewery } from '@/lib/require-brewery'
-import { ActionResult } from '@/types/database'
+import { ActionResult, BatchStatus } from '@/types/database'
+
+const VALID_BATCH_STATUSES: BatchStatus[] = ['brewing', 'fermenting', 'conditioning', 'packaging', 'complete', 'dumped']
 import { detectFermentationAlerts, BatchReadingInput, BatchConfig } from '@/lib/fermentation-alerts'
 import { sendFermentationAlertNotification } from '@/app/actions/push-actions'
 import { headers } from 'next/headers'
@@ -20,6 +22,9 @@ export async function updateBatchStatus(formData: FormData): Promise<ActionResul
     const status = formData.get('status') as string
 
     if (!batchId) return { success: false, error: 'Batch ID is required' }
+    if (!VALID_BATCH_STATUSES.includes(status as BatchStatus)) {
+      return { success: false, error: `Invalid batch status: '${status}'` }
+    }
 
     const { error } = await supabase
       .from('batches')
@@ -75,6 +80,9 @@ export async function updateBatchFG(formData: FormData): Promise<ActionResult> {
       provenance_ip: ip,
       provenance_user_agent: userAgent
     })
+
+    // Trigger alert detection after FG reading creation
+    await runFermentationAlertCheck(batchId)
 
     revalidatePath(`/batches/${batchId}`)
     revalidatePath('/batches')

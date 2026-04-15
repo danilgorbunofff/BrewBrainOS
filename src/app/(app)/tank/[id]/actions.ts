@@ -42,9 +42,23 @@ export async function assignBatch(formData: FormData): Promise<ActionResult> {
 
     if (!tankId || !batchId) return { success: false, error: 'Tank and Batch IDs are required' }
 
+    // Fetch the batch to determine its current status for correct tank status
+    const { data: batch, error: batchError } = await supabase
+      .from('batches')
+      .select('status')
+      .eq('id', batchId)
+      .eq('brewery_id', brewery.id)
+      .single()
+
+    if (batchError || !batch) {
+      return { success: false, error: 'Batch not found or access denied' }
+    }
+
+    const tankStatus = batch.status === 'conditioning' ? 'conditioning' : 'fermenting'
+
     const { error } = await supabase
       .from('tanks')
-      .update({ current_batch_id: batchId, status: 'fermenting' })
+      .update({ current_batch_id: batchId, status: tankStatus })
       .eq('id', tankId)
       .eq('brewery_id', brewery.id)
 
@@ -54,6 +68,7 @@ export async function assignBatch(formData: FormData): Promise<ActionResult> {
     }
 
     revalidatePath(`/tank/${tankId}`)
+    revalidatePath('/tanks')
     return { success: true, data: null }
   } catch (e: unknown) {
     return { success: false, error: e instanceof Error ? e.message : String(e) || 'Authentication error' }
@@ -79,6 +94,7 @@ export async function unassignBatch(formData: FormData): Promise<ActionResult> {
     }
 
     revalidatePath(`/tank/${tankId}`)
+    revalidatePath('/tanks')
     return { success: true, data: null }
   } catch (e: unknown) {
     return { success: false, error: e instanceof Error ? e.message : String(e) || 'Authentication error' }

@@ -45,7 +45,9 @@ export async function deleteTank(formData: FormData): Promise<ActionResult> {
 
     if (!tankId) return { success: false, error: 'Tank ID is required' }
 
-    // First delete dependent records (like sanitation logs) to avoid foreign key violations
+    // Sanitation logs have FK ON DELETE CASCADE from tank_id, so this manual
+    // delete is redundant.  It is kept as a belt-and-suspenders measure in case
+    // RLS prevents the cascade from seeing rows created by other brewery members.
     const { error: logsError } = await supabase
       .from('sanitation_logs')
       .delete()

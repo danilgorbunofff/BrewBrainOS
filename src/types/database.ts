@@ -18,6 +18,7 @@ export type BatchStatus =
   | 'conditioning' 
   | 'packaging' 
   | 'complete'
+  | 'dumped'
 
 export type InventoryType = 
   | 'Hops' 

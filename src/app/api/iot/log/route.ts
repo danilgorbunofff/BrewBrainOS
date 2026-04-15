@@ -122,8 +122,9 @@ export const POST = withSentry(async (req: Request) => {
         if (insertedAlerts) {
           const { sendFermentationAlertNotification } = await import('@/app/actions/push-actions')
           for (const alert of insertedAlerts) {
-            void sendFermentationAlertNotification
-            void alert
+            sendFermentationAlertNotification(batchConfig.brewery_id, alert).catch((e) =>
+              console.error('Failed to send IoT fermentation alert notification', e)
+            )
           }
         }
       }

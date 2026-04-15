@@ -66,34 +66,39 @@ export default async function BatchDetailPage({ params, searchParams }: PageProp
 
   if (error || !batch) notFound()
 
-  // Chart query – keeps the last 20 readings for the fermentation curve
-  const { data: readings } = await supabase
-    .from('batch_readings')
-    .select('*')
-    .eq('batch_id', id)
-    .order('created_at', { ascending: false })
-    .limit(20)
-
-  // Paginated query for the Production Readings table
-  const { data: tableReadings, count: readingsCount } = await supabase
-    .from('batch_readings')
-    .select('*', { count: 'exact' })
-    .eq('batch_id', id)
-    .order('created_at', { ascending: false })
-    .range(from, to)
-
-  const { data: alerts } = await supabase
-    .from('fermentation_alerts')
-    .select('*')
-    .eq('batch_id', id)
-    .order('created_at', { ascending: false })
-
-  const { data: yeastLogs } = await supabase
-    .from('yeast_logs')
-    .select('*')
-    .eq('batch_id', id)
-    .order('created_at', { ascending: false })
-    .limit(10)
+  // Parallelize remaining data fetches
+  const [
+    { data: readings },
+    { data: tableReadings, count: readingsCount },
+    { data: alerts },
+    { data: yeastLogs },
+  ] = await Promise.all([
+    // Chart query – keeps the last 20 readings for the fermentation curve
+    supabase
+      .from('batch_readings')
+      .select('*')
+      .eq('batch_id', id)
+      .order('created_at', { ascending: false })
+      .limit(20),
+    // Paginated query for the Production Readings table
+    supabase
+      .from('batch_readings')
+      .select('*', { count: 'exact' })
+      .eq('batch_id', id)
+      .order('created_at', { ascending: false })
+      .range(from, to),
+    supabase
+      .from('fermentation_alerts')
+      .select('*')
+      .eq('batch_id', id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('yeast_logs')
+      .select('*')
+      .eq('batch_id', id)
+      .order('created_at', { ascending: false })
+      .limit(10),
+  ])
 
   const currentStatus = BATCH_STATUSES.find(s => s.value === batch.status)
   const abv = batch.og && batch.fg

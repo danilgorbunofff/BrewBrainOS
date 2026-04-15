@@ -65,30 +65,34 @@ export default async function TankPage({ params }: PageProps) {
     )
   }
 
-  const { data: logs } = await supabase
-    .from('sanitation_logs')
-    .select('*')
-    .eq('tank_id', id)
-    .order('cleaned_at', { ascending: false })
-    .limit(5)
-
-  // Fetch all brewery's batches for the assignment dropdown
-  const { data: allBatches } = await supabase
-    .from('batches')
-    .select('id, recipe_name, status')
-    .eq('brewery_id', tank.brewery_id)
-    .in('status', ['fermenting', 'conditioning'])
-    .order('created_at', { ascending: false })
-
-  let activeBatch = null
-  if (tank.current_batch_id) {
-    const { data: batch } = await supabase
+  // Fetch logs, batches, and active batch in parallel
+  const [
+    { data: logs },
+    { data: allBatches },
+    activeBatchResult,
+  ] = await Promise.all([
+    supabase
+      .from('sanitation_logs')
+      .select('*')
+      .eq('tank_id', id)
+      .order('cleaned_at', { ascending: false })
+      .limit(5),
+    supabase
       .from('batches')
-      .select('id, recipe_name, status, og, fg')
-      .eq('id', tank.current_batch_id)
-      .single()
-    activeBatch = batch
-  }
+      .select('id, recipe_name, status')
+      .eq('brewery_id', tank.brewery_id)
+      .in('status', ['fermenting', 'conditioning'])
+      .order('created_at', { ascending: false }),
+    tank.current_batch_id
+      ? supabase
+          .from('batches')
+          .select('id, recipe_name, status, og, fg')
+          .eq('id', tank.current_batch_id)
+          .single()
+      : Promise.resolve({ data: null }),
+  ])
+
+  const activeBatch = activeBatchResult.data
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6 md:p-8 pt-8 selection:bg-primary/30">

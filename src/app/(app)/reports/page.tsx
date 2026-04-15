@@ -23,29 +23,38 @@ export default async function ReportsPage() {
 
   if (!brewery) redirect('/dashboard')
 
-  // Fetch ALL batches for this brewery
-  const { data: batches } = await supabase
-    .from('batches')
-    .select('id, recipe_name, status, og, fg, created_at')
-    .eq('brewery_id', brewery.id)
-    .order('created_at', { ascending: false })
+  // Fetch batches and tanks first (brewery-scoped)
+  const [{ data: batches }, { data: tanks }] = await Promise.all([
+    supabase
+      .from('batches')
+      .select('id, recipe_name, status, og, fg, created_at')
+      .eq('brewery_id', brewery.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('tanks')
+      .select('id, name, capacity')
+      .eq('brewery_id', brewery.id),
+  ])
 
-  // Fetch ALL tanks for capacity data
-  const { data: tanks } = await supabase
-    .from('tanks')
-    .select('id, name, capacity')
-    .eq('brewery_id', brewery.id)
+  const tankIds = tanks?.map(t => t.id) ?? []
+  const batchIds = batches?.map(b => b.id) ?? []
 
-  // Fetch ALL sanitation logs
-  const { data: sanitationLogs } = await supabase
-    .from('sanitation_logs')
-    .select('id, tank_id, notes, cleaned_at, user_id')
-    .order('cleaned_at', { ascending: false })
-
-  // Fetch batch readings count
-  const { count: totalReadings } = await supabase
-    .from('batch_readings')
-    .select('id', { count: 'exact', head: true })
+  // Fetch sanitation logs and batch readings scoped to brewery's tanks/batches
+  const [{ data: sanitationLogs }, { count: totalReadings }] = await Promise.all([
+    tankIds.length > 0
+      ? supabase
+          .from('sanitation_logs')
+          .select('id, tank_id, notes, cleaned_at, user_id')
+          .in('tank_id', tankIds)
+          .order('cleaned_at', { ascending: false })
+      : Promise.resolve({ data: [] as { id: string; tank_id: string; notes: string | null; cleaned_at: string; user_id: string | null }[] }),
+    batchIds.length > 0
+      ? supabase
+          .from('batch_readings')
+          .select('id', { count: 'exact', head: true })
+          .in('batch_id', batchIds)
+      : Promise.resolve({ count: 0 }),
+  ])
 
   // --- Aggregate monthly production data ---
   const allBatches = batches || []
@@ -98,7 +107,7 @@ export default async function ReportsPage() {
       m.completedBatches++
       m.estimatedBBL += avgTankCapacity // 1 batch ≈ 1 tank fill
     }
-    if (batch.status === 'fermenting' || batch.status === 'conditioning') {
+    if (batch.status === 'brewing' || batch.status === 'fermenting' || batch.status === 'conditioning') {
       m.activeBatches++
     }
     if (batch.status === 'dumped') {

@@ -1,0 +1,412 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: offline-precache.spec.ts >> offline precache >> serves the precached offline fallback for disconnected navigations
+- Location: playwright/offline-precache.spec.ts:4:7
+
+# Error details
+
+```
+Test timeout of 120000ms exceeded.
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - img "BrewBrain Logo" [ref=e7]
+          - generic [ref=e8]: BrewBrain OS
+        - navigation [ref=e9]:
+          - link "Features" [ref=e10] [cursor=pointer]:
+            - /url: "#features"
+          - link "How It Works" [ref=e11] [cursor=pointer]:
+            - /url: "#how-it-works"
+          - link "Pricing" [ref=e12] [cursor=pointer]:
+            - /url: "#pricing"
+        - generic [ref=e13]:
+          - link "Sign In" [ref=e14] [cursor=pointer]:
+            - /url: /login
+            - button "Sign In" [ref=e15]
+          - link "Start Free Trial" [ref=e16] [cursor=pointer]:
+            - /url: /login?trial=production
+            - button "Start Free Trial" [ref=e17]
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - img [ref=e21]
+        - text: Built for the Brewery Floor
+      - heading "Stop managing your brewery from a whiteboard." [level=1] [ref=e23]:
+        - text: Stop managing your brewery
+        - text: from a whiteboard.
+      - paragraph [ref=e24]: BrewBrain OS is the AI-powered production platform that replaces spreadsheets, clipboards, and guesswork with one voice command.
+      - generic [ref=e25]:
+        - link "Start Free — No Credit Card" [ref=e26] [cursor=pointer]:
+          - /url: /login?trial=production
+          - button "Start Free — No Credit Card" [ref=e27]:
+            - text: Start Free — No Credit Card
+            - img
+        - link "See How It Works" [ref=e28] [cursor=pointer]:
+          - /url: "#how-it-works"
+          - button "See How It Works" [ref=e29]
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - img [ref=e32]
+          - text: 14-day free trial
+        - generic [ref=e34]:
+          - img [ref=e35]
+          - text: Works offline
+        - generic [ref=e37]:
+          - img [ref=e38]
+          - text: TTB/FSMA compliant
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - paragraph [ref=e42]: THE DASHBOARD
+          - heading "Your entire brewery, in your pocket." [level=2] [ref=e43]
+          - paragraph [ref=e44]: Real-time floor state, tank levels, and batch history. Zero latency, even in the cold room.
+        - generic [ref=e46]:
+          - generic [ref=e54]: app.brewbrain.io/dashboard
+          - generic [ref=e55]:
+            - generic [ref=e56]:
+              - generic [ref=e57]:
+                - img "BrewBrain Logo" [ref=e59]
+                - generic [ref=e60]: BrewBrain OS
+              - generic [ref=e61]:
+                - paragraph [ref=e62]: Active Brewery
+                - paragraph [ref=e63]: Copper Trail Brewing
+              - generic [ref=e64]:
+                - generic [ref=e65]: Dashboard
+                - generic [ref=e67]: Vessels
+                - generic [ref=e69]: Batches
+                - generic [ref=e71]: Inventory
+                - generic [ref=e73]: QR Scan
+                - generic [ref=e75]: Reports
+            - generic [ref=e77]:
+              - generic [ref=e79]:
+                - heading "Brewery Brain" [level=2] [ref=e80]
+                - paragraph [ref=e81]: Welcome back. Copper Trail Brewing is online.
+              - generic [ref=e82]:
+                - generic [ref=e83]:
+                  - paragraph [ref=e84]: Active Batches
+                  - paragraph [ref=e85]: "4"
+                - generic [ref=e86]:
+                  - paragraph [ref=e87]: Tanks in Use
+                  - paragraph [ref=e88]: 7/12
+                - generic [ref=e89]:
+                  - paragraph [ref=e90]: Fermenting
+                  - paragraph [ref=e91]: "3"
+                - generic [ref=e92]:
+                  - paragraph [ref=e93]: Low Stock
+                  - paragraph [ref=e94]: "2"
+              - generic [ref=e95]:
+                - generic [ref=e96]:
+                  - generic [ref=e97]:
+                    - paragraph [ref=e98]: Current Production
+                    - generic [ref=e99]: View All →
+                  - generic [ref=e100]:
+                    - generic [ref=e101]:
+                      - generic [ref=e102]:
+                        - generic [ref=e103]: "#B240"
+                        - generic [ref=e104]: Hazy IPA
+                      - generic [ref=e105]:
+                        - generic [ref=e106]: "1.065"
+                        - generic [ref=e107]: Fermenting
+                    - generic [ref=e108]:
+                      - generic [ref=e109]:
+                        - generic [ref=e110]: "#B241"
+                        - generic [ref=e111]: Stout
+                      - generic [ref=e112]:
+                        - generic [ref=e113]: "1.072"
+                        - generic [ref=e114]: Conditioning
+                    - generic [ref=e115]:
+                      - generic [ref=e116]:
+                        - generic [ref=e117]: "#B239"
+                        - generic [ref=e118]: Pale Ale
+                      - generic [ref=e119]:
+                        - generic [ref=e120]: "1.052"
+                        - generic [ref=e121]: Packaging
+                    - generic [ref=e122]:
+                      - generic [ref=e123]:
+                        - generic [ref=e124]: "#B242"
+                        - generic [ref=e125]: Lager
+                      - generic [ref=e126]:
+                        - generic [ref=e127]: "1.048"
+                        - generic [ref=e128]: Fermenting
+                - generic [ref=e129]:
+                  - paragraph [ref=e130]: Gravity Trend — Hazy IPA
+                  - generic [ref=e131]:
+                    - generic "1.065" [ref=e132]
+                    - generic "1.058" [ref=e133]
+                    - generic "1.052" [ref=e134]
+                    - generic "1.044" [ref=e135]
+                    - generic "1.038" [ref=e136]
+                    - generic "1.033" [ref=e137]
+                    - generic "1.028" [ref=e138]
+                    - generic "1.024" [ref=e139]
+                    - generic "1.020" [ref=e140]
+                    - generic "1.018" [ref=e141]
+                    - generic "1.016" [ref=e142]
+                    - generic "1.014" [ref=e143]
+                    - generic "1.013" [ref=e144]
+                    - generic "1.012" [ref=e145]
+                  - generic [ref=e146]:
+                    - generic [ref=e147]: Day 1
+                    - generic [ref=e148]: 1.012 current
+                    - generic [ref=e149]: Latest
+              - generic [ref=e150]:
+                - generic [ref=e151]:
+                  - paragraph [ref=e155]: Low Stock Alerts
+                  - generic [ref=e156]:
+                    - generic [ref=e157]:
+                      - generic [ref=e158]:
+                        - paragraph [ref=e159]: Cascade Hops
+                        - paragraph [ref=e160]: Hops
+                      - generic [ref=e161]: 2 lbs
+                    - generic [ref=e162]:
+                      - generic [ref=e163]:
+                        - paragraph [ref=e164]: US-05 Yeast
+                        - paragraph [ref=e165]: Yeast
+                      - generic [ref=e166]: 1 packs
+                - generic [ref=e167]:
+                  - paragraph [ref=e169]: Quick Actions
+                  - generic [ref=e170]:
+                    - generic [ref=e171]:
+                      - generic [ref=e174]:
+                        - paragraph [ref=e175]: Vessels
+                        - paragraph [ref=e176]: 12 registered
+                      - generic [ref=e177]: →
+                    - generic [ref=e178]:
+                      - generic [ref=e181]:
+                        - paragraph [ref=e182]: Batches
+                        - paragraph [ref=e183]: 4 active
+                      - generic [ref=e184]: →
+                    - generic [ref=e185]:
+                      - generic [ref=e188]:
+                        - paragraph [ref=e189]: Inventory
+                        - paragraph [ref=e190]: 2 alerts
+                      - generic [ref=e191]: →
+    - generic [ref=e192]:
+      - generic [ref=e194]:
+        - paragraph [ref=e195]: THE PROBLEM
+        - heading "Your brewery runs on paper, memory, and spreadsheets" [level=2] [ref=e196]
+        - paragraph [ref=e197]: Every day, critical production data gets lost — scribbled on whiteboards, forgotten in walk-in coolers, or buried in a spreadsheet nobody updates. Until TTB audit season, when it becomes a three-day panic.
+      - generic [ref=e198]:
+        - generic [ref=e200]:
+          - generic [ref=e201]: 📋
+          - paragraph [ref=e202]: Handwritten logs get wet, lost, or unreadable
+          - paragraph [ref=e203]: 40%
+          - paragraph [ref=e204]: of manual data is never digitized
+        - generic [ref=e206]:
+          - generic [ref=e207]: 🧊
+          - paragraph [ref=e208]: No signal in the cold room or basement
+          - paragraph [ref=e209]: 0 bars
+          - paragraph [ref=e210]: where most readings happen
+        - generic [ref=e212]:
+          - generic [ref=e213]: 😰
+          - paragraph [ref=e214]: TTB & FSMA audits cause 72-hour fire drills
+          - paragraph [ref=e215]: $5,000+
+          - paragraph [ref=e216]: average cost of a compliance error
+    - generic [ref=e218]:
+      - generic [ref=e220]:
+        - paragraph [ref=e221]: FEATURES
+        - heading "Everything your brewery needs. Nothing it doesn't." [level=2] [ref=e222]:
+          - text: Everything your brewery needs.
+          - text: Nothing it doesn't.
+      - generic [ref=e223]:
+        - generic [ref=e225]:
+          - generic [ref=e226]: AI Powered
+          - img [ref=e228]
+          - heading "Voice-Powered Logging" [level=3] [ref=e231]
+          - paragraph [ref=e232]: Tap the mic, say "Batch 402, 68 degrees, gravity 1.012." AI extracts the data and writes it to your database. No keyboards, no wet hands.
+        - generic [ref=e234]:
+          - img [ref=e236]
+          - heading "QR Tank Scanning" [level=3] [ref=e242]
+          - paragraph [ref=e243]: Stick a waterproof QR code on every tank. Scan with your phone to instantly pull up batch info, log sanitation, or record a reading.
+        - generic [ref=e245]:
+          - img [ref=e247]
+          - heading "Offline-First PWA" [level=3] [ref=e251]
+          - paragraph [ref=e252]: Works in basements, cold rooms, and walk-in coolers with zero signal. Syncs automatically when you're back online.
+        - generic [ref=e254]:
+          - img [ref=e256]
+          - heading "Compliance Autopilot" [level=3] [ref=e259]
+          - paragraph [ref=e260]: TTB Form 5130.9, FSMA sanitation logs — generated automatically from your production data. One-click export for audits.
+        - generic [ref=e262]:
+          - img [ref=e264]
+          - heading "Digital Twin Tanks" [level=3] [ref=e268]
+          - paragraph [ref=e269]: See exactly what's in FV-04 from your couch. Real-time floor state with batch assignment, capacity, and reading history.
+        - generic [ref=e271]:
+          - img [ref=e273]
+          - heading "Live Dashboards" [level=3] [ref=e275]
+          - paragraph [ref=e276]: Active batches, tanks in use, low-stock alerts, gravity trends — all in one place. Know your floor state at a glance.
+    - generic [ref=e278]:
+      - generic [ref=e280]:
+        - paragraph [ref=e281]: HOW IT WORKS
+        - heading "Three steps. Five minutes." [level=2] [ref=e282]
+        - paragraph [ref=e283]: You'll be logging readings before your yeast finishes proofing.
+      - generic [ref=e284]:
+        - generic [ref=e288]:
+          - img [ref=e290]
+          - paragraph [ref=e292]: Step 01
+          - heading "Sign Up & Name Your Brewery" [level=3] [ref=e293]
+          - paragraph [ref=e294]: Create your account and register your facility. Takes 30 seconds. No credit card needed.
+        - generic [ref=e298]:
+          - img [ref=e300]
+          - paragraph [ref=e306]: Step 02
+          - heading "Add Tanks & Print QR Labels" [level=3] [ref=e307]
+          - paragraph [ref=e308]: Register each vessel. We generate waterproof QR stickers that link directly to each tank's dashboard.
+        - generic [ref=e311]:
+          - img [ref=e313]
+          - paragraph [ref=e321]: Step 03
+          - heading "Start Logging with AI" [level=3] [ref=e322]
+          - paragraph [ref=e323]: Tap the mic, speak your reading, and our AI parses it into structured data. It's that simple.
+    - generic [ref=e326]:
+      - generic [ref=e327]:
+        - img [ref=e328]
+        - img [ref=e330]
+        - img [ref=e332]
+        - img [ref=e334]
+        - img [ref=e336]
+      - blockquote [ref=e338]: “We were running our 15-barrel system on whiteboards and Google Sheets. BrewBrain replaced all of it in one afternoon. TTB reporting went from a 3-day nightmare to one button click.”
+      - generic [ref=e339]:
+        - paragraph [ref=e340]: Jake Morrison
+        - paragraph [ref=e341]: Head Brewer, Copper Trail Brewing Co.
+    - generic [ref=e343]:
+      - generic [ref=e345]:
+        - paragraph [ref=e346]: PRICING
+        - heading "Cheaper than one compliance mistake." [level=2] [ref=e347]
+        - paragraph [ref=e348]: Start free for 14 days. Cancel anytime.
+      - generic [ref=e349]:
+        - radiogroup "Billing interval" [ref=e351]:
+          - radio "Monthly" [checked] [ref=e352]
+          - radio "Annual Save 20%" [ref=e353]:
+            - text: Annual
+            - generic [ref=e354]: Save 20%
+          - generic [ref=e355]: Monthly billing selected
+        - generic [ref=e356]:
+          - generic [ref=e358]:
+            - paragraph [ref=e359]: Nanobrewery
+            - generic [ref=e360]:
+              - generic [ref=e361]: $149
+              - generic [ref=e362]: /mo
+            - paragraph [ref=e363]: For small-batch and homebrew-scale operations
+            - list [ref=e364]:
+              - listitem [ref=e365]:
+                - img [ref=e366]
+                - text: Up to 5 tanks
+              - listitem [ref=e368]:
+                - img [ref=e369]
+                - text: Inventory tracking
+              - listitem [ref=e371]:
+                - img [ref=e372]
+                - text: QR tank scanning
+              - listitem [ref=e374]:
+                - img [ref=e375]
+                - text: Basic compliance logs
+              - listitem [ref=e377]:
+                - img [ref=e378]
+                - text: Offline-first PWA
+            - link "Start Free Trial" [ref=e380] [cursor=pointer]:
+              - /url: /login?trial=nano
+              - button "Start Free Trial" [ref=e381]
+          - generic [ref=e383]:
+            - generic [ref=e384]: Most Popular
+            - paragraph [ref=e385]: Production
+            - generic [ref=e386]:
+              - generic [ref=e387]: $299
+              - generic [ref=e388]: /mo
+            - paragraph [ref=e389]: AI voice logs, TTB reports & unlimited tanks
+            - list [ref=e390]:
+              - listitem [ref=e391]:
+                - img [ref=e392]
+                - text: Unlimited tanks & batches
+              - listitem [ref=e394]:
+                - img [ref=e395]
+                - text: AI voice logging
+              - listitem [ref=e397]:
+                - img [ref=e398]
+                - text: TTB & FSMA report exports
+              - listitem [ref=e400]:
+                - img [ref=e401]
+                - text: Real-time analytics
+              - listitem [ref=e403]:
+                - img [ref=e404]
+                - text: Priority support
+              - listitem [ref=e406]:
+                - img [ref=e407]
+                - text: White-glove setup included
+            - link "Start Free Trial" [ref=e409] [cursor=pointer]:
+              - /url: /login?trial=production
+              - button "Start Free Trial" [ref=e410]
+          - generic [ref=e412]:
+            - paragraph [ref=e413]: Multi-Site
+            - generic [ref=e414]:
+              - generic [ref=e415]: $599
+              - generic [ref=e416]: /mo
+            - paragraph [ref=e417]: Regional hubs, complex supply chain, everything
+            - list [ref=e418]:
+              - listitem [ref=e419]:
+                - img [ref=e420]
+                - text: Everything in Production
+              - listitem [ref=e422]:
+                - img [ref=e423]
+                - text: Multi-brewery management
+              - listitem [ref=e425]:
+                - img [ref=e426]
+                - text: Team roles & permissions
+              - listitem [ref=e428]:
+                - img [ref=e429]
+                - text: Supply chain dashboard
+              - listitem [ref=e431]:
+                - img [ref=e432]
+                - text: Dedicated account manager
+              - listitem [ref=e434]:
+                - img [ref=e435]
+                - text: Custom integrations
+            - link "Contact Sales" [ref=e437] [cursor=pointer]:
+              - /url: /login?trial=multi_site
+              - button "Contact Sales" [ref=e438]
+    - generic [ref=e441]:
+      - heading "Focus on the beer. We'll handle the brain." [level=2] [ref=e442]:
+        - text: Focus on the beer.
+        - text: We'll handle the brain.
+      - paragraph [ref=e443]: Join the breweries that stopped losing data on the floor and started running production like a machine.
+      - link "Launch My Brewery Brain" [ref=e444] [cursor=pointer]:
+        - /url: /login?trial=production
+        - button "Launch My Brewery Brain" [ref=e445]:
+          - text: Launch My Brewery Brain
+          - img
+    - contentinfo [ref=e446]:
+      - generic [ref=e447]:
+        - generic [ref=e448]:
+          - img "BrewBrain Logo" [ref=e450]
+          - generic [ref=e451]: BrewBrain OS
+        - generic [ref=e452]:
+          - link "Features" [ref=e453] [cursor=pointer]:
+            - /url: "#features"
+          - link "Pricing" [ref=e454] [cursor=pointer]:
+            - /url: "#pricing"
+          - link "Sign In" [ref=e455] [cursor=pointer]:
+            - /url: /login
+        - paragraph [ref=e456]: © 2026 BrewBrain Technologies
+    - generic [ref=e458]:
+      - button "Close cookie consent" [ref=e460]:
+        - img [ref=e461]
+      - generic [ref=e464]:
+        - img [ref=e466]
+        - generic [ref=e469]:
+          - generic [ref=e470]:
+            - heading "Privacy Preference" [level=4] [ref=e471]
+            - paragraph [ref=e472]: We use cookies to optimize the brewery floor experience. Choose your level of logging below.
+          - generic [ref=e473]:
+            - button "Accept All" [ref=e474]
+            - button "Customize" [ref=e475]
+  - region "Notifications alt+T"
+  - alert [ref=e476]
+```

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { parseBrewBrainQR } from '@/lib/qr'
 
 const QRCodeScanner = dynamic(
   () => import('@yudiel/react-qr-scanner').then((mod) => mod.Scanner),
@@ -34,44 +35,31 @@ export function QRScanner() {
   const handleScan = (detectedCodes: Array<{ rawValue: string }>) => {
     if (!isScanning || !detectedCodes.length) return
     
-    // Grab the first detected code value
     const data = detectedCodes[0].rawValue
+    if (!data) return
 
-    if (data) {
-      setIsScanning(false)
-      
-      try {
-        // Handle absolute URL (e.g., https://app.brewbrain.io/tank/1234-abcd)
-        if (data.includes('tank/')) {
-          const tankIdMatch = data.match(/tank\/([a-zA-Z0-9-]+)/)
-          if (tankIdMatch && tankIdMatch[1]) {
-            toast.success('Tank recognized. Loading profile...')
-            router.push(`/tank/${tankIdMatch[1]}`)
-            return
-          }
-        }
-        
-        // Handle UUID just in case it's a raw database ID
-        const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
-        if (uuidRegex.test(data)) {
-          toast.success('Tank recognized by ID. Loading profile...')
-          router.push(`/tank/${data}`)
-          return
-        }
+    setIsScanning(false)
 
-        // Unrecognized format
-        toast.error('Invalid BrewBrain QR code detected.')
-        setTimeout(() => setIsScanning(true), 2000)
-      } catch {
-        toast.error('Failed to parse QR code.')
-        setTimeout(() => setIsScanning(true), 2000)
-      }
+    const tankId = parseBrewBrainQR(data)
+    if (tankId) {
+      toast.success('Tank recognized. Loading profile...')
+      router.push(`/tank/${tankId}`)
+    } else {
+      toast.error('Invalid BrewBrain QR code detected.')
+      setTimeout(() => setIsScanning(true), 2000)
     }
   }
 
   const handleError = (error: unknown) => {
     console.error('QR Scanner Error:', error)
-    if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' && error.message.includes('Permission denied')) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'message' in error &&
+      typeof error.message === 'string' &&
+      (error.message.includes('Permission denied') ||
+        error.message.includes('NotAllowedError'))
+    ) {
       toast.error('Camera permission denied. Please allow camera access.')
     }
   }

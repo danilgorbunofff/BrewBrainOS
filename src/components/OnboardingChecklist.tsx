@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { LucideCheck, LucideX, LucideRocket } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -19,13 +19,16 @@ interface OnboardingChecklistProps {
   hasInventory: boolean
 }
 
-export function OnboardingChecklist({ hasBrewery, hasTanks, hasBatches, hasInventory }: OnboardingChecklistProps) {
-  const [dismissed, setDismissed] = useState(false)
+const subscribeDismissed = (cb: () => void) => {
+  window.addEventListener('storage', cb)
+  return () => window.removeEventListener('storage', cb)
+}
+const getSnapshotDismissed = () => localStorage.getItem('brewbrain_onboarding_dismissed') === 'true'
+const getServerSnapshotDismissed = () => false
 
-  useEffect(() => {
-    const stored = localStorage.getItem('brewbrain_onboarding_dismissed') === 'true'
-    if (stored) setDismissed(true)
-  }, [])
+export function OnboardingChecklist({ hasBrewery, hasTanks, hasBatches, hasInventory }: OnboardingChecklistProps) {
+  const storedDismissed = useSyncExternalStore(subscribeDismissed, getSnapshotDismissed, getServerSnapshotDismissed)
+  const [dismissed, setDismissed] = useState(false)
 
   const steps: OnboardingStep[] = [
     { id: 'brewery', label: 'Create your brewery', href: '/dashboard', completed: hasBrewery },
@@ -38,7 +41,7 @@ export function OnboardingChecklist({ hasBrewery, hasTanks, hasBatches, hasInven
   const allComplete = completedCount === steps.length
   const progress = (completedCount / steps.length) * 100
 
-  if (dismissed || allComplete) return null
+  if (dismissed || storedDismissed || allComplete) return null
 
   const handleDismiss = () => {
     setDismissed(true)

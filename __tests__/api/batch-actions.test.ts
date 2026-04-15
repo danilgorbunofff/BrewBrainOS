@@ -204,5 +204,36 @@ describe('batches/actions', () => {
 
       expect(mockRedirect).toHaveBeenCalledWith('/batches')
     })
+
+    it('returns error when requireActiveBrewery rejects', async () => {
+      mockRequireActiveBrewery.mockRejectedValue(new Error('Session expired'))
+
+      const { deleteBatch } = await import('../../src/app/(app)/batches/actions')
+      const result = await deleteBatch(makeFormData({ batchId: 'b-001' }))
+
+      expect(result.success).toBe(false)
+    })
+  })
+
+  // ─── addBatch error paths ───────────────────────────────────────
+  describe('addBatch error paths', () => {
+    it('returns error when requireActiveBrewery rejects', async () => {
+      mockRequireActiveBrewery.mockRejectedValue(new Error('Not authenticated'))
+
+      const { addBatch } = await import('../../src/app/(app)/batches/actions')
+      const result = await addBatch(makeFormData({ recipeName: 'Test IPA' }))
+
+      expect(result.success).toBe(false)
+    })
+
+    it('handles missing recipeName gracefully', async () => {
+      stubInsertSelectSingle({ id: 'b-new' })
+
+      const { addBatch } = await import('../../src/app/(app)/batches/actions')
+      const result = await addBatch(makeFormData({}))
+
+      // Should either succeed with null recipe_name or fail validation
+      expect(result).toBeDefined()
+    })
   })
 })

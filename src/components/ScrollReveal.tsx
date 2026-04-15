@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import type { ReactNode } from 'react'
 
@@ -19,40 +19,38 @@ export function ScrollReveal({
   distance = 40,
   duration = 0.8
 }: ScrollRevealProps) {
-  const [hasMounted, setHasMounted] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setHasMounted(true)
+    setMounted(true)
   }, [])
 
-  const directions = {
-    up: { y: distance },
-    down: { y: -distance },
-    left: { x: distance },
-    right: { x: -distance }
+  const staticTransform =
+    direction === 'up' ? `translateY(${distance}px)` :
+    direction === 'down' ? `translateY(-${distance}px)` :
+    direction === 'left' ? `translateX(${distance}px)` :
+    `translateX(-${distance}px)`
+
+  if (!mounted) {
+    return (
+      <div style={{ opacity: 0, transform: staticTransform }}>
+        {children}
+      </div>
+    )
   }
 
-  if (!hasMounted) {
-    return <div>{children}</div>
-  }
+  const motionInitial =
+    direction === 'up' ? { y: distance } :
+    direction === 'down' ? { y: -distance } :
+    direction === 'left' ? { x: distance } :
+    { x: -distance }
 
   return (
     <motion.div
-      initial={{ 
-        opacity: 0, 
-        ...directions[direction]
-      }}
-      whileInView={{ 
-        opacity: 1, 
-        x: 0, 
-        y: 0 
-      }}
+      initial={{ opacity: 0, ...motionInitial }}
+      whileInView={{ opacity: 1, x: 0, y: 0 }}
       viewport={{ once: true, margin: '-100px' }}
-      transition={{ 
-        duration, 
-        delay, 
-        ease: [0.21, 0.47, 0.32, 0.98] 
-      }}
+      transition={{ duration, delay, ease: [0.21, 0.47, 0.32, 0.98] }}
     >
       {children}
     </motion.div>

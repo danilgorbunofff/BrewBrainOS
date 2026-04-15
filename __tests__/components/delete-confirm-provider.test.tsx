@@ -93,4 +93,92 @@ describe('DeleteConfirmProvider', () => {
       expect(screen.getByRole('dialog')).toBeInTheDocument()
     })
   })
+
+  it('calls router.refresh when refreshOnSuccess is true', async () => {
+    const deleteAction = vi.fn(async () => ({ success: true }))
+
+    render(
+      <DeleteConfirmProvider>
+        <DeleteConfirmDialog
+          action={deleteAction}
+          hiddenInputs={{ id: '1' }}
+          itemName="Tank"
+          refreshOnSuccess
+        />
+      </DeleteConfirmProvider>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Tank' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm Purge' }))
+
+    await waitFor(() => {
+      expect(refreshMock).toHaveBeenCalled()
+    })
+  })
+
+  it('calls router.push when redirectOnSuccess is set', async () => {
+    const deleteAction = vi.fn(async () => ({ success: true }))
+
+    render(
+      <DeleteConfirmProvider>
+        <DeleteConfirmDialog
+          action={deleteAction}
+          hiddenInputs={{ id: '1' }}
+          itemName="Batch"
+          redirectOnSuccess="/batches"
+        />
+      </DeleteConfirmProvider>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Batch' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm Purge' }))
+
+    await waitFor(() => {
+      expect(pushMock).toHaveBeenCalledWith('/batches')
+    })
+  })
+
+  it('shows error toast when action throws a non-redirect error', async () => {
+    const { toast } = await import('sonner')
+    const deleteAction = vi.fn(async () => { throw new Error('Server down') })
+
+    render(
+      <DeleteConfirmProvider>
+        <DeleteConfirmDialog
+          action={deleteAction}
+          hiddenInputs={{ id: '1' }}
+          itemName="Item"
+        />
+      </DeleteConfirmProvider>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Item' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm Purge' }))
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Server down')
+    })
+  })
+
+  it('handles delete returning false as a failure', async () => {
+    const { toast } = await import('sonner')
+    const deleteAction = vi.fn(async () => false)
+
+    render(
+      <DeleteConfirmProvider>
+        <DeleteConfirmDialog
+          action={deleteAction}
+          hiddenInputs={{ id: '1' }}
+          itemName="Recipe"
+        />
+      </DeleteConfirmProvider>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Recipe' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm Purge' }))
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalled()
+    })
+  })
 })

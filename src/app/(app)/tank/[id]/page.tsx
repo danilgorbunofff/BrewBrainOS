@@ -15,6 +15,7 @@ import { VoiceLogger } from '@/components/VoiceLogger'
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog'
 import { AssignBatchSelect } from '@/components/AssignBatchSelect'
 import { cn } from '@/lib/utils'
+import { getActiveBrewery } from '@/lib/active-brewery'
 
 export const metadata = {
   title: 'Tank Dashboard | BrewBrain OS',
@@ -46,10 +47,14 @@ export default async function TankPage({ params }: PageProps) {
     )
   }
 
+  const brewery = await getActiveBrewery()
+  if (!brewery) redirect('/dashboard')
+
   const { data: tank, error: tankError } = await supabase
     .from('tanks')
     .select('*')
     .eq('id', id)
+    .eq('brewery_id', brewery.id)
     .single()
 
   if (tankError || !tank) {

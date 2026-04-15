@@ -67,14 +67,15 @@ export function calculateHSI(
   const today = new Date()
   const received = parseISO(receivedDate)
   const daysElapsed = differenceInDays(today, received)
-  const monthsElapsed = daysElapsed / 30.44  // Average days per month
+  // Clamp to 0 if received date is in the future
+  const monthsElapsed = Math.max(0, daysElapsed) / 30.44  // Average days per month
 
   const conditionMultiplier = getStorageConditionMultiplier(storageCondition)
   const hsiLoss = monthlyLossRate * monthsElapsed * conditionMultiplier
   const hsiCurrent = hsiInitial * (1 - hsiLoss)
 
-  // Never go below 0
-  return Math.max(0, Math.round(hsiCurrent * 100) / 100)
+  // Never go below 0 or above initial
+  return Math.min(hsiInitial, Math.max(0, Math.round(hsiCurrent * 100) / 100))
 }
 
 /**
@@ -104,7 +105,8 @@ export function calculateGrainMoisture(
 
   const today = new Date()
   const received = parseISO(receivedDate)
-  const daysElapsed = differenceInDays(today, received)
+  // Clamp to 0 if received date is in the future
+  const daysElapsed = Math.max(0, differenceInDays(today, received))
 
   // Moisture change rate per day based on storage condition
   const dailyChangeRates: Record<StorageCondition, number> = {

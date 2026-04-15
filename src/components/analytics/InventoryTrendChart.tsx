@@ -30,7 +30,7 @@ export function InventoryTrendChart({ data }: { data: TrendData[] }) {
     grid: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
     text: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
     usage: 'hsl(var(--primary))',
-    waste: 'rgb(2ef44, 63, 94)', // Rose 500
+    waste: 'rgb(244, 63, 94)', // Rose 500
     wasteColor: isDark ? 'hsla(348, 83%, 47%, 0.5)' : '#f43f5e'
   }
 

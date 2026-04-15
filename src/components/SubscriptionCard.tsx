@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LucideCreditCard, LucideArrowRight, LucideCheck, LucideAlertCircle } from 'lucide-react'
@@ -11,6 +12,8 @@ import { cn } from '@/lib/utils'
  */
 export function SubscriptionCard() {
   const { tier, tierName, status, isActive, isTrial, trialExpired, currentPeriodEnd, whiteGlovePaid } = useSubscription()
+
+  const [now] = useState(() => Date.now())
 
   const statusBadge = {
     active: { label: 'Active', color: 'text-green-400 bg-green-500/10 border-green-500/20' },
@@ -67,7 +70,7 @@ export function SubscriptionCard() {
                   month: 'long',
                   day: 'numeric',
                   year: 'numeric',
-                })} — {Math.max(0, Math.ceil((new Date(currentPeriodEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))} days remaining
+                })} — {Math.max(0, Math.ceil((new Date(currentPeriodEnd).getTime() - now) / (1000 * 60 * 60 * 24)))} days remaining
               </span>
             </div>
           )}

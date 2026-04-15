@@ -404,6 +404,194 @@ describe('batches/[id]/actions', () => {
     })
   })
 
+  // ─── runFermentationAlertCheck ──────────────────────────────────
+  describe('runFermentationAlertCheck', () => {
+    it('returns 0 alerts_created when batch has no readings', async () => {
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'batches') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: { target_temp: 20 }, error: null }),
+                }),
+              }),
+            }),
+          }
+        }
+        if (table === 'batch_readings') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+                }),
+              }),
+            }),
+          }
+        }
+        return {}
+      })
+
+      mockRequireActiveBrewery.mockResolvedValue({
+        supabase: { from: mockFrom },
+        user: mockUser,
+        brewery: mockBrewery,
+      })
+
+      const { runFermentationAlertCheck } = await import('../../src/app/(app)/batches/[id]/actions')
+      const result = await runFermentationAlertCheck('b-001')
+
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual({ alerts_created: 0 })
+    })
+
+    it('creates alerts and sends notifications when anomalies detected', async () => {
+      const mockInsert = vi.fn().mockReturnValue({
+        select: vi.fn().mockResolvedValue({
+          data: [
+            { id: 'fa-1', alert_type: 'temp_spike', severity: 'warning', message: 'Temp spike', batch_id: 'b-001', brewery_id: 'brewery-001' },
+          ],
+          error: null,
+        }),
+      })
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'batches') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: { target_temp: 20 }, error: null }),
+                }),
+              }),
+            }),
+          }
+        }
+        if (table === 'batch_readings') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue({
+                    data: [{ id: 'r-1', gravity: 1.05, temperature: 30, ph: 4.2, dissolved_oxygen: 0.1, pressure: 12, created_at: new Date().toISOString() }],
+                    error: null,
+                  }),
+                }),
+              }),
+            }),
+          }
+        }
+        if (table === 'fermentation_alerts') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+              }),
+            }),
+            insert: mockInsert,
+          }
+        }
+        return {}
+      })
+
+      mockDetectFermentationAlerts.mockReturnValue([
+        { alert_type: 'temp_spike', severity: 'warning', message: 'Temp spike', threshold_value: 22, actual_value: 30 },
+      ])
+
+      mockRequireActiveBrewery.mockResolvedValue({
+        supabase: { from: mockFrom },
+        user: mockUser,
+        brewery: mockBrewery,
+      })
+
+      const { runFermentationAlertCheck } = await import('../../src/app/(app)/batches/[id]/actions')
+      const result = await runFermentationAlertCheck('b-001')
+
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual({ alerts_created: 1 })
+      expect(mockInsert).toHaveBeenCalledWith([
+        expect.objectContaining({
+          batch_id: 'b-001',
+          brewery_id: 'brewery-001',
+          alert_type: 'temp_spike',
+          severity: 'warning',
+          status: 'active',
+        }),
+      ])
+      expect(mockSendNotification).toHaveBeenCalled()
+    })
+
+    it('skips already-active alert types (deduplication)', async () => {
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'batches') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({ data: { target_temp: 20 }, error: null }),
+                }),
+              }),
+            }),
+          }
+        }
+        if (table === 'batch_readings') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue({
+                    data: [{ id: 'r-1', gravity: 1.05, temperature: 30, ph: 4.2, dissolved_oxygen: 0.1, pressure: 12, created_at: new Date().toISOString() }],
+                    error: null,
+                  }),
+                }),
+              }),
+            }),
+          }
+        }
+        if (table === 'fermentation_alerts') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockResolvedValue({
+                  data: [{ alert_type: 'temp_spike' }],
+                  error: null,
+                }),
+              }),
+            }),
+          }
+        }
+        return {}
+      })
+
+      mockDetectFermentationAlerts.mockReturnValue([
+        { alert_type: 'temp_spike', severity: 'warning', message: 'Temp spike', threshold_value: 22, actual_value: 30 },
+      ])
+
+      mockRequireActiveBrewery.mockResolvedValue({
+        supabase: { from: mockFrom },
+        user: mockUser,
+        brewery: mockBrewery,
+      })
+
+      const { runFermentationAlertCheck } = await import('../../src/app/(app)/batches/[id]/actions')
+      const result = await runFermentationAlertCheck('b-001')
+
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual({ alerts_created: 0 })
+    })
+
+    it('returns error when auth fails', async () => {
+      mockRequireActiveBrewery.mockRejectedValue(new Error('Not authenticated'))
+
+      const { runFermentationAlertCheck } = await import('../../src/app/(app)/batches/[id]/actions')
+      const result = await runFermentationAlertCheck('b-001')
+
+      expect(result.success).toBe(false)
+      expect(result.error).toMatch(/Not authenticated/)
+    })
+  })
+
   // ─── acknowledgeAlert ──────────────────────────────────────────
   describe('acknowledgeAlert', () => {
     it('sets status to acknowledged with timestamp', async () => {

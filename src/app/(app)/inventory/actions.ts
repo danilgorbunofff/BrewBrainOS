@@ -5,6 +5,7 @@ import { requireActiveBrewery } from '@/lib/require-brewery'
 import { inventorySchema } from '@/lib/schemas'
 import { ActionResult, InventoryItem, DegradationLog, StorageCondition } from '@/types/database'
 import { sendInventoryAlert } from '@/app/actions/push-actions'
+import { recordInventoryChange } from '@/app/actions/shrinkage'
 import {
   recalculateDegradationMetrics,
   generateDegradationAlerts,
@@ -130,6 +131,16 @@ export async function updateStock(formData: FormData): Promise<ActionResult> {
     if (!itemId) return { success: false, error: 'Item ID is required' }
     if (isNaN(newStock)) return { success: false, error: 'Invalid stock amount' }
 
+    // Fetch current stock before update for audit trail
+    const { data: item } = await supabase
+      .from('inventory')
+      .select('current_stock, name, reorder_point')
+      .eq('id', itemId)
+      .eq('brewery_id', brewery.id)
+      .single()
+
+    const previousStock = item?.current_stock ?? 0
+
     const { error } = await supabase
       .from('inventory')
       .update({ current_stock: newStock })
@@ -141,15 +152,11 @@ export async function updateStock(formData: FormData): Promise<ActionResult> {
       return { success: false, error: 'Failed to update stock level' }
     }
 
-    // Check against reorder point for push notification
-    const { data: item } = await supabase
-      .from('inventory')
-      .select('name, reorder_point')
-      .eq('id', itemId)
-      .single()
+    // Create inventory_history entry for audit trail
+    recordInventoryChange(itemId, previousStock, newStock, 'stock_adjustment').catch(console.error)
 
+    // Check against reorder point for push notification
     if (item && item.reorder_point != null && newStock <= item.reorder_point) {
-      // Fire and forget
       sendInventoryAlert(brewery.id, item.name, newStock).catch(console.error)
     }
 
@@ -166,7 +173,6 @@ export async function updateStock(formData: FormData): Promise<ActionResult> {
 export async function adjustInventoryStock(
   itemId: string,
   adjustment: number,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   reason: string = 'Manual adjustment'
 ): Promise<ActionResult> {
   try {
@@ -187,7 +193,8 @@ export async function adjustInventoryStock(
       return { success: false, error: 'Item not found' }
     }
 
-    const newStock = Math.max(0, (item.current_stock || 0) + adjustment)
+    const previousStock = item.current_stock || 0
+    const newStock = Math.max(0, previousStock + adjustment)
 
     // Update stock
     const { error: updateError } = await supabase
@@ -200,6 +207,9 @@ export async function adjustInventoryStock(
       console.error('Failed to adjust stock:', updateError)
       return { success: false, error: 'Failed to update stock level' }
     }
+
+    // Create inventory_history entry for audit trail
+    recordInventoryChange(itemId, previousStock, newStock, 'stock_adjustment', reason).catch(console.error)
 
     // Check against reorder point for alerts
     if (item.reorder_point != null && newStock <= item.reorder_point) {

@@ -49,6 +49,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   return (
     <div className="min-h-screen bg-background text-foreground p-6 md:p-8 pt-8 pb-32 md:pb-8 selection:bg-primary/30">
       <RealtimeRefresh table="batches" breweryId={brewery?.id || ''} />
+      <RealtimeRefresh table="tanks" breweryId={brewery?.id || ''} />
+      <RealtimeRefresh table="inventory" breweryId={brewery?.id || ''} />
       <div className="max-w-6xl mx-auto space-y-6">
         
         {/* Header */}
@@ -89,7 +91,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 async function DashboardContent({ breweryId }: { breweryId: string }) {
   const supabase = await createClient()
 
-  const [batchRes, tankRes, inventoryRes] = await Promise.all([
+  const [batchRes, tankRes, inventoryRes] = await Promise.allSettled([
     supabase.from('batches').select('id, recipe_name, status, created_at, og, fg')
       .eq('brewery_id', breweryId).order('created_at', { ascending: false }),
     supabase.from('tanks').select('id, name, status, current_batch_id')
@@ -98,9 +100,9 @@ async function DashboardContent({ breweryId }: { breweryId: string }) {
       .eq('brewery_id', breweryId),
   ])
 
-  const batches = batchRes.data || []
-  const tanks = tankRes.data || []
-  const inventory = inventoryRes.data || []
+  const batches = batchRes.status === 'fulfilled' ? batchRes.value.data || [] : []
+  const tanks = tankRes.status === 'fulfilled' ? tankRes.value.data || [] : []
+  const inventory = inventoryRes.status === 'fulfilled' ? inventoryRes.value.data || [] : []
 
   const stats = {
     activeBatches: batches.filter(b => b.status === 'fermenting' || b.status === 'conditioning').length,

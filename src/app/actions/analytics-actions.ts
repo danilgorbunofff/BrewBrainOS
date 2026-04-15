@@ -152,7 +152,7 @@ export async function getBatchPerformance() {
     // Generate efficiency score (Target OG vs Actual OG) simple mapping
     const expectedPoints = recipe.target_og ? (recipe.target_og - 1) * 1000 : 0
     const actualPoints = b.og ? (b.og - 1) * 1000 : 0
-    const efficiencyPct = expectedPoints && actualPoints 
+    const efficiencyPct = expectedPoints > 0 && actualPoints > 0
       ? Math.min(100, (actualPoints / expectedPoints) * 100) 
       : 0
 

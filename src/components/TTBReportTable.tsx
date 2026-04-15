@@ -51,7 +51,7 @@ export function TTBReportTable({ batches, avgTankCapacity, breweryName, licenseN
       m.estimatedBBL += avgTankCapacity
       m.gallons += avgTankCapacity * 31
     }
-    if (batch.status === 'fermenting' || batch.status === 'conditioning') m.activeBatches++
+    if (batch.status === 'brewing' || batch.status === 'fermenting' || batch.status === 'conditioning') m.activeBatches++
     if (batch.status === 'dumped') m.dumpedBatches++
   }
 

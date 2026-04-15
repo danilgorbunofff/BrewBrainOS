@@ -14,6 +14,8 @@ import { transcribeVoiceLog, saveVoiceLog } from '@/app/actions/voiceModal'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { enqueueAction } from '@/lib/offlineQueue'
+import { parseBrewBrainQR } from '@/lib/qr'
+import { useTierCheck } from '@/components/UpgradeGate'
 
 const QRCodeScanner = dynamic(
   () => import('@yudiel/react-qr-scanner').then((mod) => mod.Scanner),
@@ -40,6 +42,7 @@ interface ExtractedData {
 export function MobileFloatingActions() {
   const router = useRouter()
   const [showQR, setShowQR] = useState(false)
+  const hasTier = useTierCheck('production')
 
   // Voice modal state
   const [voiceStep, setVoiceStep] = useState<VoiceStep>('idle')
@@ -51,6 +54,10 @@ export function MobileFloatingActions() {
 
   // ── Voice Recording ──
   const openVoiceModal = () => {
+    if (!hasTier) {
+      toast.error('AI Voice Logs require a Production or higher plan.')
+      return
+    }
     setShowVoiceModal(true)
     setVoiceStep('idle')
     setExtractedData(null)
@@ -178,31 +185,20 @@ export function MobileFloatingActions() {
   }
 
   // ── QR Scanner ──
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleScan = (detectedCodes: any[]) => {
+  const handleScan = (detectedCodes: Array<{ rawValue: string }>) => {
     if (!detectedCodes.length) return
     const data = detectedCodes[0].rawValue
     if (!data) return
 
     setShowQR(false)
 
-    if (data.includes('tank/')) {
-      const match = data.match(/tank\/([a-zA-Z0-9-]+)/)
-      if (match?.[1]) {
-        toast.success('Tank recognized. Loading profile...')
-        router.push(`/tank/${match[1]}`)
-        return
-      }
+    const tankId = parseBrewBrainQR(data)
+    if (tankId) {
+      toast.success('Tank recognized. Loading profile...')
+      router.push(`/tank/${tankId}`)
+    } else {
+      toast.error('Invalid BrewBrain QR code detected.')
     }
-
-    const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
-    if (uuidRegex.test(data)) {
-      toast.success('Tank recognized by ID. Loading profile...')
-      router.push(`/tank/${data}`)
-      return
-    }
-
-    toast.error('Invalid BrewBrain QR code detected.')
   }
 
   return (

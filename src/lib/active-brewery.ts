@@ -20,7 +20,7 @@ export async function getUserBreweries(): Promise<BrewerySummary[]> {
 
   const { data, error } = await supabase
     .from('breweries')
-    .select('id, name, license_number')
+    .select('id, name, license_number, subscription_tier')
     .eq('owner_id', user.id)
     .order('created_at', { ascending: true })
 
@@ -52,7 +52,7 @@ export async function getActiveBrewery(): Promise<BrewerySummary | null> {
   if (storedId) {
     const { data, error } = await supabase
       .from('breweries')
-      .select('id, name, license_number')
+      .select('id, name, license_number, subscription_tier')
       .eq('id', storedId)
       .eq('owner_id', user.id)
       .maybeSingle()
@@ -67,7 +67,7 @@ export async function getActiveBrewery(): Promise<BrewerySummary | null> {
   // Fallback: first brewery
   const { data, error } = await supabase
     .from('breweries')
-    .select('id, name, license_number')
+    .select('id, name, license_number, subscription_tier')
     .eq('owner_id', user.id)
     .order('created_at', { ascending: true })
     .limit(1)

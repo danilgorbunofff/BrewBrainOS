@@ -125,8 +125,10 @@ export default async function PrintQRLabelsPage() {
         ) : (
           <div className="print-grid grid grid-cols-2 md:grid-cols-3 gap-6">
             {vessels.map(tank => {
-              // Target URL for scan
-              const tankUrl = `https://app.brewbrain.io/tank/${tank.id}`
+              // Target URL for scan – derive from NEXT_PUBLIC_SITE_URL so
+              // dev/staging labels don't point at production.
+              const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+              const tankUrl = `${baseUrl}/tank/${tank.id}`
               
               return (
                 <div key={tank.id} className="print-label flex flex-col items-center justify-center border dashed border-gray-300 p-6 rounded-xl print:rounded-none aspect-square md:aspect-auto h-auto md:h-64">

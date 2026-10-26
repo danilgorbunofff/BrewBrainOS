@@ -121,7 +121,7 @@ export function VoiceLogger({ tankId, className, disabled, variant = 'default' }
 
       const result = await processVoiceLog(formData)
       
-      if (result && result.success) {
+      if (result && result.success && result.data) {
         toast.success(`Data Synchronized: Temp ${result.data.temperature || '??'} / Grav ${result.data.gravity || '??'}`, { id: toastId, duration: 5000 })
         speakFeedback(result.data)
       } else {

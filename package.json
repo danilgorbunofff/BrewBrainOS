@@ -12,8 +12,6 @@
     "start": "next start",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix",
-    "lint:audit": "eslint . --ext .ts,.tsx,.js,.jsx -f json --fix-dry-run > eslint-fix-report.json",
-    "lint:audit:summary": "node scripts/summarize-eslint-fix-report.mjs eslint-fix-report.json eslint-fix-summary.json",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:components": "vitest run __tests__/components",

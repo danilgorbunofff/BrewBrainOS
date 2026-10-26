@@ -1,8 +1,22 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useSyncExternalStore } from 'react'
 import { motion } from 'framer-motion'
 import type { ReactNode } from 'react'
+
+const subscribe = () => () => {}
+
+/**
+ * `false` on the server and during hydration, `true` once React has taken over.
+ * Keeps the server markup fully visible for crawlers and no-JS visitors.
+ */
+function useIsHydrated() {
+  return useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  )
+}
 
 interface ScrollRevealProps {
   children: ReactNode
@@ -19,24 +33,10 @@ export function ScrollReveal({
   distance = 40,
   duration = 0.8
 }: ScrollRevealProps) {
-  const [mounted, setMounted] = useState(false)
+  const hydrated = useIsHydrated()
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const staticTransform =
-    direction === 'up' ? `translateY(${distance}px)` :
-    direction === 'down' ? `translateY(-${distance}px)` :
-    direction === 'left' ? `translateX(${distance}px)` :
-    `translateX(-${distance}px)`
-
-  if (!mounted) {
-    return (
-      <div style={{ opacity: 0, transform: staticTransform }}>
-        {children}
-      </div>
-    )
+  if (!hydrated) {
+    return <div>{children}</div>
   }
 
   const motionInitial =

@@ -106,6 +106,8 @@ describe('InventoryTable', () => {
   })
 
   it('renders expiration and degradation indicators for detailed inventory items', () => {
+    const daysFromNow = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
+
     render(
       <InventoryTable
         items={[
@@ -116,7 +118,7 @@ describe('InventoryTable', () => {
             current_stock: 2,
             unit: 'kg',
             reorder_point: 5,
-            expiration_date: '2026-04-01T00:00:00.000Z',
+            expiration_date: daysFromNow(-10),
             hsi_current: 40,
           },
           {
@@ -126,7 +128,7 @@ describe('InventoryTable', () => {
             current_stock: 12,
             unit: 'kg',
             reorder_point: 4,
-            expiration_date: '2026-04-20T00:00:00.000Z',
+            expiration_date: daysFromNow(7),
             grain_moisture_current: 14.2,
             ppg_initial: 37,
             ppg_current: 30,
